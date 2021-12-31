@@ -20,6 +20,27 @@
 git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME
 cd $HOME/wf-assembly-snps
 nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+cat OUTPATH_DIR/SNP-distances.matrix.tsv
+-   16-090  16-100  16-127  16-146  16-151  16-155
+16-090  0   31  24  7   32  35
+16-100  31  0   33  32  3   6
+16-127  24  33  0   25  34  37
+16-146  7   32  25  0   33  36
+16-151  32  3   34  33  0   3
+16-155  35  6   37  36  3   0
+tree -a OUTPATH_DIR/
+OUTPATH_DIR/
+├── .log
+│   ├── stderr.nextflow.txt
+│   └── stdout.nextflow.txt
+├── parsnpAligner.log.gz
+├── parsnp.ggr
+├── parsnp.tree
+├── SNP-distances.matrix.tsv
+├── SNP-distances.pairs.tsv
+├── SNPs.fa.gz
+└── trace.2021-36-30 22:36:26.txt
+rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 ```
 
 
