@@ -1,0 +1,8 @@
+name: bioperl
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - perl-bioperl-core=1.007002
+
