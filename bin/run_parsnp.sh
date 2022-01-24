@@ -22,7 +22,8 @@ parsnp \
  -d "${input_path}" \
  -r "${reference_path}" \
  -o "${output_path}" \
- -p "${cpus}"
+ -p "${cpus}" \
+ --use-fasttree
 msg "INFO: finished parsnp system call"
 
 if ! verify_file_minimum_size "${output_path}/parsnp.ggr" 'gingr' '100k'; then
