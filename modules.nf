@@ -91,7 +91,7 @@ process RUN_PARSNP {
 process EXTRACT_SNPS {
 
 
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null)
+    conda (params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : 'bioconda::harvesttools=1.2')
     // conda (params.enable_conda_yml ? 'bioconda::harvesttools=1.2' : null)
     container = "$baseDir/assets/parsnp_1.5.6.sif"
 
@@ -119,7 +119,7 @@ process EXTRACT_SNPS {
 
 process PAIRWISE_DISTANCES {
 
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/bioperl.yml" : null)
+    conda (params.enable_conda_yml ? "$baseDir/conda/linux/bioperl.yml" : 'bioconda::perl-bioperl-core=1.007002')
     // conda (params.enable_conda_yml ? 'bioconda::perl-bioperl-core=1.007002' : null)
     container = "$baseDir/assets/parsnp_1.5.6.sif"
     cpus 2
@@ -149,7 +149,7 @@ process PAIRWISE_DISTANCES {
 
 process DISTANCE_MATRIX {
 
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null)
+    conda (params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : 'conda-forge::python=3.10.1')
     // conda (params.enable_conda_yml ? 'conda-forge::python=3.10.1' : null)
     container = "$baseDir/assets/python_3.sif"
 
