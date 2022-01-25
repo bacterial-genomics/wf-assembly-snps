@@ -57,13 +57,13 @@ rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 
 
 ## Misc Notes
-`-resume` uses cached results
-`-with-dag dag.png` to make dag
+- `-resume` uses cached results
+- `-with-dag dag.png` to make dag
 
-scripts needs to be in ./bin for nextflow to be able to find them
+- scripts needs to be in ./bin for nextflow to be able to find them
 
-doesn't seem possible to tell nextflow where to find conda,
-it only checks your path
+- doesn't seem possible to tell nextflow where to find conda, it only checks your path
 
 - how to stop appending -ue to bash
     - add `process.shell = ['/bin/bash']` to nextflow.config
+
