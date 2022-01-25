@@ -17,9 +17,17 @@
 
 ## Example install and run
 ```
+# install
 git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME/wf-assembly-snps
 cd $HOME/wf-assembly-snps
+
+# make conda and nextflow available for use
+module load conda nextflow
+
+# run the workflow with defaults
 nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+
+# view final output file
 cat OUTPATH_DIR/SNP-distances.matrix.tsv
 -   16-090  16-100  16-127  16-146  16-151  16-155
 16-090  0   31  24  7   32  35
@@ -28,6 +36,8 @@ cat OUTPATH_DIR/SNP-distances.matrix.tsv
 16-146  7   32  25  0   33  36
 16-151  32  3   34  33  0   3
 16-155  35  6   37  36  3   0
+
+# view final output dir structure
 tree -a OUTPATH_DIR/
 OUTPATH_DIR/
 ├── .log
@@ -40,6 +50,8 @@ OUTPATH_DIR/
 ├── SNP-distances.pairs.tsv
 ├── SNPs.fa.gz
 └── trace.2021-36-30 22:36:26.txt
+
+# cleanup
 rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 ```
 
