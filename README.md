@@ -17,7 +17,7 @@
 
 ## Example install and run
 ```
-git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME
+git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME/wf-assembly-snps
 cd $HOME/wf-assembly-snps
 nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
 cat OUTPATH_DIR/SNP-distances.matrix.tsv
