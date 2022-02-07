@@ -56,10 +56,11 @@ process INFILE_HANDLING {
 process RUN_PARSNP {
 
     cpus 2
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : 'bioconda::parsnp=1.5.6')
-    container "snads/parsnp:1.5.6"
+    params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
+    conda 'bioconda::parsnp=1.1.3'
+    container 'snads/parsnp:1.5.6'
     // @sha256:f43ffe7ed111c9721891950d25160d94cec3d8dbdaf4f3afc16ce91d184ed34f
-    // process.container = "dockerhub_user/image_name:image_tag"
+    // process.container "dockerhub_user/image_name:image_tag"
     //container "hub.docker.com/layers/snads/parsnp/1.5.6"
 
     input:
@@ -85,15 +86,14 @@ process RUN_PARSNP {
     touch run_parsnp.success.txt
     """
 
-
 }
 
 process EXTRACT_SNPS {
 
 
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : 'bioconda::harvesttools=1.2')
-    // conda (params.enable_conda_yml ? 'bioconda::harvesttools=1.2' : null)
-    container = "$baseDir/assets/parsnp_1.5.6.sif"
+    params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null
+    conda 'bioconda::harvesttools=1.2'
+    container 'snads/parsnp:1.5.6'
 
     input:
         path(ran_parsnp)
@@ -119,10 +119,10 @@ process EXTRACT_SNPS {
 
 process PAIRWISE_DISTANCES {
 
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/bioperl.yml" : 'bioconda::perl-bioperl-core=1.007002')
-    // conda (params.enable_conda_yml ? 'bioconda::perl-bioperl-core=1.007002' : null)
-    container = "$baseDir/assets/parsnp_1.5.6.sif"
-    cpus 2
+    params.enable_conda_yml ? "$baseDir/conda/linux/bioperl.yml" : null
+    conda 'bioconda::perl-bioperl-core=1.007002'
+    container 'bioperl/bioperl:release-1-7-2'
+    cpus 12
 
     input:
         path(extracted_snps)
@@ -149,9 +149,9 @@ process PAIRWISE_DISTANCES {
 
 process DISTANCE_MATRIX {
 
-    conda (params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : 'conda-forge::python=3.10.1')
-    // conda (params.enable_conda_yml ? 'conda-forge::python=3.10.1' : null)
-    container = "$baseDir/assets/python_3.sif"
+    params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null
+    conda 'conda-forge::python=3.10.1'
+    container 'snads/hamming-dist:1.0'
 
     input:
         path(calculated_snp_distances)
@@ -178,7 +178,7 @@ process DISTANCE_MATRIX {
 process RECOMBINATION {
 
     cpus 2
-    container = "$baseDir/assets/filename.sif"
+    container "$baseDir/assets/filename.sif"
 
     input:
         path(extracted_snps)

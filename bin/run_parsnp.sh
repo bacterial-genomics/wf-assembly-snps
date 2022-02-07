@@ -14,6 +14,10 @@ command -v parsnp >/dev/null 2>&1 || { echo 'ERROR: parsnp not found' >&2; exit 
 #  aligned nucleotide sequences if the deflines contain hyphens
 sed -i 's/-//g' "${reference_path}"
 
+# Log binary path and the version used
+msg "Parsnp path $(command -v parsnp)"
+msg "Parsnp version $(parsnp --version 2> /dev/null | sed 's/parsnp //1')"
+
 # Perform the parsnp system call
 msg "INFO: starting parsnp system call"
 parsnp \

@@ -5,6 +5,10 @@ output_path=$1
 
 source bash_functions.sh
 
+# Log binary path and the version used
+msg "Harvesttools path $(command -v harvesttools)"
+msg "Harvesttools version $(harvesttools --version)"
+
 # Extract only SNP positions from the gingr file
 snps_outfile="${output_path}"/SNPs.fa
 msg "INFO: starting SNP extraction"
