@@ -18,12 +18,22 @@
 
 ## Example install and run
 ```
-git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME
+# install
+git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME/wf-assembly-snps
 cd $HOME/wf-assembly-snps
 # Run with conda
 nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
 # Run with docker
 nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+
+# make conda and nextflow available for use
+module load conda nextflow
+
+# run the workflow with defaults
+nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+
+# view final output file
+
 cat OUTPATH_DIR/SNP-distances.matrix.tsv
 -   16-090  16-100  16-127  16-146  16-151  16-155
 16-090  0   31  24  7   32  35
@@ -32,6 +42,8 @@ cat OUTPATH_DIR/SNP-distances.matrix.tsv
 16-146  7   32  25  0   33  36
 16-151  32  3   34  33  0   3
 16-155  35  6   37  36  3   0
+
+# view final output dir structure
 tree -a OUTPATH_DIR/
 OUTPATH_DIR/
 ├── .log
@@ -44,18 +56,20 @@ OUTPATH_DIR/
 ├── SNP-distances.pairs.tsv
 ├── SNPs.fa.gz
 └── trace.2021-36-30 22:36:26.txt
+
+# cleanup
 rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 ```
 
 
 ## Misc Notes
-`-resume` uses cached results
-`-with-dag dag.png` to make dag
+- `-resume` uses cached results
+- `-with-dag dag.png` to make dag
 
-scripts needs to be in ./bin for nextflow to be able to find them
+- scripts needs to be in ./bin for nextflow to be able to find them
 
-doesn't seem possible to tell nextflow where to find conda,
-it only checks your path
+- doesn't seem possible to tell nextflow where to find conda, it only checks your path
 
 - how to stop appending -ue to bash
     - add `process.shell = ['/bin/bash']` to nextflow.config
+
