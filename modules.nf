@@ -57,7 +57,7 @@ process RUN_PARSNP {
 
     cpus 2
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
-    conda 'bioconda::parsnp=1.1.3'
+    //conda 'bioconda::parsnp=1.1.3'
     container "snads/parsnp:1.5.6"
     // @sha256:f43ffe7ed111c9721891950d25160d94cec3d8dbdaf4f3afc16ce91d184ed34f
     // process.container = "dockerhub_user/image_name:image_tag"
@@ -93,7 +93,7 @@ process EXTRACT_SNPS {
 
 
     params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null
-    conda 'bioconda::harvesttools=1.2'
+    // conda 'bioconda::harvesttools=1.2'
     // container = "$baseDir/assets/parsnp_1.5.6.sif"  // TODO: replace placeholder with option to run with singularity
     container "snads/parsnp:1.5.6"
 
@@ -122,7 +122,7 @@ process EXTRACT_SNPS {
 process PAIRWISE_DISTANCES {
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
-    conda 'bioconda::FIXME'
+    // conda 'bioconda::FIXME'
     // container = "$baseDir/assets/parsnp_1.5.6.sif"  // TODO: replace placeholder with option to run with singularity
     container "snads/hamming-dist:1.0"
     cpus 2
@@ -153,7 +153,7 @@ process PAIRWISE_DISTANCES {
 process DISTANCE_MATRIX {
 
     params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null
-    conda 'conda-forge::python=3.10.1'
+    // conda 'conda-forge::python=3.10.1'
     // container = "$baseDir/assets/python_3.sif"  // TODO: replace placeholder with option to run with singularity
     container "snads/hamming-dist:1.0"
 
