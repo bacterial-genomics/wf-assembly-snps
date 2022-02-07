@@ -180,6 +180,7 @@ workflow.onError {
         exit status : ${workflow.exitStatus}
         workDir     : ${workflow.workDir}
         
+
         ??? extra error messages to include ???
         """
         .stripIndent()
