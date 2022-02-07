@@ -27,7 +27,7 @@ if (params.version){
 params.inpath = new File("${launchDir}").getCanonicalPath()
 params.outpath = new File("${launchDir}").getCanonicalPath()
 params.logpath = new File("${params.outpath}/.log").getCanonicalPath()
-params.refpath = new File("$HOME/wf-assembly-snps/INPUT_DIR/16-090.fna.gz").getCanonicalPath()
+params.refpath = new File("${launchDir}/INPUT_DIR/16-090.fna.gz").getCanonicalPath()
 //params.refpath = null
 params.recombination = false
 
