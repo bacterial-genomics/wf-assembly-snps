@@ -16,24 +16,31 @@
 ![workflow](images/workflow_v1.0.0.png)
 
 
-## Example install and run
+## Example install
 ```
 # install
 git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME/wf-assembly-snps
 cd $HOME/wf-assembly-snps
-# Run with conda
-nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
-# Run with docker
-nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+```
 
+## Run with conda
+```
 # make conda and nextflow available for use
 module load conda nextflow
-
-# run the workflow with defaults
+# run workflow
 nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+```
 
+## Run with docker
+```
+# make sure docker enging is running, then
+# run workflow
+nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+```
+
+## Workflow output
+```
 # view final output file
-
 cat OUTPATH_DIR/SNP-distances.matrix.tsv
 -   16-090  16-100  16-127  16-146  16-151  16-155
 16-090  0   31  24  7   32  35
@@ -64,6 +71,7 @@ rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 
 ## Misc Notes
 - `-resume` uses cached results
+- `-stub` uses example output files for any process with a stub block
 - `-with-dag dag.png` to make dag
 
 - scripts needs to be in ./bin for nextflow to be able to find them

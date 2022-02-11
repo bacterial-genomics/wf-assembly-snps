@@ -16,10 +16,10 @@ process FIND_INFILES {
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
-    stub:
-    """
-    touch find_infiles.success.txt
-    """
+//     stub:
+//     """
+//     touch find_infiles.success.txt
+//     """
 
 }
 
@@ -47,6 +47,10 @@ process INFILE_HANDLING {
     
     stub:
     """
+    if [[ ! -d  ${output_dir_path}/.tmp || ${output_dir_path}/.ref ]]; then
+        cp -r ${params.examplepath}/.tmp ${output_dir_path}
+        cp -r ${params.examplepath}/.ref ${output_dir_path}
+    fi
     touch infile_handling.success.txt
     """
 
@@ -83,6 +87,10 @@ process RUN_PARSNP {
 
     stub:
     """
+    if [[ ! -d  ${output_dir_path}/parsnp.ggr || ${output_dir_path}/parsnp.tree ]]; then
+        cp ${params.examplepath}/parsnp.ggr  ${output_dir_path}
+        cp ${params.examplepath}/parsnp.tree ${output_dir_path}
+    fi
     touch run_parsnp.success.txt
     """
 
@@ -114,6 +122,9 @@ process EXTRACT_SNPS {
 
     stub:
     """
+    if [[ ! -f ${output_dir_path}/SNPs.fa ]]; then
+        cp ${params.examplepath}/SNPs.fa  ${output_dir_path}
+    fi
     touch extract_snps.success.txt
     """
 
@@ -144,6 +155,9 @@ process PAIRWISE_DISTANCES {
 
     stub:
     """
+    if [[ ! -f ${output_dir_path}/SNP-distances.pairs.tsv ]]; then
+        cp ${params.examplepath}/SNP-distances.pairs.tsv  ${output_dir_path}
+    fi
     touch pairwise_distances.success.txt
     """
 
@@ -174,6 +188,9 @@ process DISTANCE_MATRIX {
 
     stub:
     """
+    if [[ ! -f ${output_dir_path}/SNP-distances.matrix.tsv ]]; then
+        cp ${params.examplepath}/SNP-distances.matrix.tsv  ${output_dir_path}
+    fi
     touch distance_matrix.success.txt
     """
 }

@@ -1,0 +1,14 @@
+[2022-Feb-11 Fri 09:21:28] INFO: 6 compressed assemblies found
+[2022-Feb-11 Fri 09:21:28] INFO: 0 plain text assemblies found
+[2022-Feb-11 Fri 09:21:28] INFO: created .tmp path with all 6 input assembly files
+[2022-Feb-11 Fri 09:21:28] INFO: specified compressed reference 16-090.fna.gz copied to .ref
+[2022-Feb-11 Fri 09:21:28] INFO: will use the OUTPATH_DIR/.ref/16-090 reference file
+[2022-Feb-11 Fri 17:22:12] INFO: starting parsnp system call
+Ref 16-090
+[2022-Feb-11 Fri 17:25:49] INFO: finished parsnp system call
+[2022-Feb-11 Fri 17:25:51] INFO: starting SNP extraction
+[2022-Feb-11 Fri 17:25:51] INFO: finished SNP extraction
+[2022-Feb-11 Fri 17:25:54] INFO: starting to calculate pairwise SNP distances
+[2022-Feb-11 Fri 17:25:54] INFO: finished calculating pairwise SNP distances
+[2022-Feb-11 Fri 17:25:56] INFO: starting to form SNP matrix
+[2022-Feb-11 Fri 17:25:56] INFO: finished SNP matrix formation
