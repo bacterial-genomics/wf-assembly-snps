@@ -298,29 +298,29 @@ process MASK_RECOMBINATION {
         path(extracted_fasta)
         path(parsnp_tree)
         path(recombination_positions)
-        format
+        val format
         path(output_dir_path)
 
     output:
-        path("${output_dir_path}/parsnp.fasta.masked"), emit: masked_fasta
-        path("mask_recombination.success.txt"), emit: masked_recombination
+        path("${output_dir_path}/parsnp_${format}.fasta"), emit: masked_fasta
+        path("mask_recombination_${format}.success.txt"), emit: masked_recombination
 
     script:
     """
-    if mask_recombination.py --alignment ${extracted_fasta} --format ${format} --rec_positions ${recombination_positions} --tree ${parsnp_tree} > ${output_dir_path}/parsnp.fasta.masked; then
-        touch mask_recombination.success.txt
+    if mask_recombination.py --alignment ${extracted_fasta} --format ${format} --rec_positions ${recombination_positions} --tree ${parsnp_tree} > ${output_dir_path}/parsnp_${format}.fasta; then
+        touch mask_recombination_${format}.success.txt
     fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
-//     stub:
-//     """
-//     if [[ ! -f ${output_dir_path}/parsnp.fasta.masked ]]; then
-//         cp ${params.examplepath}/parsnp.fasta.masked  ${output_dir_path}
-//     fi
-//     touch mask_recombination.success.txt
-//     """
+    stub:
+    """
+    if [[ ! -f ${output_dir_path}/parsnp_${format}.fasta ]]; then
+        cp ${params.examplepath}/parsnp_${format}.fasta  ${output_dir_path}
+    fi
+    touch mask_recombination_${format}.success.txt
+    """
 }
 
 process REINFER_TREE {
@@ -328,17 +328,20 @@ process REINFER_TREE {
 
     input:
         path(masked_fasta)
+        val recombination_method
         path(output_dir_path)
 
     output:
-        path("${output_dir_path}/parsnp_masked_recombination.tree")
-        path("reinfer_tree.success.txt"), emit: reinferred_tree
+        path("${output_dir_path}/parsnp_${recombination_method}.tree")
+        path("reinfer_tree_${recombination_method}.success.txt"), emit: reinferred_tree
 
     script:
     """
-    if fasttree -nt ${masked_fasta} > ${output_dir_path}/parsnp_masked_recombination.tree; then
-        touch reinfer_tree.success.txt
-    fi
+    # fasttree -nt ${masked_fasta} > ${output_dir_path}/parsnp_${recombination_method}.tree
+    # raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${output_dir_path} -n parsnp_${recombination_method}.tree
+    #if fasttree -nt ${masked_fasta} > ${output_dir_path}/parsnp_${recombination_method}.tree; then
+    #    touch reinfer_tree_${recombination_method}.success.txt
+    #fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
@@ -348,6 +351,6 @@ process REINFER_TREE {
 //     if [[ ! -f ${output_dir_path}/parsnp_masked_recombination.tree ]]; then
 //         cp ${params.examplepath}/parsnp_masked_recombination.tree  ${output_dir_path}
 //     fi
-//     touch reinfer_tree.success.txt
+//     touch reinfer_tree_${recombination_method}.success.txt
 //     """
 }

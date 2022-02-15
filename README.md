@@ -33,9 +33,11 @@ nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
 
 ## Run with docker
 ```
-# make sure docker enging is running, then
+# make sure docker engine is running, then
 # run workflow
 nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+# run workflow with recombination (options are 'gubbins', 'cfml', or 'both')
+nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR --recombination gubbins -with-dag flow.png
 ```
 
 ## Workflow output
@@ -59,6 +61,11 @@ OUTPATH_DIR/
 ├── parsnpAligner.log.gz
 ├── parsnp.ggr
 ├── parsnp.tree
+├── parsnp.fasta
+├── parsnp.importation_status.txt
+├── parsnp.recombination_predictions.gff
+├── parsnp_gubbins.tree
+├── parsnp_clonalframeml.tree
 ├── SNP-distances.matrix.tsv
 ├── SNP-distances.pairs.tsv
 ├── SNPs.fa.gz
@@ -71,7 +78,7 @@ rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 
 ## Misc Notes
 - `-resume` uses cached results
-- `-stub` uses example output files for any process with a stub block
+- `-stub` uses example output files for any process with an uncommented stub block
 - `-with-dag dag.png` to make dag
 
 - scripts needs to be in ./bin for nextflow to be able to find them

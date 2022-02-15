@@ -111,6 +111,7 @@ include {
                             Run the main workflow                             
 ==============================================================================
 */
+
 workflow {
     if (params.refpath) {
         ref_ch = Channel.fromPath(params.refpath, checkIfExists: true)
@@ -161,86 +162,122 @@ workflow {
     }
 
     if (params.recombination == 'gubbins') {
-        INFER_RECOMBINATION_GUBBINS(
+        RUN_GUBBINS(
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
             out_ch
         )
     } else if (params.recombination == 'cfml') {
-        INFER_RECOMBINATION_CFML(
+        RUN_CFML(
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
             out_ch
         )
     } else if (params.recombination == 'both') {
-        INFER_RECOMBINATION_GUBBINS(
+        RUN_GUBBINS(
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
             out_ch
         )
-        INFER_RECOMBINATION_CFML(
+        RUN_CFML(
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
             out_ch
         )
     }
-
-//     MASK_RECOMBINATION(
-//         EXTRACT_FASTA.out.parsnp_fasta,
-//         RUN_PARSNP.out.parsnp_tree,
-//         INFER_RECOMBINATION_GUBBINS.out.recombination_positions,
-//         'gubbins'
-//         out_ch
-//     )
-//
-//     REINFER_TREE(
-//         MASK_RECOMBINATION.out.masked_fasta,
-//         out_ch
-//     )
 }
 
+workflow RUN_GUBBINS {
+    take:
+        parsnp_fasta
+        parsnp_tree
+        out_ch
+    main:
+        INFER_RECOMBINATION_GUBBINS(
+            parsnp_fasta,
+            parsnp_tree,
+            out_ch
+        )
+        MASK_RECOMBINATION(
+            parsnp_fasta,
+            parsnp_tree,
+            INFER_RECOMBINATION_GUBBINS.out.recombination_positions,
+            channel.from('gubbins'),
+            out_ch
+        )
+        REINFER_TREE(
+            MASK_RECOMBINATION.out.masked_fasta,
+            channel.from('gubbins'),
+            out_ch
+        )
+}
+
+workflow RUN_CFML {
+    take:
+        parsnp_fasta
+        parsnp_tree
+        out_ch
+    main:
+        INFER_RECOMBINATION_CFML(
+            parsnp_fasta,
+            parsnp_tree,
+            out_ch
+        )
+        MASK_RECOMBINATION(
+            parsnp_fasta,
+            parsnp_tree,
+            INFER_RECOMBINATION_CFML.out.recombination_positions,
+            channel.from('clonalframeml'),
+            out_ch
+        )
+        REINFER_TREE(
+            MASK_RECOMBINATION.out.masked_fasta,
+            channel.from('clonalframeml'),
+            out_ch
+        )
+}
 
 /*
 ==============================================================================
                         Completion e-mail and summary                         
 ==============================================================================
 */
-workflow.onComplete {
-    workDir = new File("${workflow.workDir}")
-
-    println """
-    Pipeline Execution Summary
-    --------------------------
-    Workflow Version : ${workflow.version}
-    Nextflow Version : ${nextflow.version}
-    Command Line     : ${workflow.commandLine}
-    Resumed          : ${workflow.resume}
-    Completed At     : ${workflow.complete}
-    Duration         : ${workflow.duration}
-    Success          : ${workflow.success}
-    Exit Code        : ${workflow.exitStatus}
-    Error Report     : ${workflow.errorReport ?: '-'}
-    Launch Dir       : ${workflow.launchDir}
-    """
-}
-
-workflow.onError {
-    def err_msg = """\
-        Error summary
-        ---------------------------
-        Completed at: ${workflow.complete}
-        exit status : ${workflow.exitStatus}
-        workDir     : ${workflow.workDir}
-        
-        ??? extra error messages to include ???
-        """
-        .stripIndent()
-/*    sendMail(
-        to: "${USER}@cdc.gov",
-        subject: 'workflow error',
-        body: err_msg,
-        charset: UTF-8
-        // attach: '/path/stderr.log.txt'
-    )
-*/
-}
+// workflow.onComplete {
+//     workDir = new File("${workflow.workDir}")
+//
+//     println """
+//     Pipeline Execution Summary
+//     --------------------------
+//     Workflow Version : ${workflow.version}
+//     Nextflow Version : ${nextflow.version}
+//     Command Line     : ${workflow.commandLine}
+//     Resumed          : ${workflow.resume}
+//     Completed At     : ${workflow.complete}
+//     Duration         : ${workflow.duration}
+//     Success          : ${workflow.success}
+//     Exit Code        : ${workflow.exitStatus}
+//     Error Report     : ${workflow.errorReport ?: '-'}
+//     Launch Dir       : ${workflow.launchDir}
+//     """
+// }
+//
+// workflow.onError {
+//     def err_msg = """\
+//         Error summary
+//         ---------------------------
+//         Completed at: ${workflow.complete}
+//         exit status : ${workflow.exitStatus}
+//         workDir     : ${workflow.workDir}
+//
+//         ??? extra error messages to include ???
+//         """
+//         .stripIndent()
+// /*    sendMail(
+//         to: "${USER}@cdc.gov",
+//         subject: 'workflow error',
+//         body: err_msg,
+//         charset: UTF-8
+//         // attach: '/path/stderr.log.txt'
+//     )
+// */
+// }
