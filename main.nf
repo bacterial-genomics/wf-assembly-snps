@@ -90,7 +90,10 @@ include {
     PAIRWISE_DISTANCES;
     DISTANCE_MATRIX;
     EXTRACT_FASTA;
-    INFER_RECOMBINATION_GUBBINS
+    INFER_RECOMBINATION_GUBBINS;
+    INFER_RECOMBINATION_CFML;
+    MASK_RECOMBINATION;
+    INFER_MASKED_RECOMBINATION_TREE
 } from "./modules.nf"
 
 
@@ -155,9 +158,29 @@ workflow {
         out_ch
     )
 
-//     INFER_RECOMBINATION_GUBBINS(
+    // TODO: toggle between CFML and Gubbins
+    INFER_RECOMBINATION_GUBBINS(
+        EXTRACT_FASTA.out.parsnp_fasta,
+        RUN_PARSNP.out.parsnp_tree,
+        out_ch
+    )
+
+    INFER_RECOMBINATION_CFML(
+        EXTRACT_FASTA.out.parsnp_fasta,
+        RUN_PARSNP.out.parsnp_tree,
+        out_ch
+    )
+
+//     MASK_RECOMBINATION(
 //         EXTRACT_FASTA.out.parsnp_fasta,
 //         RUN_PARSNP.out.parsnp_tree,
+//         INFER_RECOMBINATION_GUBBINS.out.recombination_positions,
+//         'gubbins'
+//         out_ch
+//     )
+//
+//     REINFER_TREE(
+//         MASK_RECOMBINATION.out.masked_fasta,
 //         out_ch
 //     )
 }

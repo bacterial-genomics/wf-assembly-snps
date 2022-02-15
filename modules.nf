@@ -210,17 +210,25 @@ process EXTRACT_FASTA {
 
     script:
     """
-    if convert_xmfa_to_fasta.py -xmfa ${parsnp_xmfa} > ${output_dir_path}/parsnp.fasta; then
+    if convert_xmfa_to_fasta.py --xmfa ${parsnp_xmfa} > ${output_dir_path}/parsnp.fasta; then
+        sed -i.bak 's/.ref//g' ${output_dir_path}/parsnp.fasta
+        rm ${output_dir_path}/parsnp.fasta.bak
         touch "extract_fasta.success.txt"
     fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
+
+    stub:
+    """
+    if [[ ! -f ${output_dir_path}/parsnp.fasta ]]; then
+        cp ${params.examplepath}/parsnp.fasta  ${output_dir_path}
+    fi
+    touch extract_fasta.success.txt
+    """
 }
 
 process INFER_RECOMBINATION_GUBBINS {
-    // TODO: toggle between CFML and Gubbins
-    // container = "snads/clonalframeml:1.12"
     container = "snads/gubbins:3.1.4"
 
     input:
@@ -229,12 +237,12 @@ process INFER_RECOMBINATION_GUBBINS {
         path(output_dir_path)
 
     output:
-        path("${output_dir_path}/mutational-only.recombination-free.tre")
+        path("${output_dir_path}/parsnp.recombination_predictions.gff"), emit: recombination_positions
         path("infer_recombination.success.txt"), emit: inferred_recombination
 
     script:
     """
-    if run_gubbins.py --starting-tree ${parsnp_tree} --prefix ${output_dir_path} ${extracted_fasta}; then
+    if run_gubbins.py --starting-tree ${parsnp_tree} --prefix ${output_dir_path}/parsnp ${extracted_fasta}; then
         touch infer_recombination.success.txt
     fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
@@ -243,6 +251,103 @@ process INFER_RECOMBINATION_GUBBINS {
 
     stub:
     """
+    if [[ ! -f ${output_dir_path}/parsnp.recombination_predictions.gff ]]; then
+        cp ${params.examplepath}/parsnp.recombination_predictions.gff  ${output_dir_path}
+    fi
     touch infer_recombination.success.txt
     """
+}
+
+process INFER_RECOMBINATION_CFML {
+    container = "snads/clonalframeml:1.12"
+
+    input:
+        path(extracted_fasta)
+        path(parsnp_tree)
+        path(output_dir_path)
+
+    output:
+        path("${output_dir_path}/parsnp.importation_status.txt"), emit: recombination_positions
+        path("infer_recombination.success.txt"), emit: inferred_recombination
+
+    script:
+    """
+    # ClonalFrameML needs tree labels to not be surrounded by single quotes
+    sed -i.bak "s/'//g" ${parsnp_tree}
+    rm ${parsnp_tree}.bak
+    if ClonalFrameML ${parsnp_tree} ${extracted_fasta} ${output_dir_path}/parsnp; then
+        touch infer_recombination.success.txt
+    fi
+    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
+    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
+    """
+
+    stub:
+    """
+    if [[ ! -f ${output_dir_path}/parsnp.importation_status.txt ]]; then
+        cp ${params.examplepath}/parsnp.importation_status.txt  ${output_dir_path}
+    fi
+    touch infer_recombination.success.txt
+    """
+}
+
+process MASK_RECOMBINATION {
+    container = "snads/mask-recombination:1.0"
+
+    input:
+        path(extracted_fasta)
+        path(parsnp_tree)
+        path(recombination_positions)
+        format
+        path(output_dir_path)
+
+    output:
+        path("${output_dir_path}/parsnp.fasta.masked"), emit: masked_fasta
+        path("mask_recombination.success.txt"), emit: masked_recombination
+
+    script:
+    """
+    if mask_recombination.py --alignment ${extracted_fasta} --format ${format} --rec_positions ${recombination_positions} --tree ${parsnp_tree} > ${output_dir_path}/parsnp.fasta.masked; then
+        touch mask_recombination.success.txt
+    fi
+    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
+    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
+    """
+
+//     stub:
+//     """
+//     if [[ ! -f ${output_dir_path}/parsnp.fasta.masked ]]; then
+//         cp ${params.examplepath}/parsnp.fasta.masked  ${output_dir_path}
+//     fi
+//     touch mask_recombination.success.txt
+//     """
+}
+
+process REINFER_TREE {
+    container "snads/parsnp:1.5.6"
+
+    input:
+        path(masked_fasta)
+        path(output_dir_path)
+
+    output:
+        path("${output_dir_path}/parsnp_masked_recombination.tree")
+        path("reinfer_tree.success.txt"), emit: reinferred_tree
+
+    script:
+    """
+    if fasttree -nt ${masked_fasta} > ${output_dir_path}/parsnp_masked_recombination.tree; then
+        touch reinfer_tree.success.txt
+    fi
+    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
+    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
+    """
+
+//     stub:
+//     """
+//     if [[ ! -f ${output_dir_path}/parsnp_masked_recombination.tree ]]; then
+//         cp ${params.examplepath}/parsnp_masked_recombination.tree  ${output_dir_path}
+//     fi
+//     touch reinfer_tree.success.txt
+//     """
 }
