@@ -75,7 +75,8 @@ process RUN_PARSNP {
 
     output:
         path("${output_dir_path}/parsnp.ggr")
-        path("${output_dir_path}/parsnp.tree")
+        path("${output_dir_path}/parsnp.xmfa"), emit: parsnp_xmfa
+        path("${output_dir_path}/parsnp.tree"), emit: parsnp_tree
         path("run_parsnp.success.txt"), emit: ran_parsnp
 
     script:
@@ -87,8 +88,9 @@ process RUN_PARSNP {
 
     stub:
     """
-    if [[ ! -d  ${output_dir_path}/parsnp.ggr || ${output_dir_path}/parsnp.tree ]]; then
+    if [[ ! -d  ${output_dir_path}/parsnp.ggr || ${output_dir_path}/parsnp.tree || ${output_dir_path}/parsnp.xmfa ]]; then
         cp ${params.examplepath}/parsnp.ggr  ${output_dir_path}
+        cp ${params.examplepath}/parsnp.xmfa  ${output_dir_path}
         cp ${params.examplepath}/parsnp.tree ${output_dir_path}
     fi
     touch run_parsnp.success.txt
@@ -195,29 +197,52 @@ process DISTANCE_MATRIX {
     """
 }
 
-
-process RECOMBINATION {
-
-    cpus 2
-    container = "$baseDir/assets/filename.sif"
+process EXTRACT_FASTA {
+    container "snads/xmfa-to-fasta:2.0"
 
     input:
-        path(extracted_snps)
+        path(parsnp_xmfa)
+        path(output_dir_path)
+
+    output:
+        path("${output_dir_path}/parsnp.fasta"), emit: parsnp_fasta
+        path("extract_fasta.success.txt"), emit: extracted_fasta
+
+    script:
+    """
+    if convert_xmfa_to_fasta.py -xmfa ${parsnp_xmfa} > ${output_dir_path}/parsnp.fasta; then
+        touch "extract_fasta.success.txt"
+    fi
+    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
+    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
+    """
+}
+
+process INFER_RECOMBINATION_GUBBINS {
+    // TODO: toggle between CFML and Gubbins
+    // container = "snads/clonalframeml:1.12"
+    container = "snads/gubbins:3.1.4"
+
+    input:
+        path(extracted_fasta)
+        path(parsnp_tree)
         path(output_dir_path)
 
     output:
         path("${output_dir_path}/mutational-only.recombination-free.tre")
-        path("recombination.success.txt"), emit: inferred_recombination
+        path("infer_recombination.success.txt"), emit: inferred_recombination
 
     script:
     """
-    recombination.sh ${output_dir_path} ${task.cpus}
+    if run_gubbins.py --starting-tree ${parsnp_tree} --prefix ${output_dir_path} ${extracted_fasta}; then
+        touch infer_recombination.success.txt
+    fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    touch recombination.success.txt
+    touch infer_recombination.success.txt
     """
 }

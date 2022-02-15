@@ -82,7 +82,16 @@ if (logpathFileObj.exists()){
                  Import local custom modules and subworkflows                 
 ==============================================================================
 */
-include { FIND_INFILES; INFILE_HANDLING; RUN_PARSNP; EXTRACT_SNPS; PAIRWISE_DISTANCES; DISTANCE_MATRIX; RECOMBINATION } from "./modules.nf"
+include {
+    FIND_INFILES;
+    INFILE_HANDLING;
+    RUN_PARSNP;
+    EXTRACT_SNPS;
+    PAIRWISE_DISTANCES;
+    DISTANCE_MATRIX;
+    EXTRACT_FASTA;
+    INFER_RECOMBINATION_GUBBINS
+} from "./modules.nf"
 
 
 /*
@@ -141,11 +150,16 @@ workflow {
         out_ch
     )
 
-/*    RECOMBINATION(
-        RUN_PARSNP.out.ran_parsnp,
+    EXTRACT_FASTA(
+        RUN_PARSNP.out.parsnp_xmfa,
         out_ch
     )
-*/
+
+//     INFER_RECOMBINATION_GUBBINS(
+//         EXTRACT_FASTA.out.parsnp_fasta,
+//         RUN_PARSNP.out.parsnp_tree,
+//         out_ch
+//     )
 }
 
 
