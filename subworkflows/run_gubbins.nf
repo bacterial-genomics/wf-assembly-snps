@@ -20,7 +20,7 @@ workflow RUN_GUBBINS {
         MASK_RECOMBINATION(
             INFER_RECOMBINATION_GUBBINS.out.infer_recombination_success,
             parsnp_fasta,
-            parsnp_tree,
+            INFER_RECOMBINATION_GUBBINS.out.node_labelled_tree,
             INFER_RECOMBINATION_GUBBINS.out.recombination_positions,
             channel.from('gubbins'),
             outpath

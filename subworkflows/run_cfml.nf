@@ -20,7 +20,7 @@ workflow RUN_CFML {
         MASK_RECOMBINATION(
             INFER_RECOMBINATION_CFML.out.infer_recombination_success,
             parsnp_fasta,
-            parsnp_tree,
+            INFER_RECOMBINATION_CFML.out.node_labelled_tree,
             INFER_RECOMBINATION_CFML.out.recombination_positions,
             channel.from('clonalframeml'),
             outpath

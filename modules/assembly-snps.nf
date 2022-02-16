@@ -230,6 +230,7 @@ process INFER_RECOMBINATION_GUBBINS {
 
     output:
         path("${outpath}/parsnp.recombination_predictions.gff"), emit: recombination_positions
+        path("${outpath}/parsnp.node_labelled.final_tree.tre"), emit: node_labelled_tree
         path("infer_recombination.success.txt"), emit: infer_recombination_success
 
     script:
@@ -243,8 +244,9 @@ process INFER_RECOMBINATION_GUBBINS {
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp.recombination_predictions.gff ]]; then
+    if [[ ! -f ${outpath}/parsnp.recombination_predictions.gff || ! -f ${outpath}/parsnp.node_labelled.final_tree.tre ]]; then
         cp ${params.examplepath}/parsnp.recombination_predictions.gff  ${outpath}
+        cp ${params.examplepath}/parsnp.node_labelled.final_tree.tre  ${outpath}
     fi
     touch infer_recombination.success.txt
     """
@@ -262,6 +264,7 @@ process INFER_RECOMBINATION_CFML {
 
     output:
         path("${outpath}/parsnp.importation_status.txt"), emit: recombination_positions
+        path("${outpath}/parsnp.labelled_tree.newick"), emit: node_labelled_tree
         path("infer_recombination.success.txt"), emit: infer_recombination_success
 
     script:
@@ -278,8 +281,9 @@ process INFER_RECOMBINATION_CFML {
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp.importation_status.txt ]]; then
+    if [[ ! -f ${outpath}/parsnp.importation_status.txt || ! -f ${outpath}/parsnp.labelled_tree.newick ]]; then
         cp ${params.examplepath}/parsnp.importation_status.txt  ${outpath}
+        cp ${params.examplepath}/parsnp.labelled_tree.newick ${outpath}
     fi
     touch infer_recombination.success.txt
     """
@@ -293,7 +297,7 @@ process MASK_RECOMBINATION {
     input:
         path(infer_recombination_success)
         path(extracted_fasta)
-        path(parsnp_tree)
+        path(node_labelled_tree)
         path(recombination_positions)
         val format
         path(outpath)
@@ -304,7 +308,12 @@ process MASK_RECOMBINATION {
 
     script:
     """
-    if mask_recombination.py --alignment ${extracted_fasta} --format ${format} --rec_positions ${recombination_positions} --tree ${parsnp_tree} > ${outpath}/parsnp_${format}.fasta; then
+    if mask_recombination.py \
+        --alignment ${extracted_fasta} \
+        --format ${format} \
+        --rec_positions ${recombination_positions} \
+        --tree ${node_labelled_tree} \
+        > ${outpath}/parsnp_${format}.fasta; then
         touch mask_recombination_${format}.success.txt
     fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
