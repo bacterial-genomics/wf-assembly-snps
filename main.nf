@@ -16,7 +16,7 @@ nextflow.enable.dsl=2
 params.inpath = new File("${launchDir}").getCanonicalPath()
 params.outpath = new File("${launchDir}").getCanonicalPath()
 params.logpath = new File("${params.outpath}/.log").getCanonicalPath()
-params.refpath = new File("${launchDir}/INPUT_DIR/16-090.fna.gz").getCanonicalPath() // TODO: make default refpath the longest input file
+params.refpath = 'largest'
 params.examplepath = new File("${launchDir}/example_output").getCanonicalPath() // TODO: remove this when development is finished
 params.help = false
 params.version = false
@@ -112,11 +112,6 @@ include { RUN_CFML } from './subworkflows/run_cfml.nf'
 */
 
 workflow {
-    if (params.refpath) {
-        refpath = Channel.fromPath(params.refpath, checkIfExists: true)
-    } else {
-        refpath = 'random' //how to send a non-path null along for auto-selection of file downstream?
-    }
     inpath = Channel.fromPath(params.inpath, checkIfExists: true)
     outpath = Channel.fromPath(params.outpath, checkIfExists: true)
 
@@ -128,7 +123,7 @@ workflow {
         FIND_INFILES.out.find_infiles_success,
         inpath,
         outpath,
-        refpath
+        channel.from(params.refpath)
     )
 
     RUN_PARSNP(

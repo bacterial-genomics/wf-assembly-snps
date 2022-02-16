@@ -25,7 +25,7 @@ process INFILE_HANDLING {
         path(find_infiles_success)
         path(inpath)
         path(outpath)
-        path(refpath)
+        val refpath
 
     output:
         path("${outpath}/.ref/*"), emit: refpath

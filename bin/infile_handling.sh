@@ -45,10 +45,10 @@ msg "INFO: created .tmp path with all ${#tmp_asm[@]} input assembly files"
 # Parsnp is reference-based. Handle a specified reference file, otherwise
 #  use the largest filesize for reproducibility (not randomly selected).
 mkdir "${output_path}"/.ref
-if [ "${reference_path}" == 'random' ]; then
+if [ "${reference_path}" == 'largest' ]; then
   largest_size=$(ls -SLr "${output_path}"/.tmp/* | tail -n 1 | xargs basename)
   reference_path="${output_path}"/.ref/"${largest_size}"
-  mv -f "${output_path}"/parsnp/.tmp/"${largest_size}" "${reference_path}"
+  mv -f "${output_path}"/.tmp/"${largest_size}" "${reference_path}"
   msg "INFO: ${largest_size} autoselected as reference with largest filesize"
 else
   # Handle if the reference file is compressed and in a different input path
