@@ -12,32 +12,52 @@ usage: nextflow run ./wf-assembly-snps/main.nf [-help]
 version = "1.0.0"
 nextflow.enable.dsl=2
 
+// Default parameters (can be overwritten by command line inputs)
+params.inpath = new File("${launchDir}").getCanonicalPath()
+params.outpath = new File("${launchDir}").getCanonicalPath()
+params.logpath = new File("${params.outpath}/.log").getCanonicalPath()
+params.refpath = new File("${launchDir}/INPUT_DIR/16-090.fna.gz").getCanonicalPath() // TODO: make default refpath the longest input file
+params.examplepath = new File("${launchDir}/example_output").getCanonicalPath() // TODO: remove this when development is finished
 params.help = false
+params.version = false
+params.recombination = false
+params.enable_conda_yml = false
+
+// Handle command line input
+if (!(params.recombination in ["cfml", "gubbins", "both", false])){
+    System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
+    System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
+    exit 1
+}
+
 if (params.help){
     println "USAGE: put usage info here"
     exit 0
 }
-params.version = false
+
 if (params.version){
     println "VERSION: $version"
     exit 0
 }
 
-// Default parameters
-params.inpath = new File("${launchDir}").getCanonicalPath()
-params.outpath = new File("${launchDir}").getCanonicalPath()
-params.logpath = new File("${params.outpath}/.log").getCanonicalPath()
-params.refpath = new File("${launchDir}/INPUT_DIR/16-090.fna.gz").getCanonicalPath()
-params.examplepath = new File("${launchDir}/example_output").getCanonicalPath()
-//params.refpath = null
-params.recombination = false
-params.enable_conda_yml = false
-
-// Checks on recombination parameter
-if (!(params.recombination in ["cfml", "gubbins", "both", false])){
-    System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
-    System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
+File inpathFileObj = new File(params.inpath)
+if (!inpathFileObj.exists()){
+    System.err.println "ERROR: $params.inpath doesn't exist"
     exit 1
+}
+
+File outpathFileObj = new File(params.outpath)
+if (outpathFileObj.exists()){
+    System.out.println "WARNING: $params.outpath already exists. Output files will be overwritten."
+} else {
+    outpathFileObj.mkdirs()
+}
+
+File logpathFileObj = new File(params.logpath)
+if (logpathFileObj.exists()){
+    System.out.println "WARNING: $params.logpath already exists. Log files will be overwritten."
+} else {
+    logpathFileObj.mkdirs()
 }
 
 // Print parameters used
@@ -49,30 +69,10 @@ log.info """
          outpath:        ${params.outpath}
          logpath:        ${params.logpath}
          recombination:  ${params.recombination}
-         reference:      ${params.refpath}
+         refpath:        ${params.refpath}
          =====================================
          """
          .stripIndent()
-
-// Path handling
-File inpathFileObj = new File(params.inpath)
-if (!inpathFileObj.exists()){
-    System.err.println "ERROR: $params.inpath doesn't exist"
-    exit 1
-}
-File outpathFileObj = new File(params.outpath)
-if (outpathFileObj.exists()){
-    System.out.println "WARNING: $params.outpath already exists. Output files will be overwritten."
-} else {
-    outpathFileObj.mkdirs()
-}
-File logpathFileObj = new File(params.logpath)
-if (logpathFileObj.exists()){
-    System.out.println "WARNING: $params.logpath already exists. Log files will be overwritten."
-} else {
-    logpathFileObj.mkdirs()
-}
-
 
 /*
 ==============================================================================
@@ -113,75 +113,80 @@ include { RUN_CFML } from './subworkflows/run_cfml.nf'
 
 workflow {
     if (params.refpath) {
-        ref_ch = Channel.fromPath(params.refpath, checkIfExists: true)
+        refpath = Channel.fromPath(params.refpath, checkIfExists: true)
     } else {
-        ref_ch = 'random' //how to send a non-path null along for auto-selection of file downstream?
+        refpath = 'random' //how to send a non-path null along for auto-selection of file downstream?
     }
-    inp_ch = Channel.fromPath(params.inpath, checkIfExists: true)
-    out_ch = Channel.fromPath(params.outpath, checkIfExists: true)
+    inpath = Channel.fromPath(params.inpath, checkIfExists: true)
+    outpath = Channel.fromPath(params.outpath, checkIfExists: true)
 
     FIND_INFILES(
-        inp_ch
+        inpath
     )
 
     INFILE_HANDLING(
-        FIND_INFILES.out.found_infiles,
-        inp_ch,
-        out_ch,
-        ref_ch
+        FIND_INFILES.out.find_infiles_success,
+        inpath,
+        outpath,
+        refpath
     )
 
     RUN_PARSNP(
-        INFILE_HANDLING.out.handled_infiles,
-        INFILE_HANDLING.out.ref_path,
-        INFILE_HANDLING.out.tmp_path,
-        out_ch
+        INFILE_HANDLING.out.infile_handling_success,
+        INFILE_HANDLING.out.refpath,
+        INFILE_HANDLING.out.tmppath,
+        outpath
     )
 
     EXTRACT_SNPS(
-        RUN_PARSNP.out.ran_parsnp,
-        out_ch
+        RUN_PARSNP.out.run_parsnp_success,
+        outpath
     )
 
     PAIRWISE_DISTANCES(
-        EXTRACT_SNPS.out.extracted_snps,
-        out_ch
+        EXTRACT_SNPS.out.extract_snps_success,
+        outpath
     )
 
     DISTANCE_MATRIX(
-        PAIRWISE_DISTANCES.out.calculated_snp_distances,
-        out_ch
+        PAIRWISE_DISTANCES.out.pairwise_distances_success,
+        outpath
     )
 
     if (params.recombination != false) {
         EXTRACT_FASTA(
+            RUN_PARSNP.out.run_parsnp_success,
             RUN_PARSNP.out.parsnp_xmfa,
-            out_ch
+            outpath
         )
     }
 
     if (params.recombination == 'gubbins') {
         RUN_GUBBINS(
+            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
-            out_ch
+            outpath
         )
     } else if (params.recombination == 'cfml') {
         RUN_CFML(
+            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
-            out_ch
+            outpath
         )
     } else if (params.recombination == 'both') {
         RUN_GUBBINS(
+            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
-            out_ch
+            outpath
         )
         RUN_CFML(
+            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
             RUN_PARSNP.out.parsnp_tree,
-            out_ch
+            outpath
         )
     }
 }
@@ -191,42 +196,42 @@ workflow {
                         Completion e-mail and summary                         
 ==============================================================================
 */
-// workflow.onComplete {
-//     workDir = new File("${workflow.workDir}")
-//
-//     println """
-//     Pipeline Execution Summary
-//     --------------------------
-//     Workflow Version : ${workflow.version}
-//     Nextflow Version : ${nextflow.version}
-//     Command Line     : ${workflow.commandLine}
-//     Resumed          : ${workflow.resume}
-//     Completed At     : ${workflow.complete}
-//     Duration         : ${workflow.duration}
-//     Success          : ${workflow.success}
-//     Exit Code        : ${workflow.exitStatus}
-//     Error Report     : ${workflow.errorReport ?: '-'}
-//     Launch Dir       : ${workflow.launchDir}
-//     """
-// }
-//
-// workflow.onError {
-//     def err_msg = """\
-//         Error summary
-//         ---------------------------
-//         Completed at: ${workflow.complete}
-//         exit status : ${workflow.exitStatus}
-//         workDir     : ${workflow.workDir}
-//
-//         ??? extra error messages to include ???
-//         """
-//         .stripIndent()
-// /*    sendMail(
-//         to: "${USER}@cdc.gov",
-//         subject: 'workflow error',
-//         body: err_msg,
-//         charset: UTF-8
-//         // attach: '/path/stderr.log.txt'
-//     )
-// */
-// }
+workflow.onComplete {
+    workDir = new File("${workflow.workDir}")
+
+    println """
+    Pipeline Execution Summary
+    --------------------------
+    Workflow Version : ${workflow.version}
+    Nextflow Version : ${nextflow.version}
+    Command Line     : ${workflow.commandLine}
+    Resumed          : ${workflow.resume}
+    Completed At     : ${workflow.complete}
+    Duration         : ${workflow.duration}
+    Success          : ${workflow.success}
+    Exit Code        : ${workflow.exitStatus}
+    Error Report     : ${workflow.errorReport ?: '-'}
+    Launch Dir       : ${workflow.launchDir}
+    """
+}
+
+workflow.onError {
+    def err_msg = """\
+        Error summary
+        ---------------------------
+        Completed at: ${workflow.complete}
+        exit status : ${workflow.exitStatus}
+        workDir     : ${workflow.workDir}
+
+        ??? extra error messages to include ???
+        """
+        .stripIndent()
+/*    sendMail(
+        to: "${USER}@cdc.gov",
+        subject: 'workflow error',
+        body: err_msg,
+        charset: UTF-8
+        // attach: '/path/stderr.log.txt'
+    )
+*/
+}
