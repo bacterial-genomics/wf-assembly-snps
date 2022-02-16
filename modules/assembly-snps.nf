@@ -337,19 +337,15 @@ process REINFER_TREE {
 
     script:
     """
-    ## With RAxML
-    #raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${launchDir}/${output_dir_path} -n parsnp_${recombination_method} -p 5280
-    #cp ${launchDir}/${output_dir_path}/RAxML_result.parsnp_${recombination_method} ${launchDir}/${output_dir_path}/parsnp_${recombination_method}.tree
-    #if [ -f ${launchDir}/${output_dir_path}/parsnp_${recombination_method}.tree ]; then
-    #    touch reinfer_tree_${recombination_method}.success.txt
-    #fi
-
+    # With RAxML
+    # raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${launchDir}/${output_dir_path} -n parsnp_${recombination_method} -p 5280
+    # mv ${launchDir}/${output_dir_path}/RAxML_result.parsnp_${recombination_method} ${output_dir_path}/parsnp_${recombination_method}.tree
     # With FastTree
     fasttree -nt ${masked_fasta} > ${output_dir_path}/parsnp_${recombination_method}.tree
-    if [ -f ${output_dir_path}/parsnp_${recombination_method}.tree ]; then
+    if [ -f "${output_dir_path}/parsnp_${recombination_method}.tree" ] && \
+        [ -s "${output_dir_path}/parsnp_${recombination_method}.tree" ]; then
         touch reinfer_tree_${recombination_method}.success.txt
     fi
-
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """

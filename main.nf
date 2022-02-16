@@ -31,9 +31,7 @@ params.refpath = new File("${launchDir}/INPUT_DIR/16-090.fna.gz").getCanonicalPa
 params.examplepath = new File("${launchDir}/example_output").getCanonicalPath()
 //params.refpath = null
 params.recombination = false
-
 params.enable_conda_yml = false
-
 
 // Checks on recombination parameter
 if (!(params.recombination in ["cfml", "gubbins", "both", false])){
@@ -41,7 +39,6 @@ if (!(params.recombination in ["cfml", "gubbins", "both", false])){
     System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
     exit 1
 }
-
 
 // Print parameters used
 log.info """
@@ -94,8 +91,10 @@ include {
     INFER_RECOMBINATION_CFML;
     MASK_RECOMBINATION;
     REINFER_TREE
-} from "./modules.nf"
+} from "./modules/assembly-snps.nf"
 
+include { RUN_GUBBINS } from './subworkflows/run_gubbins.nf'
+include { RUN_CFML } from './subworkflows/run_cfml.nf'
 
 /*
 ==============================================================================
@@ -185,56 +184,6 @@ workflow {
             out_ch
         )
     }
-}
-
-workflow RUN_GUBBINS {
-    take:
-        parsnp_fasta
-        parsnp_tree
-        out_ch
-    main:
-        INFER_RECOMBINATION_GUBBINS(
-            parsnp_fasta,
-            parsnp_tree,
-            out_ch
-        )
-        MASK_RECOMBINATION(
-            parsnp_fasta,
-            parsnp_tree,
-            INFER_RECOMBINATION_GUBBINS.out.recombination_positions,
-            channel.from('gubbins'),
-            out_ch
-        )
-        REINFER_TREE(
-            MASK_RECOMBINATION.out.masked_fasta,
-            channel.from('gubbins'),
-            out_ch
-        )
-}
-
-workflow RUN_CFML {
-    take:
-        parsnp_fasta
-        parsnp_tree
-        out_ch
-    main:
-        INFER_RECOMBINATION_CFML(
-            parsnp_fasta,
-            parsnp_tree,
-            out_ch
-        )
-        MASK_RECOMBINATION(
-            parsnp_fasta,
-            parsnp_tree,
-            INFER_RECOMBINATION_CFML.out.recombination_positions,
-            channel.from('clonalframeml'),
-            out_ch
-        )
-        REINFER_TREE(
-            MASK_RECOMBINATION.out.masked_fasta,
-            channel.from('clonalframeml'),
-            out_ch
-        )
 }
 
 /*
