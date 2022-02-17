@@ -58,7 +58,6 @@ if (outpathFileObj.exists()){
     }
 } else {
     outpathFileObj.mkdirs()
-
 }
 
 File logpathFileObj = new File(params.logpath)
@@ -70,17 +69,17 @@ if (logpathFileObj.exists()){
 
 // Print parameters used
 log.info """
-         =====================================
-         wf-assembly-snps $version
-         =====================================
-         inpath:         ${params.inpath}
-         outpath:        ${params.outpath}
-         logpath:        ${params.logpath}
-         recombination:  ${params.recombination}
-         refpath:        ${params.refpath}
-         =====================================
-         """
-         .stripIndent()
+    =====================================
+    wf-assembly-snps $version
+    =====================================
+    inpath:         ${params.inpath}
+    outpath:        ${params.outpath}
+    logpath:        ${params.logpath}
+    recombination:  ${params.recombination}
+    refpath:        ${params.refpath}
+    =====================================
+    """
+    .stripIndent()
 
 /*
 ==============================================================================
@@ -199,36 +198,39 @@ workflow {
                         Completion e-mail and summary                         
 ==============================================================================
 */
-workflow.onComplete {
-    workDir = new File("${workflow.workDir}")
 
-    println """
-    Pipeline Execution Summary
-    --------------------------
-    Workflow Version : ${workflow.version}
-    Nextflow Version : ${nextflow.version}
-    Command Line     : ${workflow.commandLine}
-    Resumed          : ${workflow.resume}
-    Completed At     : ${workflow.complete}
-    Duration         : ${workflow.duration}
-    Success          : ${workflow.success}
-    Exit Code        : ${workflow.exitStatus}
-    Error Report     : ${workflow.errorReport ?: '-'}
-    Launch Dir       : ${workflow.launchDir}
-    """
+workflow.onComplete {
+    log.info """
+                |=====================================
+                |Pipeline Execution Summary
+                |=====================================
+                |Workflow Version : ${version}
+                |Nextflow Version : ${nextflow.version}
+                |Command Line     : ${workflow.commandLine}
+                |Resumed          : ${workflow.resume}
+                |Completed At     : ${workflow.complete}
+                |Duration         : ${workflow.duration}
+                |Success          : ${workflow.success}
+                |Exit Code        : ${workflow.exitStatus}
+                |Launch Dir       : ${workflow.launchDir}
+                |=====================================
+             """.stripMargin()
 }
 
 workflow.onError {
-    def err_msg = """\
-        Error summary
-        ---------------------------
-        Completed at: ${workflow.complete}
-        exit status : ${workflow.exitStatus}
-        workDir     : ${workflow.workDir}
+    def err_msg = """
+                     |=====================================
+                     |Error summary
+                     |=====================================
+                     |Completed at : ${workflow.complete}
+                     |exit status  : ${workflow.exitStatus}
+                     |workDir      : ${workflow.workDir}
+                     |Error Report :
+                     |${workflow.errorReport ?: '-'}
+                     |=====================================
+                  """.stripMargin()
+    log.info err_msg
 
-        ??? extra error messages to include ???
-        """
-        .stripIndent()
 /*    sendMail(
         to: "${USER}@cdc.gov",
         subject: 'workflow error',
