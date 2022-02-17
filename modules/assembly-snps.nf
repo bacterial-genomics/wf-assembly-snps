@@ -359,4 +359,11 @@ process REINFER_TREE {
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
+    stub:
+    """
+    if [[ ! -f ${outpath}/parsnp_${recombination_method}.tree ]]; then
+        cp ${params.examplepath}/parsnp_${recombination_method}.tree  ${outpath}
+    fi
+    touch reinfer_tree_${recombination_method}.success.txt
+    """
 }
