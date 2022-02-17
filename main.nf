@@ -48,9 +48,17 @@ if (!inpathFileObj.exists()){
 
 File outpathFileObj = new File(params.outpath)
 if (outpathFileObj.exists()){
-    System.out.println "WARNING: $params.outpath already exists. Output files will be overwritten."
+    // Per the config file, outpath stores log & trace files so it is created before this point
+    // Check that outpath only contains a trace file created this hour
+    dayAndHour = new java.util.Date().format('yyyy-MM-dd HH')
+    outFiles = outpathFileObj.list()
+    if (!(outFiles[0] ==~ /trace.($dayAndHour):\d\d:\d\d.txt/ && outFiles.size() == 1)) {
+        // If it contains an older trace file or other files, warn the user
+        System.out.println "WARNING: $params.outpath already exists. Output files will be overwritten."
+    }
 } else {
     outpathFileObj.mkdirs()
+
 }
 
 File logpathFileObj = new File(params.logpath)
