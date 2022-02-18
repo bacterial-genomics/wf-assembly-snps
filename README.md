@@ -2,42 +2,63 @@
 
 
 ## Steps in the workflow
-1. Have conda or docker installed
-2. Identify all FastA assembly files in a given input path
+1. Identify all FastA assembly files in a given input path
     - recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz
-3. Create a tmp dir and symlink to the assembly files with file extensions removed from all sample names
-4. Run parsnp, which generates a phylogenetic tree "parsnp.tree"
+2. Create a tmp dir and symlink to the assembly files with file extensions removed from all sample names
+3. Run parsnp, which generates a phylogenetic tree "parsnp.tree"
     - optionally specify the reference file (`--reference <FILE>`); otherwise largest filesize is chosen automatically as the reference file
-5. Extract a FastA file "SNPs.fa" with harvesttools of all samples with only the SNP positions
-6. Perform all pairwise comparisons to tabulate the number of SNPs each sample pair have between them
-7. Generate a matrix table summarizing pairwise distances between all samples
-8. Optionally, classify SNPs as being due to recombination
+4. Extract a FastA file "SNPs.fa" with harvesttools of all samples with only the SNP positions
+5. Perform all pairwise comparisons to tabulate the number of SNPs each sample pair have between them
+6. Generate a matrix table summarizing pairwise distances between all samples
+7. Optionally, classify SNPs as being due to recombination
 
-![workflow](images/workflow_v1.0.0.png)
+![workflow](images/workflow_v1.0.0.svg)
 
+## Requirements
+* Nextflow
+* Docker or Singularity
 
-## Example install
+## Install
 ```
-# install
-git clone git@github.com:chrisgulvik/wf-assembly-snps.git $HOME/wf-assembly-snps
-cd $HOME/wf-assembly-snps
-```
-
-## Run with conda
-```
-# make conda and nextflow available for use
-module load conda nextflow
-# run workflow
-nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
+git clone git@github.com:chrisgulvik/wf-assembly-snps.git
+cd wf-assembly-snps
 ```
 
-## Run with docker
+[//]: # (## Run with conda)
+
+[//]: # (```)
+
+[//]: # (# make conda and nextflow available for use)
+
+[//]: # (module load conda nextflow)
+
+[//]: # (# run workflow)
+
+[//]: # (nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png)
+
+[//]: # (```)
+
+## Set-up for Aspen cluster
+``` 
+# Add these Singularity variables to $HOME/.bashrc
+SINGULARITY_BASE=/scicomp/scratch/$USER
+export SINGULARITY_TMPDIR=$SINGULARITY_BASE/singularity.tmp
+export SINGULARITY_CACHEDIR=$SINGULARITY_BASE/singularity.cache
+mkdir -pv $SINGULARITY_TMPDIR $SINGULARITY_CACHEDIR
+
+# Restart session
+
+module load nextflow/21.04.3
+
+# Run workflow with -profile singularity
 ```
-# make sure docker engine is running, then
-# run workflow
-nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png
-# run workflow with recombination (options are 'gubbins', 'cfml', or 'both')
-nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR --recombination gubbins -with-dag flow.png
+
+## Run workflow
+```
+# With Docker
+nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
+# With Singularity
+nextflow run -profile singularity main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
 ```
 
 ## Workflow output
@@ -86,15 +107,13 @@ rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 ```
 
 
-## Misc Notes
+## Misc User Notes
 - `-resume` uses cached results
 - `-stub` uses example output files for any process with an uncommented stub block
-- `-with-dag dag.png` to make dag
 
+## Misc Dev Notes
 - scripts needs to be in ./bin for nextflow to be able to find them
-
 - doesn't seem possible to tell nextflow where to find conda, it only checks your path
-
 - how to stop appending -ue to bash
     - add `process.shell = ['/bin/bash']` to nextflow.config
 
