@@ -6,29 +6,23 @@ include {
 
 
 workflow RUN_GUBBINS {
+    recombination_method = Channel.from('gubbins')
     take:
-        extract_fasta_success
         parsnp_fasta
         parsnp_tree
-        outpath
     main:
         INFER_RECOMBINATION_GUBBINS(
             parsnp_fasta,
-            parsnp_tree,
-            outpath
+            parsnp_tree
         )
         MASK_RECOMBINATION(
-            INFER_RECOMBINATION_GUBBINS.out.infer_recombination_success,
             parsnp_fasta,
             INFER_RECOMBINATION_GUBBINS.out.node_labelled_tree,
             INFER_RECOMBINATION_GUBBINS.out.recombination_positions,
-            channel.from('gubbins'),
-            outpath
+            recombination_method
         )
         REINFER_TREE(
-            MASK_RECOMBINATION.out.mask_recombination_success,
             MASK_RECOMBINATION.out.masked_fasta,
-            channel.from('gubbins'),
-            outpath
+            recombination_method
         )
 }

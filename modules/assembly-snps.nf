@@ -24,346 +24,310 @@ process INFILE_HANDLING {
     input:
         path(find_infiles_success)
         path(inpath)
-        path(outpath)
         val refpath
 
     output:
-        path("${outpath}/.ref/*"), emit: refpath
-        path("${outpath}/.tmp"), emit: tmppath
-        path("${outpath}/.tmp/*")
-        path("infile_handling.success.txt"), emit: infile_handling_success
+        path(".ref"), emit: refpath
+        path(".tmp"), emit: tmppath
+        path(".tmp/*")
 
     script:
     """
-    infile_handling.sh ${inpath} ${outpath} ${refpath}
+    infile_handling.sh ${inpath} ${refpath}
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
     
     stub:
     """
-    if [[ ! -d  ${outpath}/.tmp || ${outpath}/.ref ]]; then
-        cp -r ${params.examplepath}/.tmp ${outpath}
-        cp -r ${params.examplepath}/.ref ${outpath}
+    if [[ ! -d .tmp || .ref ]]; then
+        cp -r ${params.examplepath}/.tmp .
+        cp -r ${params.examplepath}/.ref .
     fi
-    touch infile_handling.success.txt
     """
 
 }
 
 
 process RUN_PARSNP {
+    publishDir "${params.outpath}", mode: "copy"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
     //conda 'bioconda::parsnp=1.1.3'
     container "snads/parsnp:1.5.6"
 
     input:
-        path(infile_handling_success)
         path(refpath)
         path(tmppath)
-        path(outpath)
 
     output:
-        path("${outpath}/parsnp.ggr")
-        path("${outpath}/parsnp.xmfa"), emit: parsnp_xmfa
-        path("${outpath}/parsnp.tree"), emit: parsnp_tree
-        path("run_parsnp.success.txt"), emit: run_parsnp_success
+        path("parsnp/parsnp.ggr"), emit: parsnp_ggr
+        path("parsnp/parsnp.xmfa"), emit: parsnp_xmfa
+        path("parsnp/parsnp.tree"), emit: parsnp_tree
 
     script:
     """
-    run_parsnp.sh ${tmppath} ${outpath} ${refpath} ${task.cpus}
+    run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus}
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -d  ${outpath}/parsnp.ggr || ${outpath}/parsnp.tree || ${outpath}/parsnp.xmfa ]]; then
-        cp ${params.examplepath}/parsnp.ggr  ${outpath}
-        cp ${params.examplepath}/parsnp.xmfa  ${outpath}
-        cp ${params.examplepath}/parsnp.tree ${outpath}
+    if [[ ! -f parsnp/parsnp.ggr || parsnp/parsnp.tree || parsnp/parsnp.xmfa ]]; then
+        mkdir parsnp
+        cp ${params.examplepath}/parsnp/parsnp.ggr parsnp/
+        cp ${params.examplepath}/parsnp/parsnp.xmfa parsnp/
+        cp ${params.examplepath}/parsnp/parsnp.tree parsnp/
     fi
-    touch run_parsnp.success.txt
     """
 
 }
 
 
 process EXTRACT_SNPS {
+    publishDir "${params.outpath}/parsnp", mode: "copy"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null
     // conda 'bioconda::harvesttools=1.2'
     container "snads/parsnp:1.5.6"
 
     input:
-        path(run_parsnp_success)
-        path(outpath)
+        path(parsnp_ggr)
 
     output:
-        path("${outpath}/SNPs.fa")
-        path("extract_snps.success.txt"), emit: extract_snps_success
+        path("SNPs.fa"), emit: snps_file
 
     script:
     """
-    extract_snps.sh ${outpath}
+    extract_snps.sh "${parsnp_ggr}" "SNPs.fa"
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/SNPs.fa ]]; then
-        cp ${params.examplepath}/SNPs.fa  ${outpath}
+    if [[ ! -f SNPs.fa ]]; then
+        cp ${params.examplepath}/parsnp/SNPs.fa .
     fi
-    touch extract_snps.success.txt
     """
 
 }
 
 
 process PAIRWISE_DISTANCES {
+    publishDir "${params.outpath}/parsnp", mode: "copy"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
     // conda 'bioconda::FIXME'
     container "snads/hamming-dist:1.0"
 
     input:
-        path(extract_snps_success)
-        path(outpath)
+        path(snps_file)
 
     output:
-        path("${outpath}/SNP-distances.pairs.tsv")
-        path("pairwise_distances.success.txt"), emit: pairwise_distances_success
+        path("SNP-distances.pairs.tsv"), emit: snp_distances
 
     script:
     """
-    pairwise_distances.sh ${outpath} ${task.cpus}
+    pairwise_distances.sh ${task.cpus} ${snps_file}
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/SNP-distances.pairs.tsv ]]; then
-        cp ${params.examplepath}/SNP-distances.pairs.tsv  ${outpath}
+    if [[ ! -f SNP-distances.pairs.tsv ]]; then
+        cp ${params.examplepath}/parsnp/SNP-distances.pairs.tsv .
     fi
-    touch pairwise_distances.success.txt
     """
 
 }
 
 
 process DISTANCE_MATRIX {
+    publishDir "${params.outpath}/parsnp", mode: "copy"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null
     // conda 'conda-forge::python=3.10.1'
     container "snads/hamming-dist:1.0"
 
     input:
-        path(pairwise_distances_success)
-        path(outpath)
+        path(snp_distances)
 
     output:
-        path("${outpath}/SNP-distances.matrix.tsv")
-        path("distance_matrix.success.txt"), emit: distance_matrix_success
+        path("SNP-distances.matrix.tsv")
 
     script:
     """
-    distance_matrix.sh ${outpath}
+    distance_matrix.sh ${snp_distances}
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/SNP-distances.matrix.tsv ]]; then
-        cp ${params.examplepath}/SNP-distances.matrix.tsv  ${outpath}
+    if [[ ! -f SNP-distances.matrix.tsv ]]; then
+        cp ${params.examplepath}/parsnp/SNP-distances.matrix.tsv .
     fi
-    touch distance_matrix.success.txt
     """
 }
 
 
 process EXTRACT_FASTA {
+    publishDir "${params.outpath}/parsnp", mode: "copy"
 
     container "snads/xmfa-to-fasta:2.0"
 
     input:
-        path(run_parsnp_success)
         path(parsnp_xmfa)
-        path(outpath)
 
     output:
-        path("${outpath}/parsnp.fasta"), emit: parsnp_fasta
-        path("extract_fasta.success.txt"), emit: extract_fasta_success
+        path("parsnp.fasta"), emit: parsnp_fasta
 
     script:
     """
-    if convert_xmfa_to_fasta.py --xmfa ${parsnp_xmfa} > ${outpath}/parsnp.fasta; then
-        sed -i.bak 's/.ref//g' ${outpath}/parsnp.fasta
-        rm ${outpath}/parsnp.fasta.bak
-        touch "extract_fasta.success.txt"
-    fi
+    convert_xmfa_to_fasta.py --xmfa ${parsnp_xmfa} > parsnp.fasta
+    sed -i.bak 's/.ref//g' parsnp.fasta
+    rm parsnp.fasta.bak
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp.fasta ]]; then
-        cp ${params.examplepath}/parsnp.fasta  ${outpath}
+    if [[ ! -f parsnp.fasta ]]; then
+        cp ${params.examplepath}/parsnp/parsnp.fasta .
     fi
-    touch extract_fasta.success.txt
     """
 }
 
 
 process INFER_RECOMBINATION_GUBBINS {
+    publishDir "${params.outpath}/gubbins", mode: "copy"
 
     container = "snads/gubbins:3.1.4"
 
     input:
         path(extracted_fasta)
         path(parsnp_tree)
-        path(outpath)
 
     output:
-        path("${outpath}/parsnp.recombination_predictions.gff"), emit: recombination_positions
-        path("${outpath}/parsnp.node_labelled.final_tree.tre"), emit: node_labelled_tree
-        path("infer_recombination.success.txt"), emit: infer_recombination_success
+        path("gubbins.recombination_predictions.gff"), emit: recombination_positions
+        path("gubbins.node_labelled.final_tree.tre"), emit: node_labelled_tree
 
     script:
     """
-    if run_gubbins.py --starting-tree ${parsnp_tree} --prefix ${outpath}/parsnp ${extracted_fasta}; then
-        touch infer_recombination.success.txt
-    fi
+    run_gubbins.py --starting-tree ${parsnp_tree} --prefix gubbins ${extracted_fasta}
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp.recombination_predictions.gff || ! -f ${outpath}/parsnp.node_labelled.final_tree.tre ]]; then
-        cp ${params.examplepath}/parsnp.recombination_predictions.gff  ${outpath}
-        cp ${params.examplepath}/parsnp.node_labelled.final_tree.tre  ${outpath}
+    if [[ ! -f gubbins.recombination_predictions.gff || ! -f gubbins.node_labelled.final_tree.tre ]]; then
+        cp ${params.examplepath}/gubbins/gubbins.recombination_predictions.gff .
+        cp ${params.examplepath}/gubbins/gubbins.node_labelled.final_tree.tre .
     fi
-    touch infer_recombination.success.txt
     """
 }
 
 
 process INFER_RECOMBINATION_CFML {
+    publishDir "${params.outpath}/clonalframeml", mode: "copy"
 
     container = "snads/clonalframeml:1.12"
 
     input:
         path(extracted_fasta)
         path(parsnp_tree)
-        path(outpath)
 
     output:
-        path("${outpath}/parsnp.importation_status.txt"), emit: recombination_positions
-        path("${outpath}/parsnp.labelled_tree.newick"), emit: node_labelled_tree
-        path("infer_recombination.success.txt"), emit: infer_recombination_success
+        path("clonalframeml.importation_status.txt"), emit: recombination_positions
+        path("clonalframeml.labelled_tree.newick"), emit: node_labelled_tree
 
     script:
     """
     # ClonalFrameML needs tree labels to not be surrounded by single quotes
     sed -i.bak "s/'//g" ${parsnp_tree}
     rm ${parsnp_tree}.bak
-    if ClonalFrameML ${parsnp_tree} ${extracted_fasta} ${outpath}/parsnp; then
-        touch infer_recombination.success.txt
-    fi
+    ClonalFrameML ${parsnp_tree} ${extracted_fasta} clonalframeml
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp.importation_status.txt || ! -f ${outpath}/parsnp.labelled_tree.newick ]]; then
-        cp ${params.examplepath}/parsnp.importation_status.txt  ${outpath}
-        cp ${params.examplepath}/parsnp.labelled_tree.newick ${outpath}
+    if [[ ! -f clonalframeml.importation_status.txt || ! -f clonalframeml.labelled_tree.newick ]]; then
+        cp ${params.examplepath}/clonalframeml/clonalframeml.importation_status.txt .
+        cp ${params.examplepath}/clonalframeml/clonalframeml.labelled_tree.newick .
     fi
-    touch infer_recombination.success.txt
     """
 }
 
 
 process MASK_RECOMBINATION {
+    publishDir "${params.outpath}/${recombination_method}", mode: "copy"
 
     container = "snads/mask-recombination:1.0"
 
     input:
-        path(infer_recombination_success)
         path(extracted_fasta)
         path(node_labelled_tree)
         path(recombination_positions)
-        val format
-        path(outpath)
+        val recombination_method
 
     output:
-        path("${outpath}/parsnp_${format}.fasta"), emit: masked_fasta
-        path("mask_recombination_${format}.success.txt"), emit: mask_recombination_success
+        path("${recombination_method}_masked_recombination.fasta"), emit: masked_fasta
 
     script:
     """
-    if mask_recombination.py \
+    mask_recombination.py \
         --alignment ${extracted_fasta} \
-        --format ${format} \
+        --format ${recombination_method} \
         --rec_positions ${recombination_positions} \
         --tree ${node_labelled_tree} \
-        > ${outpath}/parsnp_${format}.fasta; then
-        touch mask_recombination_${format}.success.txt
-    fi
+        > ${recombination_method}_masked_recombination.fasta
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp_${format}.fasta ]]; then
-        cp ${params.examplepath}/parsnp_${format}.fasta  ${outpath}
+    if [[ ! -f ${recombination_method}_masked_recombination.fasta ]]; then
+        cp ${params.examplepath}/${recombination_method}/${recombination_method}_masked_recombination.fasta .
     fi
-    touch mask_recombination_${format}.success.txt
     """
 }
 
 
 process REINFER_TREE {
+    publishDir "${params.outpath}/${recombination_method}", mode: "copy"
 
     container "snads/parsnp:1.5.6"
 
     input:
-        path(mask_recombination_success)
         path(masked_fasta)
         val recombination_method
-        path(outpath)
 
     output:
-        path("${outpath}/parsnp_${recombination_method}.tree")
-        path("reinfer_tree_${recombination_method}.success.txt"), emit: reinfer_tree_success
+        path("${recombination_method}_masked_recombination.tree"), emit: reinferred_tree
 
     script:
     """
     # With RAxML
-    raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${launchDir}/${outpath} -n parsnp_${recombination_method} -p 5280
-    mv ${launchDir}/${outpath}/RAxML_result.parsnp_${recombination_method} ${outpath}/parsnp_${recombination_method}.tree
+    raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${workDir} -n ${recombination_method}_masked_recombination -p 5280
+    mv ${workDir}/RAxML_bestTree.${recombination_method}_masked_recombination ${recombination_method}_masked_recombination.tree
     # With FastTree
-    # fasttree -nt ${masked_fasta} > ${outpath}/parsnp_${recombination_method}.tree
-    if [ -f "${outpath}/parsnp_${recombination_method}.tree" ] && \
-        [ -s "${outpath}/parsnp_${recombination_method}.tree" ]; then
-        touch reinfer_tree_${recombination_method}.success.txt
-    fi
+    # fasttree -nt ${masked_fasta} > ${recombination_method}_masked_recombination.tree
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
     """
-    if [[ ! -f ${outpath}/parsnp_${recombination_method}.tree ]]; then
-        cp ${params.examplepath}/parsnp_${recombination_method}.tree  ${outpath}
+    if [[ ! -f ${recombination_method}_masked_recombination.tree ]]; then
+        cp ${params.examplepath}/${recombination_method}/${recombination_method}_masked_recombination.tree .
     fi
-    touch reinfer_tree_${recombination_method}.success.txt
     """
 }

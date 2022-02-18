@@ -119,8 +119,10 @@ include { RUN_CFML } from './subworkflows/run_cfml.nf'
 */
 
 workflow {
-    inpath = Channel.fromPath(params.inpath, checkIfExists: true)
-    outpath = Channel.fromPath(params.outpath, checkIfExists: true)
+
+    // Generate a core-genome alignment, call SNPs, and build a tree
+    inpath = Channel.fromPath(params.inpath, checkIfExists: true) // a filepath
+    refpath = Channel.from(params.refpath) // a string (filepath or 'largest')
 
     FIND_INFILES(
         inpath
@@ -129,66 +131,51 @@ workflow {
     INFILE_HANDLING(
         FIND_INFILES.out.find_infiles_success,
         inpath,
-        outpath,
-        channel.from(params.refpath)
+        refpath
     )
 
     RUN_PARSNP(
-        INFILE_HANDLING.out.infile_handling_success,
         INFILE_HANDLING.out.refpath,
-        INFILE_HANDLING.out.tmppath,
-        outpath
+        INFILE_HANDLING.out.tmppath
     )
 
     EXTRACT_SNPS(
-        RUN_PARSNP.out.run_parsnp_success,
-        outpath
+        RUN_PARSNP.out.parsnp_ggr
     )
 
     PAIRWISE_DISTANCES(
-        EXTRACT_SNPS.out.extract_snps_success,
-        outpath
+        EXTRACT_SNPS.out.snps_file
     )
 
     DISTANCE_MATRIX(
-        PAIRWISE_DISTANCES.out.pairwise_distances_success,
-        outpath
+        PAIRWISE_DISTANCES.out.snp_distances
     )
 
+    // Optionally infer SNPs due to recombination, mask them, and build a new tree
     if (params.recombination != false) {
         EXTRACT_FASTA(
-            RUN_PARSNP.out.run_parsnp_success,
-            RUN_PARSNP.out.parsnp_xmfa,
-            outpath
+            RUN_PARSNP.out.parsnp_xmfa
         )
     }
 
     if (params.recombination == 'gubbins') {
         RUN_GUBBINS(
-            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree,
-            outpath
+            RUN_PARSNP.out.parsnp_tree
         )
     } else if (params.recombination == 'cfml') {
         RUN_CFML(
-            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree,
-            outpath
+            RUN_PARSNP.out.parsnp_tree
         )
     } else if (params.recombination == 'both') {
         RUN_GUBBINS(
-            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree,
-            outpath
+            RUN_PARSNP.out.parsnp_tree
         )
         RUN_CFML(
-            EXTRACT_FASTA.out.extract_fasta_success,
             EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree,
-            outpath
+            RUN_PARSNP.out.parsnp_tree
         )
     }
 }

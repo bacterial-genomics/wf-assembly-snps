@@ -55,21 +55,31 @@ cat OUTPATH_DIR/SNP-distances.matrix.tsv
 # view final output dir structure
 tree -a OUTPATH_DIR/
 OUTPATH_DIR/
-├── .log
-│   ├── stderr.nextflow.txt
-│   └── stdout.nextflow.txt
-├── parsnpAligner.log.gz
-├── parsnp.ggr
-├── parsnp.tree
-├── parsnp.fasta
-├── parsnp.importation_status.txt
-├── parsnp.recombination_predictions.gff
-├── parsnp_gubbins.tree
-├── parsnp_clonalframeml.tree
-├── SNP-distances.matrix.tsv
-├── SNP-distances.pairs.tsv
-├── SNPs.fa.gz
-└── trace.2021-36-30 22:36:26.txt
+|-- .log
+|   |-- stderr.nextflow.txt
+|   `-- stdout.nextflow.txt
+|-- clonalframeml
+|   |-- clonalframeml.importation_status.txt
+|   |-- clonalframeml.labelled_tree.newick
+|   |-- clonalframeml_masked_recombination.fasta
+|   `-- clonalframeml_masked_recombination.tree
+|-- gubbins
+|   |-- gubbins.node_labelled.final_tree.tre
+|   |-- gubbins.recombination_predictions.gff
+|   |-- gubbins_masked_recombination.fasta
+|   `-- gubbins_masked_recombination.tree
+|-- parsnp
+|   |-- SNP-distances.matrix.tsv
+|   |-- SNP-distances.pairs.tsv
+|   |-- SNPs.fa
+|   |-- parsnp.fasta
+|   |-- parsnp.ggr
+|   |-- parsnp.tree
+|   `-- parsnp.xmfa
+|-- pipeline_dag.2022-02-18\ 12:52:15.svg
+|-- report.2022-02-18\ 12:52:15.html
+|-- timeline.2022-02-18\ 12:52:15.html
+`-- trace.2022-02-18\ 12:52:15.txt
 
 # cleanup
 rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
