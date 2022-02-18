@@ -9,35 +9,50 @@ usage: nextflow run ./wf-assembly-snps/main.nf [-help]
 ----------------------------------------------------------------------------
 */
 
+def helpMessage() {
+    log.info"""
+    =========================================
+     wf-assembly-snps v${version}
+    =========================================
+
+    Usage:
+    The minimal command for running the pipeline is:
+    nextflow run main.nf
+    A more typical command for running the pipeline is:
+    nextflow run -profile singularity main.nf --inpath INPUT_DIR --outpath OUTPATH_DIR
+
+    Input/output options:
+      --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
+      --outpath            The output directory where the results will be saved.
+    Profile options:
+      -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
+      -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
+      -profile conda       TODO: this is not implemented yet.
+    Other options:
+      -resume              Re-start a workflow using cached results. May not behave as expected with containerization profiles docker or singularity.
+      -stub                Use example output files for any process with an uncommented stub block. For debugging/testing purposes.
+      -name                Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+    """.stripIndent()
+}
+
 version = "1.0.0"
 nextflow.enable.dsl=2
 
-// Default parameters (can be overwritten by command line inputs)
-params.inpath = new File("${launchDir}").getCanonicalPath()
-params.outpath = new File("${launchDir}").getCanonicalPath()
-params.logpath = new File("${params.outpath}/.log").getCanonicalPath()
-params.refpath = 'largest'
-params.examplepath = new File("${launchDir}/example_output").getCanonicalPath() // TODO: remove this when development is finished
-params.help = false
-params.version = false
-params.recombination = false
-params.enable_conda_yml = false
-
-// Handle command line input
-if (!(params.recombination in ["cfml", "gubbins", "both", false])){
-    System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
-    System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
-    exit 1
-}
-
-if (params.help){
-    println "USAGE: put usage info here"
+if (params.help) {
+    helpMessage()
     exit 0
 }
 
 if (params.version){
     println "VERSION: $version"
     exit 0
+}
+
+// Handle command line input
+if (!(params.recombination in ["cfml", "gubbins", "both", false])){
+    System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
+    System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
+    exit 1
 }
 
 File inpathFileObj = new File(params.inpath)
