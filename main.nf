@@ -24,6 +24,9 @@ def helpMessage() {
     Input/output options:
       --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
       --outpath            The output directory where the results will be saved.
+    Analysis options:
+      --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
+      --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
     Profile options:
       -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
       -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
@@ -91,6 +94,7 @@ log.info """
     outpath:        ${params.outpath}
     logpath:        ${params.logpath}
     recombination:  ${params.recombination}
+    reinfer_tree:   ${params.recombination ? params.reinferTreeProg : '-'}
     refpath:        ${params.refpath}
     =====================================
     """

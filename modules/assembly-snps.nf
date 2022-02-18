@@ -315,11 +315,16 @@ process REINFER_TREE {
 
     script:
     """
-    # With RAxML
-    raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${workDir} -n ${recombination_method}_masked_recombination -p 5280
-    mv ${workDir}/RAxML_bestTree.${recombination_method}_masked_recombination ${recombination_method}_masked_recombination.tree
-    # With FastTree
-    # fasttree -nt ${masked_fasta} > ${recombination_method}_masked_recombination.tree
+    if [ "${params.reinferTreeProg}" = "fasttree" ]; then
+        fasttree -nt ${masked_fasta} > ${recombination_method}_masked_recombination.tree
+    elif [ "${params.reinferTreeProg}" = "raxml" ]; then
+        raxmlHPC-PTHREADS -s ${masked_fasta} -m GTRGAMMA -w ${workDir} -n ${recombination_method}_masked_recombination -p 5280
+        mv ${workDir}/RAxML_bestTree.${recombination_method}_masked_recombination ${recombination_method}_masked_recombination.tree
+    fi
+    if [ ! -s ${recombination_method}_masked_recombination.tree ]; then
+        echo "Empty tree file. Did tree building program run out of RAM?" >> ${params.logpath}/stderr.nextflow.txt
+        exit 1
+    fi
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
