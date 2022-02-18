@@ -55,6 +55,8 @@ module load nextflow/21.04.3
 
 ## Run workflow
 ```
+# Get help
+nextflow run main.nf --help
 # With Docker
 nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
 # With Singularity
@@ -106,14 +108,9 @@ OUTPATH_DIR/
 rm -rf .nextflow .nextflow.log* work/ OUTPATH_DIR/
 ```
 
-
-## Misc User Notes
-- `-resume` uses cached results
-- `-stub` uses example output files for any process with an uncommented stub block
-
 ## Misc Dev Notes
 - scripts needs to be in ./bin for nextflow to be able to find them
 - doesn't seem possible to tell nextflow where to find conda, it only checks your path
 - how to stop appending -ue to bash
     - add `process.shell = ['/bin/bash']` to nextflow.config
-
+    
