@@ -9,65 +9,75 @@ usage: nextflow run ./wf-assembly-snps/main.nf [-help]
 ----------------------------------------------------------------------------
 */
 
+def helpMessage() {
+    log.info"""
+    =========================================
+     wf-assembly-snps v${version}
+    =========================================
+
+    Usage:
+    The minimal command for running the pipeline is:
+    nextflow run main.nf
+    A more typical command for running the pipeline is:
+    nextflow run -profile singularity main.nf --inpath INPUT_DIR --outpath OUTPATH_DIR
+
+    Input/output options:
+      --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
+      --outpath            The output directory where the results will be saved.
+    Analysis options:
+      --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
+      --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
+    Profile options:
+      -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
+      -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
+      -profile conda       TODO: this is not implemented yet.
+    Other options:
+      -resume              Re-start a workflow using cached results. May not behave as expected with containerization profiles docker or singularity.
+      -stub                Use example output files for any process with an uncommented stub block. For debugging/testing purposes.
+      -name                Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
+    """.stripIndent()
+}
+
 version = "1.0.0"
 nextflow.enable.dsl=2
 
-params.help = false
-if (params.help){
-    println "USAGE: put usage info here"
+if (params.help) {
+    helpMessage()
     exit 0
 }
-params.version = false
+
 if (params.version){
     println "VERSION: $version"
     exit 0
 }
 
-// Default parameters
-params.inpath = new File("${launchDir}").getCanonicalPath()
-params.outpath = new File("${launchDir}").getCanonicalPath()
-params.logpath = new File("${params.outpath}/.log").getCanonicalPath()
-params.refpath = new File("${launchDir}/INPUT_DIR/16-090.fna.gz").getCanonicalPath()
-//params.refpath = null
-params.recombination = false
-
-params.enable_conda_yml = false
-
-
-// Checks on recombination parameter
+// Handle command line input
 if (!(params.recombination in ["cfml", "gubbins", "both", false])){
     System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
     System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
     exit 1
 }
 
-
-// Print parameters used
-log.info """
-         =====================================
-         wf-assembly-snps $version
-         =====================================
-         inpath:         ${params.inpath}
-         outpath:        ${params.outpath}
-         logpath:        ${params.logpath}
-         recombination:  ${params.recombination}
-         reference:      ${params.refpath}
-         =====================================
-         """
-         .stripIndent()
-
-// Path handling
 File inpathFileObj = new File(params.inpath)
 if (!inpathFileObj.exists()){
     System.err.println "ERROR: $params.inpath doesn't exist"
     exit 1
 }
+
 File outpathFileObj = new File(params.outpath)
 if (outpathFileObj.exists()){
-    System.out.println "WARNING: $params.outpath already exists. Output files will be overwritten."
+    // Per the config file, outpath stores log & trace files so it is created before this point
+    // Check that outpath only contains a trace file created this hour
+    dayAndHour = new java.util.Date().format('yyyy-MM-dd HH')
+    outFiles = outpathFileObj.list()
+    if (!(outFiles[0] ==~ /trace.($dayAndHour):\d\d:\d\d.txt/ && outFiles.size() == 1)) {
+        // If it contains an older trace file or other files, warn the user
+        System.out.println "WARNING: $params.outpath already exists. Output files will be overwritten."
+    }
 } else {
     outpathFileObj.mkdirs()
 }
+
 File logpathFileObj = new File(params.logpath)
 if (logpathFileObj.exists()){
     System.out.println "WARNING: $params.logpath already exists. Log files will be overwritten."
@@ -75,14 +85,42 @@ if (logpathFileObj.exists()){
     logpathFileObj.mkdirs()
 }
 
+// Print parameters used
+log.info """
+    =====================================
+    wf-assembly-snps $version
+    =====================================
+    inpath:         ${params.inpath}
+    outpath:        ${params.outpath}
+    logpath:        ${params.logpath}
+    recombination:  ${params.recombination}
+    reinfer_tree:   ${params.recombination ? params.reinferTreeProg : '-'}
+    refpath:        ${params.refpath}
+    =====================================
+    """
+    .stripIndent()
 
 /*
 ==============================================================================
                  Import local custom modules and subworkflows                 
 ==============================================================================
 */
-include { FIND_INFILES; INFILE_HANDLING; RUN_PARSNP; EXTRACT_SNPS; PAIRWISE_DISTANCES; DISTANCE_MATRIX; RECOMBINATION } from "./modules.nf"
+include {
+    FIND_INFILES;
+    INFILE_HANDLING;
+    RUN_PARSNP;
+    EXTRACT_SNPS;
+    PAIRWISE_DISTANCES;
+    DISTANCE_MATRIX;
+    EXTRACT_FASTA;
+    INFER_RECOMBINATION_GUBBINS;
+    INFER_RECOMBINATION_CFML;
+    MASK_RECOMBINATION;
+    REINFER_TREE
+} from "./modules/assembly-snps.nf"
 
+include { RUN_GUBBINS } from './subworkflows/run_gubbins.nf'
+include { RUN_CFML } from './subworkflows/run_cfml.nf'
 
 /*
 ==============================================================================
@@ -98,91 +136,107 @@ include { FIND_INFILES; INFILE_HANDLING; RUN_PARSNP; EXTRACT_SNPS; PAIRWISE_DIST
                             Run the main workflow                             
 ==============================================================================
 */
+
 workflow {
-    if (params.refpath) {
-        ref_ch = Channel.fromPath(params.refpath, checkIfExists: true)
-    } else {
-        ref_ch = 'random' //how to send a non-path null along for auto-selection of file downstream?
-    }
-    inp_ch = Channel.fromPath(params.inpath, checkIfExists: true)
-    out_ch = Channel.fromPath(params.outpath, checkIfExists: true)
+
+    // Generate a core-genome alignment, call SNPs, and build a tree
+    inpath = Channel.fromPath(params.inpath, checkIfExists: true) // a filepath
+    refpath = Channel.from(params.refpath) // a string (filepath or 'largest')
 
     FIND_INFILES(
-        inp_ch
+        inpath
     )
 
     INFILE_HANDLING(
-        FIND_INFILES.out.found_infiles,
-        inp_ch,
-        out_ch,
-        ref_ch
+        FIND_INFILES.out.find_infiles_success,
+        inpath,
+        refpath
     )
 
     RUN_PARSNP(
-        INFILE_HANDLING.out.handled_infiles,
-        INFILE_HANDLING.out.ref_path,
-        INFILE_HANDLING.out.tmp_path,
-        out_ch
+        INFILE_HANDLING.out.refpath,
+        INFILE_HANDLING.out.tmppath
     )
 
     EXTRACT_SNPS(
-        RUN_PARSNP.out.ran_parsnp,
-        out_ch
+        RUN_PARSNP.out.parsnp_ggr
     )
 
     PAIRWISE_DISTANCES(
-        EXTRACT_SNPS.out.extracted_snps,
-        out_ch
+        EXTRACT_SNPS.out.snps_file
     )
 
     DISTANCE_MATRIX(
-        PAIRWISE_DISTANCES.out.calculated_snp_distances,
-        out_ch
+        PAIRWISE_DISTANCES.out.snp_distances
     )
 
-/*    RECOMBINATION(
-        RUN_PARSNP.out.ran_parsnp,
-        out_ch
-    )
-*/
+    // Optionally infer SNPs due to recombination, mask them, and build a new tree
+    if (params.recombination != false) {
+        EXTRACT_FASTA(
+            RUN_PARSNP.out.parsnp_xmfa
+        )
+    }
+
+    if (params.recombination == 'gubbins') {
+        RUN_GUBBINS(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            RUN_PARSNP.out.parsnp_tree
+        )
+    } else if (params.recombination == 'cfml') {
+        RUN_CFML(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            RUN_PARSNP.out.parsnp_tree
+        )
+    } else if (params.recombination == 'both') {
+        RUN_GUBBINS(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            RUN_PARSNP.out.parsnp_tree
+        )
+        RUN_CFML(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            RUN_PARSNP.out.parsnp_tree
+        )
+    }
 }
-
 
 /*
 ==============================================================================
                         Completion e-mail and summary                         
 ==============================================================================
 */
-workflow.onComplete {
-    workDir = new File("${workflow.workDir}")
 
-    println """
-    Pipeline Execution Summary
-    --------------------------
-    Workflow Version : ${workflow.version}
-    Nextflow Version : ${nextflow.version}
-    Command Line     : ${workflow.commandLine}
-    Resumed          : ${workflow.resume}
-    Completed At     : ${workflow.complete}
-    Duration         : ${workflow.duration}
-    Success          : ${workflow.success}
-    Exit Code        : ${workflow.exitStatus}
-    Error Report     : ${workflow.errorReport ?: '-'}
-    Launch Dir       : ${workflow.launchDir}
-    """
+workflow.onComplete {
+    log.info """
+                |=====================================
+                |Pipeline Execution Summary
+                |=====================================
+                |Workflow Version : ${version}
+                |Nextflow Version : ${nextflow.version}
+                |Command Line     : ${workflow.commandLine}
+                |Resumed          : ${workflow.resume}
+                |Completed At     : ${workflow.complete}
+                |Duration         : ${workflow.duration}
+                |Success          : ${workflow.success}
+                |Exit Code        : ${workflow.exitStatus}
+                |Launch Dir       : ${workflow.launchDir}
+                |=====================================
+             """.stripMargin()
 }
 
 workflow.onError {
-    def err_msg = """\
-        Error summary
-        ---------------------------
-        Completed at: ${workflow.complete}
-        exit status : ${workflow.exitStatus}
-        workDir     : ${workflow.workDir}
-        
-        ??? extra error messages to include ???
-        """
-        .stripIndent()
+    def err_msg = """
+                     |=====================================
+                     |Error summary
+                     |=====================================
+                     |Completed at : ${workflow.complete}
+                     |exit status  : ${workflow.exitStatus}
+                     |workDir      : ${workflow.workDir}
+                     |Error Report :
+                     |${workflow.errorReport ?: '-'}
+                     |=====================================
+                  """.stripMargin()
+    log.info err_msg
+
 /*    sendMail(
         to: "${USER}@cdc.gov",
         subject: 'workflow error',

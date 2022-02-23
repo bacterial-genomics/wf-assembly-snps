@@ -1,0 +1,7 @@
+task_id	name	status	exit	realtime	%cpu	%mem	rss	vmem	peak_rss	peak_vmem	rchar	wchar
+1	FIND_INFILES (1)	COMPLETED	0	0ms	-	-	-	-	-	-	-	-
+2	INFILE_HANDLING (1)	COMPLETED	0	0ms	-	-	-	-	-	-	-	-
+3	RUN_PARSNP (1)	COMPLETED	0	4m 20s	22.1%	35.0%	697.1 MB	1.1 GB	744.3 MB	1.2 GB	93 MB	34.1 MB
+4	EXTRACT_SNPS (1)	COMPLETED	0	210ms	30.0%	0.2%	5.6 MB	35.2 MB	5.6 MB	35.2 MB	3.9 MB	1.3 KB
+5	PAIRWISE_DISTANCES (1)	COMPLETED	0	462ms	92.3%	0.4%	6.3 MB	10.7 MB	6.3 MB	10.8 MB	5.3 MB	9.5 KB
+6	DISTANCE_MATRIX (1)	COMPLETED	0	166ms	54.5%	0.4%	6.1 MB	10.7 MB	6.1 MB	10.8 MB	709.8 KB	864 B
