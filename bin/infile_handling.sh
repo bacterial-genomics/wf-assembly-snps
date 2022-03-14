@@ -24,10 +24,8 @@ for file in "${compressed_asm[@]}" "${plaintext_asm[@]}"; do
     gunzip -c "${file}" > ./.tmp/"${pref_no_ext}"
   else
     base="$(basename "${file}")"
-    pref_no_ext="${base%.*}"  
-    # Save space by just making symlinks with filenames lacking file
-    #  extensions.
-    ln -sf "${file}" ./.tmp/"${pref_no_ext}"
+    pref_no_ext="${base%.*}"
+    cp "${file}" ./.tmp/"${pref_no_ext}"
   fi
 done
 
