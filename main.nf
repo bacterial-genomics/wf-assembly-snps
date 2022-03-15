@@ -25,6 +25,7 @@ def helpMessage() {
       --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
       --outpath            The output directory where the results will be saved.
     Analysis options:
+      --curated-input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
       --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
       --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
     Profile options:
@@ -55,6 +56,18 @@ if (params.version){
 if (!(params.recombination in ["cfml", "gubbins", "both", false])){
     System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
     System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
+    exit 1
+}
+
+if (!(params.curatedInput in ["true", "false", true, false])){
+    System.err.println "\nERROR: --curated-input was set as: ${params.curatedInput}"
+    System.err.println "\nERROR: --curated-input must be: true|false"
+    exit 1
+}
+
+if (!(params.reinferTreeProg in ["fasttree", "raxml", false])){
+    System.err.println "\nERROR: --reinfer-tree-prog was set as: ${params.reinferTreeProg}"
+    System.err.println "\nERROR: --reinfer-tree-prog must be: fasttree|raxml"
     exit 1
 }
 
@@ -94,7 +107,8 @@ log.info """
     outpath:        ${params.outpath}
     logpath:        ${params.logpath}
     recombination:  ${params.recombination}
-    reinfer_tree:   ${params.recombination ? params.reinferTreeProg : '-'}
+    curated-input:  ${params.curatedInput}
+    reinfer-tree:   ${params.recombination ? params.reinferTreeProg : '-'}
     refpath:        ${params.refpath}
     =====================================
     """

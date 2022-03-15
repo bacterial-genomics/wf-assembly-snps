@@ -67,7 +67,7 @@ process RUN_PARSNP {
 
     script:
     """
-    run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus}
+    run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus} ${params.curatedInput}
     cat .command.out >> ${params.logpath}/stdout.nextflow.txt
     cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
