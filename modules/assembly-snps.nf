@@ -2,24 +2,26 @@ nextflow.enable.dsl = 2
 
 
 process FIND_INFILES {
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.FIND_INFILES.txt" }
 
     input:
         path(inpath)
 
     output:
         path("find_infiles.success.txt"), emit: find_infiles_success
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     find_infiles.sh ${inpath}
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
 }
 
 
 process INFILE_HANDLING {
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.INFILE_HANDLING.txt" }
     
     input:
         path(find_infiles_success)
@@ -30,12 +32,12 @@ process INFILE_HANDLING {
         path(".ref"), emit: refpath
         path(".tmp"), emit: tmppath
         path(".tmp/*")
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     infile_handling.sh ${inpath} ${refpath}
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
     
     stub:
@@ -51,6 +53,7 @@ process INFILE_HANDLING {
 
 process RUN_PARSNP {
     publishDir "${params.outpath}", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.RUN_PARSNP.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
     //conda 'bioconda::parsnp=1.1.3'
@@ -64,12 +67,12 @@ process RUN_PARSNP {
         path("parsnp/parsnp.ggr"), emit: parsnp_ggr
         path("parsnp/parsnp.xmfa"), emit: parsnp_xmfa
         path("parsnp/parsnp.tree"), emit: parsnp_tree
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus} ${params.curatedInput}
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -87,6 +90,7 @@ process RUN_PARSNP {
 
 process EXTRACT_SNPS {
     publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.EXTRACT_SNPS.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null
     // conda 'bioconda::harvesttools=1.2'
@@ -97,12 +101,12 @@ process EXTRACT_SNPS {
 
     output:
         path("SNPs.fa"), emit: snps_file
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     extract_snps.sh "${parsnp_ggr}" "SNPs.fa"
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -117,6 +121,7 @@ process EXTRACT_SNPS {
 
 process PAIRWISE_DISTANCES {
     publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.PAIRWISE_DISTANCES.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
     // conda 'bioconda::FIXME'
@@ -127,12 +132,12 @@ process PAIRWISE_DISTANCES {
 
     output:
         path("SNP-distances.pairs.tsv"), emit: snp_distances
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     pairwise_distances.sh ${task.cpus} ${snps_file}
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -147,6 +152,7 @@ process PAIRWISE_DISTANCES {
 
 process DISTANCE_MATRIX {
     publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.DISTANCE_MATRIX.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null
     // conda 'conda-forge::python=3.10.1'
@@ -157,12 +163,12 @@ process DISTANCE_MATRIX {
 
     output:
         path("SNP-distances.matrix.tsv")
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     distance_matrix.sh ${snp_distances}
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -176,6 +182,7 @@ process DISTANCE_MATRIX {
 
 process EXTRACT_FASTA {
     publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.EXTRACT_FASTA.txt" }
 
     container "snads/xmfa-to-fasta:2.0"
 
@@ -184,14 +191,14 @@ process EXTRACT_FASTA {
 
     output:
         path("parsnp.fasta"), emit: parsnp_fasta
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     convert_xmfa_to_fasta.py --xmfa ${parsnp_xmfa} > parsnp.fasta
     sed -i.bak 's/.ref//g' parsnp.fasta
     rm parsnp.fasta.bak
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -205,6 +212,7 @@ process EXTRACT_FASTA {
 
 process INFER_RECOMBINATION_GUBBINS {
     publishDir "${params.outpath}/gubbins", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.INFER_RECOMBINATION_GUBBINS.txt" }
 
     container = "snads/gubbins:3.1.4"
 
@@ -215,12 +223,12 @@ process INFER_RECOMBINATION_GUBBINS {
     output:
         path("gubbins.recombination_predictions.gff"), emit: recombination_positions
         path("gubbins.node_labelled.final_tree.tre"), emit: node_labelled_tree
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
     run_gubbins.py --starting-tree ${parsnp_tree} --prefix gubbins ${extracted_fasta}
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -235,6 +243,7 @@ process INFER_RECOMBINATION_GUBBINS {
 
 process INFER_RECOMBINATION_CFML {
     publishDir "${params.outpath}/clonalframeml", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.INFER_RECOMBINATION_CFML.txt" }
 
     container = "snads/clonalframeml:1.12"
 
@@ -245,6 +254,8 @@ process INFER_RECOMBINATION_CFML {
     output:
         path("clonalframeml.importation_status.txt"), emit: recombination_positions
         path("clonalframeml.labelled_tree.newick"), emit: node_labelled_tree
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
@@ -252,8 +263,6 @@ process INFER_RECOMBINATION_CFML {
     sed -i.bak "s/'//g" ${parsnp_tree}
     rm ${parsnp_tree}.bak
     ClonalFrameML ${parsnp_tree} ${extracted_fasta} clonalframeml
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -268,6 +277,7 @@ process INFER_RECOMBINATION_CFML {
 
 process MASK_RECOMBINATION {
     publishDir "${params.outpath}/${recombination_method}", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.MASK_RECOMBINATION.txt" }
 
     container = "snads/mask-recombination:1.0"
 
@@ -279,6 +289,8 @@ process MASK_RECOMBINATION {
 
     output:
         path("${recombination_method}_masked_recombination.fasta"), emit: masked_fasta
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
@@ -288,8 +300,6 @@ process MASK_RECOMBINATION {
         --rec_positions ${recombination_positions} \
         --tree ${node_labelled_tree} \
         > ${recombination_method}_masked_recombination.fasta
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
@@ -303,6 +313,7 @@ process MASK_RECOMBINATION {
 
 process REINFER_TREE {
     publishDir "${params.outpath}/${recombination_method}", mode: "copy"
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.REINFER_TREE.txt" }
 
     container "snads/parsnp:1.5.6"
 
@@ -312,6 +323,8 @@ process REINFER_TREE {
 
     output:
         path("${recombination_method}_masked_recombination.tree"), emit: reinferred_tree
+        path(".command.out")
+        path(".command.err")
 
     script:
     """
@@ -325,8 +338,6 @@ process REINFER_TREE {
         echo "Empty tree file. Did tree building program run out of RAM?" >> ${params.logpath}/stderr.nextflow.txt
         exit 1
     fi
-    cat .command.out >> ${params.logpath}/stdout.nextflow.txt
-    cat .command.err >> ${params.logpath}/stderr.nextflow.txt
     """
 
     stub:
