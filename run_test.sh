@@ -18,7 +18,7 @@ fi
 
 # Create an array of assembly files in the test data dir
 shopt -s nullglob
-ASM=( "${PWD}/tests/data/*.fa.gz" )
+ASM=( ./tests/data/*.fna.gz )
 shopt -u nullglob
 
 # Grab assembly files if the path lacks them
