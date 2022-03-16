@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+PROFILE=$1
+
+PROFILE="${PROFILE:=singularity}"
+echo "INFO: using nextflow profile $PROFILE"
 
 # Confirm this is being ran with the default directory structure
 if [ ! -f main.nf ]; then
@@ -42,7 +46,7 @@ if [ ${#ASM[@]} -ne 10 ]; then
 fi
 
 # Run the test data set through this workflow
-nextflow run main.nf \
+nextflow run -profile $PROFILE main.nf \
  --inpath "${PWD}/tests/data" \
  --outpath "${PWD}/tests/test-output" \
  --reference "${PWD}/tests/data/GCA_000703365.1_Ec2011C-3609_genomic.fna.gz" \
