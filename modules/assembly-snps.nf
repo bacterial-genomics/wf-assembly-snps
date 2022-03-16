@@ -52,7 +52,7 @@ process INFILE_HANDLING {
 
 
 process RUN_PARSNP {
-    publishDir "${params.outpath}", mode: "copy"
+    publishDir "${params.outpath}", mode: "copy", pattern: "parsnp/parsnp.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.RUN_PARSNP.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
@@ -89,7 +89,7 @@ process RUN_PARSNP {
 
 
 process EXTRACT_SNPS {
-    publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.fa"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.EXTRACT_SNPS.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null
@@ -120,7 +120,7 @@ process EXTRACT_SNPS {
 
 
 process PAIRWISE_DISTANCES {
-    publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.tsv"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.PAIRWISE_DISTANCES.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
@@ -151,7 +151,7 @@ process PAIRWISE_DISTANCES {
 
 
 process DISTANCE_MATRIX {
-    publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.tsv"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.DISTANCE_MATRIX.txt" }
 
     params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null
@@ -179,9 +179,33 @@ process DISTANCE_MATRIX {
     """
 }
 
+process CLEANUP_FILES {
+    publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.CLEANUP_FILES.txt" }
+
+    // TODO: avoid gzip/pigz dependency using a container like below
+    //container "genevera/docker-pigz@sha256:fd81c17eafd3d7bdb361aa86f2ed6261d3afa8feecd5ccc1731726c4ae7ba86b"
+    input:
+        path(snp_distances)  // compress SNP output to indicate pipeline finished through SNP distance calculation
+        path(outpath)
+
+    output:
+        path(".command.out")
+        path(".command.err")
+
+    script:
+    """
+    source bash_functions.sh
+
+    msg "INFO: starting compressing SNPs.fa file"
+    gzip -9f ${outpath}/parsnp/SNPs.fa
+    #pigz -9f ${outpath}/parsnp/SNPs.fa
+    msg "INFO: finished compressing SNPs.fa file"
+    """
+}
+
 
 process EXTRACT_FASTA {
-    publishDir "${params.outpath}/parsnp", mode: "copy"
+    publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.fasta"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.EXTRACT_FASTA.txt" }
 
     container "snads/xmfa-to-fasta:2.0"
@@ -211,7 +235,7 @@ process EXTRACT_FASTA {
 
 
 process INFER_RECOMBINATION_GUBBINS {
-    publishDir "${params.outpath}/gubbins", mode: "copy"
+    publishDir "${params.outpath}/gubbins", mode: "copy", pattern: "gubbins.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.INFER_RECOMBINATION_GUBBINS.txt" }
 
     container = "snads/gubbins:3.1.4"
@@ -242,7 +266,7 @@ process INFER_RECOMBINATION_GUBBINS {
 
 
 process INFER_RECOMBINATION_CFML {
-    publishDir "${params.outpath}/clonalframeml", mode: "copy"
+    publishDir "${params.outpath}/clonalframeml", mode: "copy", pattern: "clonalframeml.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.INFER_RECOMBINATION_CFML.txt" }
 
     container = "snads/clonalframeml:1.12"
@@ -276,7 +300,7 @@ process INFER_RECOMBINATION_CFML {
 
 
 process MASK_RECOMBINATION {
-    publishDir "${params.outpath}/${recombination_method}", mode: "copy"
+    publishDir "${params.outpath}/${recombination_method}", mode: "copy", pattern: "*.fasta"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.MASK_RECOMBINATION.txt" }
 
     container = "snads/mask-recombination:1.0"
@@ -312,7 +336,7 @@ process MASK_RECOMBINATION {
 
 
 process REINFER_TREE {
-    publishDir "${params.outpath}/${recombination_method}", mode: "copy"
+    publishDir "${params.outpath}/${recombination_method}", mode: "copy", pattern: "*.tree"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "${filename}.REINFER_TREE.txt" }
 
     container "snads/parsnp:1.5.6"

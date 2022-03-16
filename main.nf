@@ -126,6 +126,7 @@ include {
     EXTRACT_SNPS;
     PAIRWISE_DISTANCES;
     DISTANCE_MATRIX;
+    CLEANUP_FILES;
     EXTRACT_FASTA;
     INFER_RECOMBINATION_GUBBINS;
     INFER_RECOMBINATION_CFML;
@@ -156,6 +157,7 @@ workflow {
     // Generate a core-genome alignment, call SNPs, and build a tree
     inpath = Channel.fromPath(params.inpath, checkIfExists: true) // a filepath
     refpath = Channel.from(params.refpath) // a string (filepath or 'largest')
+    outpath = Channel.fromPath(params.outpath)
 
     FIND_INFILES(
         inpath
@@ -182,6 +184,11 @@ workflow {
 
     DISTANCE_MATRIX(
         PAIRWISE_DISTANCES.out.snp_distances
+    )
+
+    CLEANUP_FILES(
+        PAIRWISE_DISTANCES.out.snp_distances,
+        outpath
     )
 
     // Optionally infer SNPs due to recombination, mask them, and build a new tree

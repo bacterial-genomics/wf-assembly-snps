@@ -20,9 +20,3 @@ if ! verify_file_minimum_size "${snp_matrix}" 'SNP matrix' '20c'; then
   exit 1
 fi
 sed -i "s/\t-/\t0/g" "${snp_matrix}"
-
-# Cleanup
-rm -f ./{all_mumi.ini,parsnpAligner.ini,parsnp.{rec,xmfa},psnn.ini}
-rm -f ./*.ref
-rm -rf ./{tmp,.tmp,.ref}
-pigz -9f ./{SNPs.fa,parsnpAligner.log}
