@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+
+# This script is to run the workflow on the UGE cluster
+
+# Define script usage
+
+usage() {
+  echo "
+Usage: ${0##*/} InputDirectory [OutputDirectory] [-h|--help]
+Required:
+  <InputDirectory>   All assembly files ending in fa,fas,
+                     fsa,fna,fasta will be analyzed.
+Optional:
+  -h | --help        Show this help message and exit.
+  <OutputDirectory>  Location for the output files, which
+                     includes job logfiles. Output files
+                     will be overwritten if already present.
+                     Default: current working directory.
+  "
+}
+
+# Check requirements
+[[ $1 == "--help" || $1 == "-h" ]] && { usage; exit 0; }
+if [[ $# -lt 1  || $# -gt 2 ]]; then
+  echo "ERROR: improper number ("$#") of arguments provided" >&2
+  usage
+  exit 1
+fi
+
+# I/O handling
+IN=$(readlink -f "$1")
+if [[ -z "$2" ]]; then
+  OUT="${PWD}"
+else
+  OUT=$(readlink -f "$2")
+fi
+
+# Set up tmp and cache directories for Singularity
+mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp
+mkdir -p /scicomp/scratch/$USER/singularity.cache && export NXF_SINGULARITY_CACHEDIR=/scicomp/scratch/$USER/singularity.cache
+
+# Determine whether to reduce partition size based on # input genomes
+compressed_asm=( "${IN}"/*.{fa,fas,fsa,fna,fasta}.gz )
+plaintext_asm=( "${IN}"/*.{fa,fas,fsa,fna,fasta} )
+n_asm=$(( ${#compressed_asm[@]} + ${#plaintext_asm[@]} ))
+
+if [ $n_asm -lt 1500 ]; then
+    max_partition_size=15000000  # the parsnp program default
+else
+    max_partition_size=500000
+fi
+
+# Get LAB_HOME or custom tmp/cache variables from .bashrc
+source $HOME/.bashrc
+
+# Run the nextflow workflow
+qsub \
+    -v NXF_SINGULARITY_CACHEDIR=$NXF_SINGULARITY_CACHEDIR \
+    -v TMPDIR=$TMPDIR \
+    -v OUT=$OUT \
+    -v IN=$IN \
+    -v P=$max_partition_size \
+    -v LAB_HOME=$LAB_HOME \
+    -o $OUT/ \
+    -e $OUT/ \
+    -M $USER@cdc.gov \
+    -m bae \
+    -N Parsnp \
+    -q all.q \
+    $LAB_HOME/wf-assembly-snps/_run_parsnp.uge-nextflow
