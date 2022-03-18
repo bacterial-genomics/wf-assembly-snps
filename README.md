@@ -42,29 +42,10 @@ cd wf-assembly-snps
 
 [//]: # (```)
 
-## Set-up for Aspen cluster
-This is a one-time set-up step for Aspen users only. 
-``` 
-# View the contents of the $HOME/.bashrc file
-cat $HOME/.bashrc
-```
-If missing, add these Singularity variables to the file. 
-Do this by opening it and editing it (MobaXterm or similar) or by using the command-line text editor vim (vim cheatsheet [here](https://www.keycdn.com/blog/vim-commands)).
-
-```
-# Set environment variables for running singularity containers
-SINGULARITY_BASE=/scicomp/scratch/$USER
-export SINGULARITY_TMPDIR=$SINGULARITY_BASE/singularity.tmp
-export SINGULARITY_CACHEDIR=$SINGULARITY_BASE/singularity.cache
-export NXF_SINGULARITY_CACHEDIR=$SINGULARITY_CACHEDIR  # See: https://www.nextflow.io/docs/latest/config.html
-mkdir -pv $SINGULARITY_TMPDIR $SINGULARITY_CACHEDIR
-```
-After saving the file, restart your session.
-
 ## Run workflow
+For Aspen or other Univa Gride Engine users, skip to the quick start instructions [below](#quick-start-for-uge-users).
+
 Before running, make sure you have Nextflow and Docker or Singularity installed.
-Aspen users need to load the Nextflow module at the start of every session: `module load nextflow/21.04.3`.
-Singularity is already installed.
 
 The below run commands assume you are still in the workflow code directory `wf-assembly-snps`.
 ```
@@ -105,11 +86,11 @@ Other options:
 To run the workflow, replace `INPATH_DIR` with the path to a directory of assembly files you want to analyze.
 Replace `OUTPATH_DIR` with the path to a directory to store analysis results. The workflow will create this directory, or add/overwrite files in it if it already exists.
 
-Run with Singularity (Aspen users use this command):
+Run with Singularity:
 ```
 nextflow run -profile singularity main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
 ```
-Run with Docker (not for Aspen users):
+Run with Docker:
 ```
 nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
 ```
@@ -167,16 +148,34 @@ Nextflow produces many intermediate files that can waste space. Remove these fil
 # Clean up intermediate files, retain output
 rm -rf .nextflow .nextflow.log* work/
 ```
+## Quick start for UGE Users
+If you are a user of the Apsen cluster (which employs the Univa Grid Engine batch-queueing system), you can call this workflow using a wrapper script.
 
-## Misc Dev Notes
-- scripts needs to be in ./bin for Nextflow to be able to find them
-- doesn't seem possible to tell Nextflow where to find conda, it only checks your path
-- how to stop appending -ue to bash
-    - add `process.shell = ['/bin/bash']` to nextflow.config
-- for a wrapper script for Aspen:
-  - should use Nextflow's 'sge' profile to send jobs that can run in parallel to different compute nodes
-  - should detect when > ~1500 genomes provided and decrease --max-partition-size to reduce memory usage
-  - include these lines for singularity:
-    - `module load nextflow`
-    - `mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp`
-    - `mkdir -p /scicomp/scratch/$USER/singularity.cache && export NXF_SINGULARITY_CACHEDIR=/scicomp/scratch/$USER/singularity.cache`
+The wrapper script needs to know where you installed the `wf-assembly-snps` directory via an environment variable called `LAB_HOME`. 
+The following are one-time steps to define this environment variable and make the script executable:
+```
+# Check if you already have LAB_HOME set:
+cat $HOME/.bashrc
+```
+If you already have this variable set, move wf-assembly-snps to that directory:
+```
+cd ../
+mv wf-assembly-snps $LAB_HOME/
+```
+If not, set LAB_HOME to be the directory you installed wf-assembly-snps in.
+```
+cd ../
+echo "export LAB_HOME=$PWD" >> $HOME/.bashrc
+```
+Finally, make the wrapper script executable and add its location to your `PATH` variable.
+```
+chmod u+x wf-assembly-snps/run_parsnp.uge-nextflow
+echo "export PATH=\$PATH:$LAB_HOME/wf-assembly-snps" >> $HOME/.bashrc
+```
+Re-start your session.
+
+After this one-time set-up is complete, you will only need to call the script to run the workflow each time you have new data to analyze.
+To run the workflow, replace INPATH_DIR with the path to a directory of assembly files you want to analyze. Replace OUTPATH_DIR with the path to a directory to store analysis results. The workflow will create this directory, or add/overwrite files in it if it already exists.
+```
+run_parsnp.uge-nextflow INPUT_DIR OUTPATH_DIR
+```
