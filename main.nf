@@ -28,6 +28,7 @@ def helpMessage() {
       --curated-input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
       --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
       --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
+      --max-partition-size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
     Profile options:
       -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
       -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
@@ -103,13 +104,14 @@ log.info """
     =====================================
     wf-assembly-snps $version
     =====================================
-    inpath:         ${params.inpath}
-    outpath:        ${params.outpath}
-    logpath:        ${params.logpath}
-    recombination:  ${params.recombination}
-    curated-input:  ${params.curatedInput}
-    reinfer-tree:   ${params.recombination ? params.reinferTreeProg : '-'}
-    refpath:        ${params.refpath}
+    inpath:             ${params.inpath}
+    outpath:            ${params.outpath}
+    logpath:            ${params.logpath}
+    recombination:      ${params.recombination}
+    curated-input:      ${params.curatedInput}
+    max-partition-size: ${params.maxPartitionSize}
+    reinfer-tree:       ${params.recombination ? params.reinferTreeProg : '-'}
+    refpath:            ${params.refpath}
     =====================================
     """
     .stripIndent()

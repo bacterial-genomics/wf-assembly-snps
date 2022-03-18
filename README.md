@@ -173,4 +173,10 @@ rm -rf .nextflow .nextflow.log* work/
 - doesn't seem possible to tell Nextflow where to find conda, it only checks your path
 - how to stop appending -ue to bash
     - add `process.shell = ['/bin/bash']` to nextflow.config
-    
+- for a wrapper script for Aspen:
+  - should use Nextflow's 'sge' profile to send jobs that can run in parallel to different compute nodes
+  - should detect when > ~1500 genomes provided and decrease --max-partition-size to reduce memory usage
+  - include these lines for singularity:
+    - `module load nextflow`
+    - `mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp`
+    - `mkdir -p /scicomp/scratch/$USER/singularity.cache && export NXF_SINGULARITY_CACHEDIR=/scicomp/scratch/$USER/singularity.cache`

@@ -72,7 +72,7 @@ process RUN_PARSNP {
 
     script:
     """
-    run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus} ${params.curatedInput}
+    run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus} ${params.curatedInput} ${params.maxPartitionSize}
     """
 
     stub:

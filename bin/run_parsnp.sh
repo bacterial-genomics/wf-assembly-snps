@@ -6,6 +6,7 @@ output_path=$2
 reference_path=$3
 cpus=$4
 curated_input=$5
+max_partition_size=$6
 
 source bash_functions.sh
 
@@ -25,6 +26,8 @@ if [ "${curated_input}" == "true" ]; then
    -r "${reference_path}" \
    -o "${output_path}" \
    -p "${cpus}" \
+   -P "${max_partition_size}" \
+   --verbose \
    --use-fasttree
 else
   msg "INFO: starting parsnp system call with uncurated input (will check sequence similarity)"
@@ -34,6 +37,8 @@ else
    -r "${reference_path}" \
    -o "${output_path}" \
    -p "${cpus}" \
+   -P "${max_partition_size}" \
+   --verbose \
    --use-fasttree
 fi
 
