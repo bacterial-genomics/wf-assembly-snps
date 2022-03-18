@@ -56,6 +56,7 @@ Do this by opening it and editing it (MobaXterm or similar) or by using the comm
 SINGULARITY_BASE=/scicomp/scratch/$USER
 export SINGULARITY_TMPDIR=$SINGULARITY_BASE/singularity.tmp
 export SINGULARITY_CACHEDIR=$SINGULARITY_BASE/singularity.cache
+export NXF_SINGULARITY_CACHEDIR=$SINGULARITY_CACHEDIR  # See: https://www.nextflow.io/docs/latest/config.html
 mkdir -pv $SINGULARITY_TMPDIR $SINGULARITY_CACHEDIR
 ```
 After saving the file, restart your session.
