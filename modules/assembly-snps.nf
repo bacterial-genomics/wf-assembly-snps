@@ -57,7 +57,7 @@ process RUN_PARSNP {
 
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
     //conda 'bioconda::parsnp=1.1.3'
-    container "snads/parsnp:1.5.6"
+    container "snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377"
 
     input:
         path(refpath)
@@ -72,6 +72,10 @@ process RUN_PARSNP {
 
     script:
     """
+    # Log version info
+    echo "RUN_PARSNP:" >> ${params.logpath}/versions.txt
+    parsnp --version | sed 's/^/    /' >> ${params.logpath}/versions.txt
+
     run_parsnp.sh ${tmppath} parsnp ${refpath}/* ${task.cpus} ${params.curatedInput} ${params.maxPartitionSize}
     """
 
@@ -94,7 +98,7 @@ process EXTRACT_SNPS {
 
     params.enable_conda_yml ? "$baseDir/conda/linux/harvesttools.yml" : null
     // conda 'bioconda::harvesttools=1.2'
-    container "snads/parsnp:1.5.6"
+    container "snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377"
 
     input:
         path(parsnp_ggr)
@@ -106,6 +110,10 @@ process EXTRACT_SNPS {
 
     script:
     """
+    # Log version info
+    echo "EXTRACT_SNPS:" >> ${params.logpath}/versions.txt
+    parsnp --version | sed 's/^/    /' >> ${params.logpath}/versions.txt
+
     extract_snps.sh "${parsnp_ggr}" "SNPs.fa"
     """
 
@@ -125,7 +133,7 @@ process PAIRWISE_DISTANCES {
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
     // conda 'bioconda::FIXME'
-    container "snads/hamming-dist:1.0"
+    container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
 
     input:
         path(snps_file)
@@ -156,7 +164,7 @@ process DISTANCE_MATRIX {
 
     params.enable_conda_yml ? "$baseDir/conda/linux/python3.yml" : null
     // conda 'conda-forge::python=3.10.1'
-    container "snads/hamming-dist:1.0"
+    container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
 
     input:
         path(snp_distances)
@@ -208,7 +216,7 @@ process EXTRACT_FASTA {
     publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.fasta"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "8${filename}.EXTRACT_FASTA.txt" }
 
-    container "snads/xmfa-to-fasta:2.0"
+    container "snads/xmfa-to-fasta@sha256:ef61b6d2c1a3ac675ecd102d64488f65f715745788deaf9fae2d7ab69c71c277"
 
     input:
         path(parsnp_xmfa)
@@ -238,7 +246,7 @@ process INFER_RECOMBINATION_GUBBINS {
     publishDir "${params.outpath}/gubbins", mode: "copy", pattern: "gubbins.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "9a${filename}.INFER_RECOMBINATION_GUBBINS.txt" }
 
-    container = "snads/gubbins:3.1.4"
+    container = "snads/gubbins@sha256:391a980312096f96d976f4be668d4dea7dda13115db004a50e49762accc0ec62"
 
     input:
         path(extracted_fasta)
@@ -252,6 +260,10 @@ process INFER_RECOMBINATION_GUBBINS {
 
     script:
     """
+    # Log version info
+    echo "INFER_RECOMBINATION_GUBBINS:" >> ${params.logpath}/versions.txt
+    run_gubbins.py --version | sed 's/^/    /' >> ${params.logpath}/versions.txt
+
     run_gubbins.py --starting-tree ${parsnp_tree} --prefix gubbins ${extracted_fasta}
     """
 
@@ -269,7 +281,7 @@ process INFER_RECOMBINATION_CFML {
     publishDir "${params.outpath}/clonalframeml", mode: "copy", pattern: "clonalframeml.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "9b${filename}.INFER_RECOMBINATION_CFML.txt" }
 
-    container = "snads/clonalframeml:1.12"
+    container = "snads/clonalframeml@sha256:bc00db247195fdc6151793712a74cc9b272dc2c9f153bb0037415e387f15351e"
 
     input:
         path(extracted_fasta)
@@ -283,6 +295,10 @@ process INFER_RECOMBINATION_CFML {
 
     script:
     """
+    # Log version info
+    echo "INFER_RECOMBINATION_CFML:" >> ${params.logpath}/versions.txt
+    ClonalFrameML -version | sed 's/^/    /' >> ${params.logpath}/versions.txt
+
     # ClonalFrameML needs tree labels to not be surrounded by single quotes
     sed -i.bak "s/'//g" ${parsnp_tree}
     rm ${parsnp_tree}.bak
@@ -303,7 +319,7 @@ process MASK_RECOMBINATION {
     publishDir "${params.outpath}/${recombination_method}", mode: "copy", pattern: "*.fasta"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "10${filename}.MASK_RECOMBINATION.txt" }
 
-    container = "snads/mask-recombination:1.0"
+    container = "snads/mask-recombination@sha256:0df4f5e26b2beeb2a180c2e4d75148cde55d4cc62585b5053d6606c6623d33e4"
 
     input:
         path(extracted_fasta)
@@ -339,7 +355,7 @@ process REINFER_TREE {
     publishDir "${params.outpath}/${recombination_method}", mode: "copy", pattern: "*.tree"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "11${filename}.REINFER_TREE.txt" }
 
-    container "snads/parsnp:1.5.6"
+    container "snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377"
 
     input:
         path(masked_fasta)
@@ -352,6 +368,12 @@ process REINFER_TREE {
 
     script:
     """
+    # Log version info
+    echo "REINFER_TREE:" >> ${params.logpath}/versions.txt
+    parsnp --version | sed 's/^/    /' >> ${params.logpath}/versions.txt
+    fasttree -expert &> tmp.txt; head -1 tmp.txt | sed 's/^/    /' >> ${params.logpath}/versions.txt; rm tmp.txt
+    raxmlHPC-PTHREADS -v | sed 's/^/    /' >> ${params.logpath}/versions.txt; rm tmp.txt
+
     if [ "${params.reinferTreeProg}" = "fasttree" ]; then
         fasttree -nt ${masked_fasta} > ${recombination_method}_masked_recombination.tree
     elif [ "${params.reinferTreeProg}" = "raxml" ]; then
