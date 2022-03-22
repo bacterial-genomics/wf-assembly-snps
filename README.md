@@ -55,7 +55,7 @@ nextflow run main.nf --help
 This yields:
 ```
 N E X T F L O W  ~  version 21.10.6
-Launching `main.nf` [determined_volhard] - revision: b2865e0d2e
+Launching `main.nf` [big_bernard] - revision: 876ab2e244
 
 =========================================
  wf-assembly-snps v1.0.0
@@ -71,8 +71,10 @@ Input/output options:
   --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
   --outpath            The output directory where the results will be saved.
 Analysis options:
+  --curated-input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
   --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
   --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
+  --max-partition-size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
 Profile options:
   -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
   -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
@@ -86,12 +88,11 @@ Other options:
 To run the workflow, replace `INPATH_DIR` with the path to a directory of assembly files you want to analyze.
 Replace `OUTPATH_DIR` with the path to a directory to store analysis results. The workflow will create this directory, or add/overwrite files in it if it already exists.
 
-Run with Singularity:
 ```
+# Run with Singularity
 nextflow run -profile singularity main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
-```
-Run with Docker:
-```
+
+# Run with Docker
 nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
 ```
 
@@ -119,7 +120,8 @@ This yields:
 OUTPATH_DIR/
 |-- .log
 |   |-- stderr.nextflow.txt
-|   `-- stdout.nextflow.txt
+|   |-- stdout.nextflow.txt
+|   `-- versions.txt
 |-- clonalframeml
 |   |-- clonalframeml.importation_status.txt
 |   |-- clonalframeml.labelled_tree.newick
@@ -155,7 +157,8 @@ The wrapper script needs to know where you installed the `wf-assembly-snps` dire
 The following are one-time steps to define this environment variable and make the script executable:
 ```
 # Check if you already have LAB_HOME set:
-cat $HOME/.bashrc
+echo $LAB_HOME  # Is this varible set?
+cat $HOME/.bashrc  # Do you set LAB_HOME anywhere in your bash configuration file?
 ```
 If you already have this variable set, move wf-assembly-snps to that directory:
 ```

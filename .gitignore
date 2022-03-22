@@ -1,4 +1,4 @@
 .idea
 .nextflow*
 work/
-tests/data/*
+tests/
