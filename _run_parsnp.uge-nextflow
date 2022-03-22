@@ -2,7 +2,7 @@
 
 module load nextflow
 
-nextflow  run -profile singularity $LAB_HOME/wf-assembly-snps/main.nf \
+nextflow  run -profile singularity,sge $LAB_HOME/wf-assembly-snps/main.nf \
   --outpath $OUT \
   --inpath $IN \
   --max-partition-size $P
