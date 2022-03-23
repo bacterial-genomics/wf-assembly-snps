@@ -153,27 +153,30 @@ rm -rf .nextflow .nextflow.log* work/
 ## Quick start for UGE Users
 If you are a user of the Apsen cluster (which employs the Univa Grid Engine batch-queueing system), you can call this workflow using a wrapper script.
 
-The wrapper script needs to know where you installed the `wf-assembly-snps` directory via an environment variable called `LAB_HOME`. 
+The wrapper script requires wf-assembly-snps to be installed in a location `$LAB_HOME/workflows/`, where `$LAB_HOME` is an environment variable set in your bash configuration file. 
 The following are one-time steps to define this environment variable and make the script executable:
 ```
 # Check if you already have LAB_HOME set:
 echo $LAB_HOME  # Is this varible set?
 cat $HOME/.bashrc  # Do you set LAB_HOME anywhere in your bash configuration file?
 ```
-If you already have this variable set, move wf-assembly-snps to that directory:
+If you already have this variable set, move wf-assembly-snps to `$LAB_HOME/workflows`:
 ```
 cd ../
-mv wf-assembly-snps $LAB_HOME/
+mkdir -p $LAB_HOME/workflows
+mv wf-assembly-snps $LAB_HOME/workflows/
 ```
-If not, set LAB_HOME to be the directory you installed wf-assembly-snps in.
+If not, set LAB_HOME to be your `$HOME` directory and put wf-assembly-snps there.
 ```
 cd ../
-echo "export LAB_HOME=$PWD" >> $HOME/.bashrc
+mkdir -p $HOME/workflows
+mv wf-assembly-snps $HOME/workflows/
+echo "export LAB_HOME=$HOME" >> $HOME/.bashrc
 ```
 Finally, make the wrapper script executable and add its location to your `PATH` variable.
 ```
-chmod u+x wf-assembly-snps/run_parsnp.uge-nextflow
-echo "export PATH=\$PATH:$LAB_HOME/wf-assembly-snps" >> $HOME/.bashrc
+chmod u+x $LAB_HOME/workflows/wf-assembly-snps/run_parsnp.uge-nextflow
+echo "export PATH=\$PATH:$LAB_HOME/workflows/wf-assembly-snps" >> $HOME/.bashrc
 ```
 Re-start your session.
 

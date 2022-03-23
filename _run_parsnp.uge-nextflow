@@ -2,7 +2,12 @@
 
 module load nextflow
 
-nextflow  run -profile singularity,sge $LAB_HOME/wf-assembly-snps/main.nf \
+nextflow \
+  -log /scicomp/scratch/$USER/nextflow_log.txt \
+  run \
+  -profile singularity,sge \
+  $LAB_HOME/workflows/wf-assembly-snps/main.nf \
   --outpath $OUT \
   --inpath $IN \
-  --max-partition-size $P
+  --max-partition-size $P \
+  -w /scicomp/scratch/$USER/work

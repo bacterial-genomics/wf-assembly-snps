@@ -67,4 +67,4 @@ qsub \
     -m bae \
     -N Parsnp \
     -q all.q \
-    $LAB_HOME/wf-assembly-snps/_run_parsnp.uge-nextflow
+    $LAB_HOME/workflows/wf-assembly-snps/_run_parsnp.uge-nextflow

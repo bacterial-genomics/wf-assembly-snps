@@ -107,6 +107,7 @@ log.info """
     inpath:             ${params.inpath}
     outpath:            ${params.outpath}
     logpath:            ${params.logpath}
+    workDir:            ${workflow.workDir}
     recombination:      ${params.recombination}
     curated-input:      ${params.curatedInput}
     max-partition-size: ${params.maxPartitionSize}
