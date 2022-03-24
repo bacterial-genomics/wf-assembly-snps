@@ -185,3 +185,7 @@ To run the workflow, replace INPATH_DIR with the path to a directory of assembly
 ```
 run_parsnp.uge-nextflow INPUT_DIR OUTPATH_DIR
 ```
+
+Wrapper script worfklow notes: the nextflow logs (typically stored as `.nextflow.log` in the directory the script is run from) are redirected to `/scicomp/scratch/$USER/nextflow_log.txt`. 
+The workDir is set to `/scicomp/scratch/$USER/work`.
+These modifications aim to ensure temporary files get stored in a scratch space so they will be cleared out eventually.
