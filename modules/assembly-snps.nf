@@ -55,6 +55,9 @@ process RUN_PARSNP {
     publishDir "${params.outpath}", mode: "copy", pattern: "parsnp/parsnp.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "3${filename}.RUN_PARSNP.txt" }
 
+    label "process_medium"
+    label "error_retry"
+
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
     //conda 'bioconda::parsnp=1.1.3'
     container "snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377"
@@ -130,6 +133,9 @@ process EXTRACT_SNPS {
 process PAIRWISE_DISTANCES {
     publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.tsv"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "5${filename}.PAIRWISE_DISTANCES.txt" }
+
+    label "process_medium"
+    label "error_retry"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
     // conda 'bioconda::FIXME'
