@@ -10,4 +10,5 @@ nextflow \
   --outpath $OUT \
   --inpath $IN \
   --max-partition-size $P \
+  --bigdata $BIG_DATA \
   -w /scicomp/scratch/$USER/work

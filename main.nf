@@ -29,6 +29,10 @@ def helpMessage() {
       --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
       --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
       --max-partition-size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
+      --bigdata            Whether or not to use more compute resources. Options are true, false (default).
+      --max_memory         Specify memory limit on your machine/infrastructure, e.g. '128.GB'. Useful to ensure workflow doesn't request too many resources.
+      --max_time           Specify time limit for each process, e.g. '240.h'. Useful to ensure workflow doesn't request too many resources.
+      --max_cpus           Specify CPU limit on your machine/infrastructure, e.g. 16. Useful to ensure workflow doesn't request too many resources.
     Profile options:
       -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
       -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.

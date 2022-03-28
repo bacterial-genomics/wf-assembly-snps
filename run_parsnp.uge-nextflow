@@ -46,8 +46,10 @@ n_asm=$(( ${#compressed_asm[@]} + ${#plaintext_asm[@]} ))
 
 if [ $n_asm -lt 1500 ]; then
     max_partition_size=15000000  # the parsnp program default
+    BIG_DATA='false'
 else
     max_partition_size=500000
+    BIG_DATA='true'
 fi
 
 # Get LAB_HOME or custom tmp/cache variables from .bashrc
@@ -60,6 +62,7 @@ qsub \
     -v OUT=$OUT \
     -v IN=$IN \
     -v P=$max_partition_size \
+    -v BIG_DATA=$BIG_DATA \
     -v LAB_HOME=$LAB_HOME \
     -o $OUT/ \
     -e $OUT/ \
