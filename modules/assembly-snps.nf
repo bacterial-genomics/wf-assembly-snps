@@ -55,7 +55,7 @@ process RUN_PARSNP {
     publishDir "${params.outpath}", mode: "copy", pattern: "parsnp/parsnp.*"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "3${filename}.RUN_PARSNP.txt" }
 
-    label "process_medium"
+    label "process_high"
     label "error_retry"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/parsnp.yml" : null
@@ -134,7 +134,7 @@ process PAIRWISE_DISTANCES {
     publishDir "${params.outpath}/parsnp", mode: "copy", pattern: "*.tsv"
     publishDir "${params.logpath}", mode: "copy", pattern: ".command.*", saveAs: { filename -> "5${filename}.PAIRWISE_DISTANCES.txt" }
 
-    label "process_medium"
+    label "process_high"
     label "error_retry"
 
     params.enable_conda_yml ? "$baseDir/conda/linux/NEEDS-NEWFILE.yml" : null
