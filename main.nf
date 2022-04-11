@@ -162,8 +162,13 @@ include { RUN_CFML } from './subworkflows/run_cfml.nf'
 workflow {
 
     // Generate a core-genome alignment, call SNPs, and build a tree
-    inpath = Channel.fromPath(params.inpath, checkIfExists: true) // a filepath
-    refpath = Channel.from(params.refpath) // a string (filepath or 'largest')
+    inpath = Channel.fromPath(params.inpath, checkIfExists: true)
+    if (params.refpath) {
+        refpath = Channel.fromPath(params.refpath, checkIfExists: true)
+    } else {
+        // this is a dummy filepath hack, see: https://github.com/nextflow-io/nextflow/issues/1532
+        refpath = Channel.fromPath('largest')
+    }
     outpath = Channel.fromPath(params.outpath)
 
     FIND_INFILES(

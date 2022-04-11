@@ -26,7 +26,7 @@ process INFILE_HANDLING {
     input:
         path(find_infiles_success)
         path(inpath)
-        val refpath
+        path(refpath)
 
     output:
         path(".ref"), emit: refpath
