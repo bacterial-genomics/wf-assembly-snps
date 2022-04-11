@@ -44,11 +44,11 @@ fi
 
 msg "INFO: finished parsnp system call"
 
-if ! verify_file_minimum_size "${output_path}/parsnp.ggr" 'gingr' '100k'; then
+if ! verify_file_minimum_size "${output_path}/parsnp.ggr" 'gingr' "${params.min_ggr_size}"; then
   echo """ERROR: Parsnp failed.
   Check ${output_path}/parsnpAligner.log""" >&2
   exit 1
-elif ! verify_file_minimum_size "${output_path}/parsnp.xmfa" 'alignment' '100k'; then
+elif ! verify_file_minimum_size "${output_path}/parsnp.xmfa" 'alignment' "${params.min_xmfa_size}"; then
   echo """ERROR: Parsnp failed.
   Alignment file is too small - did you use a curated input directory with any too-unrelated genomes?
   Check ${output_path}/parsnpAligner.log""" >&2
