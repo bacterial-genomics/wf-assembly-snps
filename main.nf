@@ -16,23 +16,27 @@ def helpMessage() {
     =========================================
 
     Usage:
-    The minimal command for running the pipeline is:
+    The minimal command for running the workflow is:
     nextflow run main.nf
-    A more typical command for running the pipeline is:
-    nextflow run -profile singularity main.nf --inpath INPUT_DIR --outpath OUTPATH_DIR
+    To run the workflow on a small set of test data:
+    nextflow run main.nf -profile test,<docker|singularity> --outpath results
+    A typical command for running the pipeline is:
+    nextflow run -profile <docker|singularity> main.nf --inpath <input directory> --outpath <directory for results>
 
     Input/output options:
       --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
       --outpath            The output directory where the results will be saved.
     Analysis options:
-      --curated-input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
+      --curated_input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
       --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
-      --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
-      --max-partition-size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
+      --tree_method        Program used to infer trees (in ParSNP and optionally again after masking positions due to recombination). Options are: fasttree (default), raxml.
+      --max_partition_size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
       --bigdata            Whether or not to use more compute resources. Options are true, false (default).
       --max_memory         Specify memory limit on your machine/infrastructure, e.g. '128.GB'. Useful to ensure workflow doesn't request too many resources.
       --max_time           Specify time limit for each process, e.g. '240.h'. Useful to ensure workflow doesn't request too many resources.
       --max_cpus           Specify CPU limit on your machine/infrastructure, e.g. 16. Useful to ensure workflow doesn't request too many resources.
+      --min_ggr_size       Minimum filesize to verify that ParSNP produced a .ggr file. Default is: '100k'.
+      --min_xmfa_size      Minimum filesize to verify that ParSNP produced a .xmfa file. Default is: '100k'.
     Profile options:
       -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
       -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
@@ -57,20 +61,25 @@ if (params.version){
     exit 0
 }
 
-// Handle command line input
+/*
+========================================================================================
+    VALIDATE INPUTS
+========================================================================================
+*/
+
 if (!(params.recombination in ["cfml", "gubbins", "both", false])){
     System.err.println "\nERROR: --recombination was set as: ${params.recombination}"
     System.err.println "\nERROR: --recombination must be: cfml|gubbins|both"
     exit 1
 }
 
-if (!(params.curatedInput in ["true", "false", true, false])){
+if (!(params.curated_input in ["true", "false", true, false])){
     System.err.println "\nERROR: --curated-input was set as: ${params.curatedInput}"
     System.err.println "\nERROR: --curated-input must be: true|false"
     exit 1
 }
 
-if (!(params.reinferTreeProg in ["fasttree", "raxml", false])){
+if (!(params.tree_method in ["fasttree", "raxml", false])){
     System.err.println "\nERROR: --reinfer-tree-prog was set as: ${params.reinferTreeProg}"
     System.err.println "\nERROR: --reinfer-tree-prog must be: fasttree|raxml"
     exit 1
@@ -113,129 +122,137 @@ log.info """
     logpath:            ${params.logpath}
     workDir:            ${workflow.workDir}
     recombination:      ${params.recombination}
-    curated-input:      ${params.curatedInput}
-    max-partition-size: ${params.maxPartitionSize}
-    reinfer-tree:       ${params.recombination ? params.reinferTreeProg : '-'}
+    curated_input:      ${params.curated_input}
+    max_partition_size: ${params.max_partition_size}
+    tree_method:        ${params.tree_method}
     refpath:            ${params.refpath}
     =====================================
     """
     .stripIndent()
 
 /*
-==============================================================================
+========================================================================================
                  Import local custom modules and subworkflows                 
-==============================================================================
+========================================================================================
 */
-include {
-    FIND_INFILES;
-    INFILE_HANDLING;
-    RUN_PARSNP;
-    EXTRACT_SNPS;
-    PAIRWISE_DISTANCES;
-    DISTANCE_MATRIX;
-    CLEANUP_FILES;
-    EXTRACT_FASTA;
-    INFER_RECOMBINATION_GUBBINS;
-    INFER_RECOMBINATION_CFML;
-    MASK_RECOMBINATION;
-    REINFER_TREE
-} from "./modules/assembly-snps.nf"
+include { INFILE_HANDLING } from "./modules/local/infile_handling"
+include { PARSNP } from "./modules/local/parsnp"
+include { EXTRACT_SNPS } from "./modules/local/extract_snps"
+include { PAIRWISE_DISTANCES } from "./modules/local/pairwise_distances"
+include { DISTANCE_MATRIX } from "./modules/local/distance_matrix"
+include { OUTFILE_CLEANUP } from "./modules/local/outfile_cleanup"
+include { EXTRACT_FASTA } from "./modules/local/extract_fasta"
 
-include { RUN_GUBBINS } from './subworkflows/run_gubbins.nf'
-include { RUN_CFML } from './subworkflows/run_cfml.nf'
+include { RECOMBINATION_GUBBINS } from './subworkflows/recombination_gubbins'
+include { RECOMBINATION_CFML } from './subworkflows/recombination_cfml'
 
 /*
-==============================================================================
+========================================================================================
                    Import nf-core modules and subworkflows                    
-==============================================================================
+========================================================================================
 */
-            //
-            // none
-            //
+
+// None
 
 /*
-==============================================================================
+========================================================================================
                             Run the main workflow                             
-==============================================================================
+========================================================================================
 */
 
 workflow {
 
-    // Generate a core-genome alignment, call SNPs, and build a tree
-    inpath = Channel.fromPath(params.inpath, checkIfExists: true)
+    // SETUP: Define input & output channels
+    ch_inpath = Channel.fromPath(params.inpath, checkIfExists: true)
+    ch_outpath = Channel.fromPath(params.outpath)
     if (params.refpath) {
-        refpath = Channel.fromPath(params.refpath, checkIfExists: true)
+        ch_refpath = Channel.fromPath(params.refpath, checkIfExists: true)
     } else {
-        // this is a dummy filepath hack, see: https://github.com/nextflow-io/nextflow/issues/1532
-        refpath = Channel.fromPath('largest')
+        ch_refpath = Channel.fromPath('largest')  // dummy filepath hack (https://github.com/nextflow-io/nextflow/issues/1532)
     }
-    outpath = Channel.fromPath(params.outpath)
+    ch_versions = Channel.empty()
 
-    FIND_INFILES(
-        inpath
-    )
-
+    // PROCESS: Read in input directory path, validate and stage input files
     INFILE_HANDLING(
-        FIND_INFILES.out.find_infiles_success,
-        inpath,
-        refpath
+        ch_inpath,
+        ch_refpath
     )
+    ch_versions = ch_versions.mix(INFILE_HANDLING.out.versions)
 
-    RUN_PARSNP(
-        INFILE_HANDLING.out.refpath,
-        INFILE_HANDLING.out.tmppath
+    // PROCESS: Run ParSNP to generate core genome alignment and phylogeny
+    PARSNP(
+        INFILE_HANDLING.out.reference,
+        INFILE_HANDLING.out.tmpdir
     )
+    ch_versions = ch_versions.mix(PARSNP.out.versions)
 
+    // PROCESS: Get SNP alignment from ParSNP .ggr file
     EXTRACT_SNPS(
-        RUN_PARSNP.out.parsnp_ggr
+        PARSNP.out.ggr
     )
+    ch_versions = ch_versions.mix(EXTRACT_SNPS.out.versions)
 
+    // PROCESS: Calculate pairwise genome distances
     PAIRWISE_DISTANCES(
         EXTRACT_SNPS.out.snps_file
     )
+    ch_versions = ch_versions.mix(PAIRWISE_DISTANCES.out.versions)
 
+    // PROCESS: Reformat pairwise genome distances into matrix
     DISTANCE_MATRIX(
         PAIRWISE_DISTANCES.out.snp_distances
     )
+    ch_versions = ch_versions.mix(DISTANCE_MATRIX.out.versions)
 
-    CLEANUP_FILES(
-        PAIRWISE_DISTANCES.out.snp_distances,
-        outpath
+    // PROCESS: Gzip compress SNP alignment
+    OUTFILE_CLEANUP(
+        PAIRWISE_DISTANCES.out.snp_distances,  // process waits until this file is produced
+        ch_outpath
     )
+    ch_versions = ch_versions.mix(OUTFILE_CLEANUP.out.versions)
 
-    // Optionally infer SNPs due to recombination, mask them, and build a new tree
+    // PROCESS: Get core genome alignment from ParSNP .xmfa file
     if (params.recombination != false) {
         EXTRACT_FASTA(
-            RUN_PARSNP.out.parsnp_xmfa
+            PARSNP.out.xmfa
+        )
+        ch_versions = ch_versions.mix(EXTRACT_FASTA.out.versions)
+    }
+
+    // WORKFFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
+    if (params.recombination == 'gubbins') {
+        RECOMBINATION_GUBBINS(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            PARSNP.out.tree
+        )
+    } else if (params.recombination == 'cfml') {
+        RECOMBINATION_CFML(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            PARSNP.out.tree
+        )
+        ch_versions = ch_versions.mix(RECOMBINATION_CFML.out.cfml_versions)
+        ch_versions = ch_versions.mix(RECOMBINATION_CFML.out.mask_recombination_versions)
+        ch_versions = ch_versions.mix(RECOMBINATION_CFML.out.infer_tree_versions)
+    } else if (params.recombination == 'both') {
+        RECOMBINATION_GUBBINS(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            PARSNP.out.tree
+        )
+        RECOMBINATION_CFML(
+            EXTRACT_FASTA.out.parsnp_fasta,
+            PARSNP.out.tree
         )
     }
 
-    if (params.recombination == 'gubbins') {
-        RUN_GUBBINS(
-            EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree
-        )
-    } else if (params.recombination == 'cfml') {
-        RUN_CFML(
-            EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree
-        )
-    } else if (params.recombination == 'both') {
-        RUN_GUBBINS(
-            EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree
-        )
-        RUN_CFML(
-            EXTRACT_FASTA.out.parsnp_fasta,
-            RUN_PARSNP.out.parsnp_tree
-        )
-    }
+    // PATTERN: Collate method version information
+    ch_versions.collectFile(name: 'software_versions.yml', storeDir: params.outpath)
+
 }
 
 /*
-==============================================================================
+========================================================================================
                         Completion e-mail and summary                         
-==============================================================================
+========================================================================================
 */
 
 workflow.onComplete {
