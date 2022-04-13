@@ -100,6 +100,14 @@ process INFILE_HANDLING {
       fi
     fi
 
+    # Replace problematic characters in file names
+    for f in ./tmp/*"|"*; do
+        mv "$f" "${f//|/_}"
+    done
+    for f in ./ref/*"|"*; do
+        mv "$f" "${f//|/_}"
+    done
+
     # Confirm exactly 1 reference file exists
     shopt -s nullglob
     ref_asm=( ./ref/* )
