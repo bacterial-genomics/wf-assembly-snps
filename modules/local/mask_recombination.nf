@@ -8,7 +8,7 @@ process MASK_RECOMBINATION {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}" }
 
-    container = "snads/mask-recombination@sha256:0df4f5e26b2beeb2a180c2e4d75148cde55d4cc62585b5053d6606c6623d33e4"
+    container "snads/mask-recombination@sha256:0df4f5e26b2beeb2a180c2e4d75148cde55d4cc62585b5053d6606c6623d33e4"
 
     input:
         path alignment

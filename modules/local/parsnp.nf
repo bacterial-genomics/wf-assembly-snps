@@ -13,9 +13,7 @@ process PARSNP {
 
     // TODO: replace conda and null below with appropriate conda env, singularity image for this process
     //conda (params.enable_conda ? "conda-forge::python=3.8.3" : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        null :
-        'snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377' }"
+    container "snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377"
 
     input:
     path reference

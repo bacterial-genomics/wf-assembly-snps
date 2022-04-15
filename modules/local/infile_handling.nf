@@ -7,9 +7,7 @@ process INFILE_HANDLING {
 
     // TODO: replace conda and null below with appropriate conda env, singularity image for this process
     //conda (params.enable_conda ? "conda-forge::python=3.8.3" : null)
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        null :
-        'ubuntu:focal' }"
+    container "ubuntu:focal"
 
     input:
     path input
