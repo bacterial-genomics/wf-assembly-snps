@@ -3,7 +3,7 @@ process EXTRACT_FASTA {
     publishDir "${params.outpath}/parsnp",
         mode: "${params.publish_dir_mode}",
         pattern: "*.fasta"
-    publishDir "${params.logpath}",
+    publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}" }

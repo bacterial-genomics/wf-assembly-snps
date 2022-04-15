@@ -3,7 +3,7 @@ process MASK_RECOMBINATION {
     publishDir "${params.outpath}/${recombination_method}",
         mode: "${params.publish_dir_mode}",
         pattern: "*.fasta"
-    publishDir "${params.logpath}/command_outputs",
+    publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}" }

@@ -3,7 +3,7 @@ process EXTRACT_SNPS {
     publishDir "${params.outpath}/parsnp",
         mode: "${params.publish_dir_mode}",
         pattern: "*.fa"
-    publishDir "${params.logpath}",
+    publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}" }

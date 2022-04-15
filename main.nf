@@ -5,7 +5,7 @@
 ==============================================================================
                               wf-assembly-snps                              
 ==============================================================================
-usage: nextflow run ./wf-assembly-snps/main.nf [-help]
+usage: nextflow run main.nf [--help]
 ----------------------------------------------------------------------------
 */
 
@@ -16,12 +16,9 @@ def helpMessage() {
     =========================================
 
     Usage:
-    The minimal command for running the workflow is:
-    nextflow run main.nf
-    To run the workflow on a small set of test data:
-    nextflow run main.nf -profile test,<docker|singularity> --outpath results
-    A typical command for running the pipeline is:
     nextflow run -profile <docker|singularity> main.nf --inpath <input directory> --outpath <directory for results>
+    Run with test data:
+    nextflow run main.nf -profile test,<docker|singularity> --outpath results
 
     Input/output options:
       --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
@@ -85,6 +82,10 @@ if (!(params.tree_method in ["fasttree", "raxml", false])){
     exit 1
 }
 
+if (!params.inpath) {
+    System.err.println "ERROR: parameter inpath must be specified"
+    exit 1
+}
 File inpathFileObj = new File(params.inpath)
 if (!inpathFileObj.exists()){
     System.err.println "ERROR: $params.inpath doesn't exist"

@@ -1,6 +1,6 @@
 process OUTFILE_CLEANUP {
 
-    publishDir "${params.logpath}/command_outputs",
+    publishDir "${params.process_log_dir}",
         mode: "${params.publish_dir_mode}",
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}" }

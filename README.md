@@ -16,7 +16,7 @@
 *A schematic of the steps in the workflow.*
 
 ## Requirements
-* [Nextflow](https://www.nextflow.io/docs/latest/)
+* [Nextflow](https://www.nextflow.io/docs/latest/) (tested on version 21.10.6)
 * [Conda](https://docs.conda.io/en/latest/), [Docker](https://www.docker.com/), or [Singularity](https://sylabs.io/)
 
 ## Install
@@ -55,26 +55,31 @@ nextflow run main.nf --help
 This yields:
 ```
 N E X T F L O W  ~  version 21.10.6
-Launching `main.nf` [big_bernard] - revision: 876ab2e244
+Launching `main.nf` [modest_kirch] - revision: 5238884e30
 
 =========================================
  wf-assembly-snps v1.0.0
 =========================================
 
 Usage:
-The minimal command for running the pipeline is:
-nextflow run main.nf
-A more typical command for running the pipeline is:
-nextflow run -profile singularity main.nf --inpath INPUT_DIR --outpath OUTPATH_DIR
+nextflow run -profile <docker|singularity> main.nf --inpath <input directory> --outpath <directory for results>
+Run with test data:
+nextflow run main.nf -profile test,<docker|singularity> --outpath results
 
 Input/output options:
   --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
   --outpath            The output directory where the results will be saved.
 Analysis options:
-  --curated-input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
+  --curated_input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
   --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
-  --reinfer-tree-prog  Program used to re-infer tree without SNPs classified as due to recombination. Options are: fasttree (default), raxml.
-  --max-partition-size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
+  --tree_method        Program used to infer trees (in ParSNP and optionally again after masking positions due to recombination). Options are: fasttree (default), raxml.
+  --max_partition_size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
+  --bigdata            Whether or not to use more compute resources. Options are true, false (default).
+  --max_memory         Specify memory limit on your machine/infrastructure, e.g. '128.GB'. Useful to ensure workflow doesn't request too many resources.
+  --max_time           Specify time limit for each process, e.g. '240.h'. Useful to ensure workflow doesn't request too many resources.
+  --max_cpus           Specify CPU limit on your machine/infrastructure, e.g. 16. Useful to ensure workflow doesn't request too many resources.
+  --min_ggr_size       Minimum filesize to verify that ParSNP produced a .ggr file. Default is: '100k'.
+  --min_xmfa_size      Minimum filesize to verify that ParSNP produced a .xmfa file. Default is: '100k'.
 Profile options:
   -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
   -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
@@ -118,20 +123,15 @@ This yields:
 
 ```
 OUTPATH_DIR/
-|-- .log
-|   |-- stderr.nextflow.txt
-|   |-- stdout.nextflow.txt
-|   `-- versions.txt
-|-- clonalframeml
-|   |-- clonalframeml.importation_status.txt
-|   |-- clonalframeml.labelled_tree.newick
-|   |-- clonalframeml_masked_recombination.fasta
-|   `-- clonalframeml_masked_recombination.tree
-|-- gubbins
-|   |-- gubbins.node_labelled.final_tree.tre
-|   |-- gubbins.recombination_predictions.gff
-|   |-- gubbins_masked_recombination.fasta
-|   `-- gubbins_masked_recombination.tree
+|-- log
+|   |-- pipeline_dag.2022-04-15 08:43:05.svg
+|   |-- process_logs
+|   |   |-- INFILE_HANDLING.command.err
+|   |   |-- INFILE_HANDLING.command.out
+|   |   `-- ...
+|   |-- report.2022-04-15 08:43:05.html
+|   |-- timeline.2022-04-15 08:43:05.html
+|   `--trace.2022-04-15 08:43:05.txt 
 |-- parsnp
 |   |-- SNP-distances.matrix.tsv
 |   |-- SNP-distances.pairs.tsv
@@ -140,10 +140,7 @@ OUTPATH_DIR/
 |   |-- parsnp.ggr
 |   |-- parsnp.tree
 |   `-- parsnp.xmfa
-|-- pipeline_dag.2022-02-18\ 12:52:15.svg
-|-- report.2022-02-18\ 12:52:15.html
-|-- timeline.2022-02-18\ 12:52:15.html
-`-- trace.2022-02-18\ 12:52:15.txt
+`--  software_versions.yml
 ```
 Nextflow produces many intermediate files that can waste space. Remove these files with:
 ```
