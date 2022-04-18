@@ -43,7 +43,6 @@ process PAIRWISE_DISTANCES {
       exit 1
     fi
 
-    # TODO: how to get version out of python:3.8-slim-buster?
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
         python: $(python --version)
