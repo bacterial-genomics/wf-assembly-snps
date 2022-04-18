@@ -99,12 +99,14 @@ process INFILE_HANDLING {
     fi
 
     # Replace problematic characters in file names
+    shopt -s nullglob  # removes literal pattern as match if no real files match
     for f in ./tmp/*"|"*; do
         mv "$f" "${f//|/_}"
     done
     for f in ./ref/*"|"*; do
         mv "$f" "${f//|/_}"
     done
+    shopt -u nullglob
 
     # Confirm exactly 1 reference file exists
     shopt -s nullglob
