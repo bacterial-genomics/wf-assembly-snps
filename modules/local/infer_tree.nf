@@ -8,7 +8,7 @@ process INFER_TREE {
         pattern: ".command.*",
         saveAs: { filename -> "${task.process}${filename}" }
 
-    container "snads/parsnp@sha256:0dc552de1cf91fb30aa25eb09b4d9eef841abae989760c937b0006dacd165377"
+    container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
 
     input:
         path alignment
