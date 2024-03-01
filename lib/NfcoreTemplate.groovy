@@ -305,7 +305,7 @@ class NfcoreTemplate {
             ${colors.blue}|  ||_  __  /\\ (_ (_ |_ |\\/||__)|  \\_/ __ (_ |\\ ||__)(_ ${colors.reset}
             ${colors.blue}|/\\||      /--\\__)__)|__|  ||__)|__ |     __)| \\||   __) ${colors.reset}
 
-            ${colors.green}       Identify SNPs from genome assemblies.${colors.reset}
+            ${colors.green}       Identify SNPs from genome assemblies.               ${colors.reset}
 
 
             ${colors.purple}             ${workflow.manifest.name} ${workflow_version}${colors.reset}
