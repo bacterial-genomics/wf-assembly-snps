@@ -71,7 +71,14 @@ workflow RECOMBINATION {
             phylogeny
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_GUBBINS.out.versions)
-        ch_recombination = ch_recombination.mix(RECOMBINATION_GUBBINS.out.positions_and_tree)
+        ch_recombination = ch_recombination.mix(
+                                RECOMBINATION_GUBBINS.out.positions_and_tree
+                                    .map{
+                                        meta, file ->
+                                            meta['recombination'] = "Gubbins"
+                                            [ meta, file ]
+                                    }
+                            )
 
         // PROCESS: Perform recombination using ClonalFrameML
         RECOMBINATION_CLONALFRAMEML (
@@ -79,7 +86,14 @@ workflow RECOMBINATION {
             phylogeny
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_CLONALFRAMEML.out.versions)
-        ch_recombination = ch_recombination.mix(RECOMBINATION_CLONALFRAMEML.out.positions_and_tree)
+        ch_recombination = ch_recombination.mix(
+                                RECOMBINATION_CLONALFRAMEML.out.positions_and_tree
+                                    .map{
+                                        meta, file ->
+                                            meta['recombination'] = "ClonalFrameML"
+                                            [ meta, file ]
+                                    }
+                            )
     }
 
     emit:
