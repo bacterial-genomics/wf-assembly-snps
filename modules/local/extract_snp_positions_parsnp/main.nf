@@ -3,13 +3,13 @@ process EXTRACT_SNP_POSITIONS_PARSNP {
     container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
 
     input:
-    path(gingr_alignment)
+    tuple val(meta), path(gingr_alignment)
 
     output:
-    path("Extracted_SNP_Positions.tsv"), emit: qc_filecheck
-    path("Parsnp.SNPs.fa")             , emit: snps
+    tuple val(meta), path("Extracted_SNP_Positions.tsv"), emit: qc_filecheck
+    tuple val(meta), path("Parsnp.SNPs.fa")             , emit: snps
     path(".command.{out,err}")
-    path("versions.yml")               , emit: versions
+    path("versions.yml")                                , emit: versions
 
     shell:
     '''

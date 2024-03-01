@@ -5,13 +5,13 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
     container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
 
     input:
-    path(snps)
+    tuple val(meta), path(snps)
 
     output:
-    tuple val("SNP-Distances"), path("SNP-distances.pairs.tsv")        , emit: snp_distances
-    tuple val("SNP-Distances"), path("Pairwise_SNP_Distances_File.tsv"), emit: qc_filecheck
+    tuple val(meta), path("Pairwise_SNP_Distances_File.tsv"), emit: qc_filecheck
+    tuple val(meta), path("SNP-distances.pairs.tsv")        , emit: snp_distances
     path(".command.{out,err}")
-    path("versions.yml")                                               , emit: versions
+    path("versions.yml")                                    , emit: versions
 
     shell:
     '''
@@ -22,14 +22,14 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
     pairwiseDistances.py \
       -n "!{task.cpus}" \
       "!{snps}" \
-       | sort -k3,3n \
-       > SNP-distances.pairs.tsv
+      | sort -k3,3n \
+      > SNP-distances.pairs.tsv
 
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Pairwise_SNP_Distances_File.tsv
     if verify_minimum_file_size "SNP-distances.pairs.tsv" 'Pairwise SNP Distances' "!{params.min_snp_distance_filesize}"; then
-      echo -e "NaN\tPairwise SNP Distances\tPASS" >> Pairwise_SNP_Distances_File.tsv
+      echo -e "!{meta.aligner}\tPairwise SNP Distances\tPASS" >> Pairwise_SNP_Distances_File.tsv
     else
-      echo -e "NaN\tPairwise SNP Distances\tFAIL" >> Pairwise_SNP_Distances_File.tsv
+      echo -e "!{meta.aligner}\tPairwise SNP Distances\tFAIL" >> Pairwise_SNP_Distances_File.tsv
     fi
 
     cat <<-END_VERSIONS > versions.yml
@@ -37,5 +37,4 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
         python: $(python --version)
     END_VERSIONS
     '''
-
 }

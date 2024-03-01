@@ -7,10 +7,10 @@ process INFILE_HANDLING_UNIX {
     tuple val(meta), path(input)
 
     output:
-    path("inputfiles/*")                     , emit: input_files
-    path("${meta.id}.Initial_Input_File.tsv"), emit: qc_filecheck
+    tuple val(meta), path("${meta.id}.Initial_Input_File.tsv"), emit: qc_filecheck
+    path("inputfiles/*")                                      , emit: input_files
     path(".command.{out,err}")
-    path("versions.yml")                     , emit: versions
+    path("versions.yml")                                      , emit: versions
 
     shell:
     // Rename files with meta.id (has spaces and periods removed)

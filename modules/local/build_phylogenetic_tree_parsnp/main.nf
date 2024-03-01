@@ -3,13 +3,13 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
     container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
 
     input:
-    tuple val(method), path(masked_alignment)
+    tuple val(meta), path(masked_alignment)
 
     output:
-    tuple val(method), path("${method}.Tree_Output_File.tsv"), emit: qc_filecheck
-    tuple val(method), path("${method}.tree")                , emit: tree
+    tuple val(meta), path("${meta.recombination}.Tree_Output_File.tsv"), emit: qc_filecheck
+    tuple val(meta), path("${meta.recombination}.tree")                , emit: tree
     path(".command.{out,err}")
-    path("versions.yml")                                     , emit: versions
+    path("versions.yml")                                               , emit: versions
 
     shell:
     '''
@@ -20,7 +20,7 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
       fasttree \
         -nt !{masked_alignment} \
-        > !{method}.tree
+        > !{meta.recombination}.tree
 
     elif [[ "!{params.tree_method}" = "raxml" ]]; then
       msg "INFO: Building phylogenetic tree using RaxML."
@@ -28,17 +28,17 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
       raxmlHPC-PTHREADS \
         -s !{masked_alignment} \
         -m GTRGAMMA \
-        -n !{method} \
+        -n !{meta.recombination} \
         -p 5280
 
-      mv RAxML_bestTree.!{method} !{method}.tree
+      mv RAxML_bestTree.!{meta.recombination} !{meta.recombination}.tree
     fi
 
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{method}.Tree_Output_File.tsv"
-    if verify_minimum_file_size "!{method}.tree" "Final !{method} Tree Output" "!{params.min_tree_filesize}"; then
-      echo -e "NaN\tFinal !{method} Tree Output\tPASS" >> "!{method}.Tree_Output_File.tsv"
+    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.recombination}.Tree_Output_File.tsv"
+    if verify_minimum_file_size "!{meta.recombination}.tree" "Final !{meta.recombination} Tree Output" "!{params.min_tree_filesize}"; then
+      echo -e "!{meta.recombination}\tFinal Tree Output\tPASS" >> "!{meta.recombination}.Tree_Output_File.tsv"
     else
-      echo -e "NaN\tFinal !{method} Tree Output\tFAIL" >> "!{method}.Tree_Output_File.tsv"
+      echo -e "!{meta.recombination}\tFinal Tree Output\tFAIL" >> "!{meta.recombination}.Tree_Output_File.tsv"
     fi
 
     cat <<-END_VERSIONS > versions.yml

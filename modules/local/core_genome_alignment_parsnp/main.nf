@@ -1,20 +1,19 @@
 process CORE_GENOME_ALIGNMENT_PARSNP {
 
     label "process_medium"
-
     container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
 
     input:
-    path(input_files)
-    path(reference_file)
+    tuple val(meta_input)    , path(input_files)
+    tuple val(meta_reference), path(reference_file)
 
     output:
-    path("Parsnp_{Core,Gingr}_Alignment_File.tsv"), emit: qc_filecheck
-    path("Parsnp.ggr")                            , emit: gingr_alignment
-    path("Parsnp.xmfa")                           , emit: core_alignment
-    path("Parsnp.tree")                           , emit: phylogeny
+    tuple val(meta_input), path("Parsnp_Alignment_File.tsv"), emit: qc_filecheck
+    tuple val(meta_input), path("Parsnp.ggr")               , emit: gingr_alignment
+    tuple val(meta_input), path("Parsnp.xmfa")              , emit: core_alignment
+    tuple val(meta_input), path("Parsnp.tree")              , emit: phylogeny
     path(".command.{out,err}")
-    path("versions.yml")                          , emit: versions
+    path("versions.yml")                                    , emit: versions
 
     shell:
     curatedInput = params.curated_input             ? "-c"             : ""
@@ -45,19 +44,16 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     mv Parsnp/parsnp.tree Parsnp.tree
 
     # Verify output
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Gingr_Alignment_File.tsv
-    if verify_minimum_file_size "Parsnp.ggr" 'Parsnp Gingr Alignment File' "!{params.min_tree_filesize}"; then
-      echo -e "NaN\tParsnp Gingr Alignment File\tPASS" >> Parsnp_Gingr_Alignment_File.tsv
-    else
-      echo -e "NaN\tParsnp Gingr Alignment File\tFAIL" >> Parsnp_Gingr_Alignment_File.tsv
-    fi
+    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Alignment_File.tsv
+    for file in Parsnp.ggr Parsnp.xmfa; do
+      if [ ${file#*.} == "ggr" ]; then output="Gingr"; else output="Core"; fi
 
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Core_Alignment_File.tsv
-    if verify_minimum_file_size "Parsnp.xmfa" 'Parsnp Core Alignment File' "!{params.min_core_alignment_filesize}"; then
-      echo -e "NaN\tParsnp Gingr Alignment File\tPASS" >> Parsnp_Core_Alignment_File.tsv
-    else
-      echo -e "NaN\tParsnp Gingr Alignment File\tFAIL" >> Parsnp_Core_Alignment_File.tsv
-    fi
+      if verify_minimum_file_size "${file}" "Parsnp ${output} Alignment File" "!{params.min_parsnp_alignment_filesize}"; then
+        echo -e "NaN\t${output} Alignment File\tPASS" >> Parsnp_Alignment_File.tsv
+      else
+        echo -e "NaN\t${output} Alignment File\tFAIL" >> Parsnp_Alignment_File.tsv
+      fi
+    done
 
     # Remove reference label from tip in tree file
     sed -i "s/.ref//1" Parsnp.tree

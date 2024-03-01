@@ -3,11 +3,11 @@ process RECOMBINATION_GUBBINS {
     container "snads/gubbins@sha256:391a980312096f96d976f4be668d4dea7dda13115db004a50e49762accc0ec62"
 
     input:
-    path(alignment)
-    path(starter_tree)
+    tuple val(meta_alignment), path(alignment)
+    tuple val(meta_tree), path(starter_tree)
 
     output:
-    tuple val("Gubbins"), path("*_{positions,tree}.*"), emit: positions_and_tree
+    tuple val(meta_tree), path("*_{positions,tree}.*"), emit: positions_and_tree
     path(".command.{out,err}")
     path("versions.yml")                              , emit: versions
 

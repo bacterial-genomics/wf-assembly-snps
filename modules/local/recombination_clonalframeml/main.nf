@@ -3,13 +3,13 @@ process RECOMBINATION_CLONALFRAMEML {
     container "snads/clonalframeml@sha256:bc00db247195fdc6151793712a74cc9b272dc2c9f153bb0037415e387f15351e"
 
     input:
-    path(alignment)
-    path(starter_tree)
+    tuple val(meta_alignment), path(alignment)
+    tuple val(meta_tree), path(starter_tree)
 
     output:
-    tuple val("ClonalFrameML"), path("*_{positions,tree}.*"), emit: positions_and_tree
+    tuple val(meta_tree), path("*_{positions,tree}.*"), emit: positions_and_tree
     path(".command.{out,err}")
-    path("versions.yml")                                    , emit: versions
+    path("versions.yml")                              , emit: versions
 
     shell:
     '''
