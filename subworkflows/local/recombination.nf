@@ -24,6 +24,11 @@ include { RECOMBINATION_CLONALFRAMEML } from "../../modules/local/recombination_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// Convert params.aai to lowercase
+def toLower(it) {
+    it.toString().toLowerCase()
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN RECOMBINATION WORKFLOW
@@ -41,7 +46,7 @@ workflow RECOMBINATION {
     ch_recombination = Channel.empty()
 
     // Perform recombination
-    if (params.recombination == "gubbins") {
+    if ( toLower(params.recombination) == "gubbins" ) {
         // PROCESS: Perform recombination using Gubbins
         RECOMBINATION_GUBBINS (
             core_alignment,
@@ -50,7 +55,7 @@ workflow RECOMBINATION {
         ch_versions      = ch_versions.mix(RECOMBINATION_GUBBINS.out.versions)
         ch_recombination = RECOMBINATION_GUBBINS.out.positions_and_tree
 
-    } else if (params.recombination == "clonalframeml") {
+    } else if ( toLower(params.recombination) == "clonalframeml" ) {
         // PROCESS: Perform recombination using ClonalFrameML
         RECOMBINATION_CLONALFRAMEML (
             core_alignment,
@@ -59,7 +64,7 @@ workflow RECOMBINATION {
         ch_versions      = ch_versions.mix(RECOMBINATION_CLONALFRAMEML.out.versions)
         ch_recombination = RECOMBINATION_CLONALFRAMEML.out.positions_and_tree
 
-    } else if (params.recombination == "both") {
+    } else if ( toLower(params.recombination) == "both" ) {
         // PROCESS: Perform recombination using Gubbins
         RECOMBINATION_GUBBINS (
             core_alignment,
