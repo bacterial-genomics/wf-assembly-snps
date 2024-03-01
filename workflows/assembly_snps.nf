@@ -89,7 +89,11 @@ def qcfilecheck(process, qcfile, inputfile) {
 
                 if ( data.any{ it.contains('FAIL') } ) {
                     line = data.last().split('\t')
-                    log.warn("${line[1]} QC check failed during process ${process} for sample ${line.first()}")
+                    if (line.first() != "NaN") {
+                        log.warn("${line[1]} QC check failed during process ${process} for sample ${line.first()}")
+                    } else {
+                        log.warn("${line[1]} QC check failed during process ${process}")
+                    }
                 } else {
                     [ meta, input ]
                 }
@@ -249,7 +253,7 @@ workflow ASSEMBLY_SNPS {
             ch_core_alignment
         )
         ch_versions        = ch_versions.mix(CONVERT_XMFA_FASTA_PYTHON.out.versions)
-        ch_extracted_fasta = CONVERT_XMFA_FASTA_PYTHON.out.core_alignment
+        ch_extracted_fasta = CONVERT_XMFA_FASTA_PYTHON.out.core_alignment.collect()
 
     } else {
         ch_extracted_fasta = Channel.empty()
@@ -304,7 +308,7 @@ workflow ASSEMBLY_SNPS {
 
     // Collect QC file check information
     ch_qc_filecheck = ch_qc_filecheck
-                        .flatten()
+                        .map{ meta, file -> file }
                         .collectFile(
                             name:       "Summary.QC_File_Checks.tsv",
                             keepHeader: true,
