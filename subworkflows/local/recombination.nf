@@ -1,5 +1,5 @@
 //
-// Perform recombination
+// Identify recombinant positions
 //
 
 /*
@@ -11,8 +11,8 @@
 //
 // MODULES: Local modules
 //
-include { RECOMBINATION_GUBBINS                 } from "../../modules/local/recombination_gubbins/main"
-include { RECOMBINATION_CLONALFRAMEML           } from "../../modules/local/recombination_clonalframeml/main"
+include { RECOMBINATION_GUBBINS       } from "../../modules/local/recombination_gubbins/main"
+include { RECOMBINATION_CLONALFRAMEML } from "../../modules/local/recombination_clonalframeml/main"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
