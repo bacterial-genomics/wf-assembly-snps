@@ -1,13 +1,5 @@
 process CORE_GENOME_ALIGNMENT_PARSNP {
 
-    publishDir "${params.outdir}",
-        mode: "${params.publish_dir_mode}",
-        pattern: "parsnp/*"
-    publishDir "${params.process_log_dir}",
-        mode: "${params.publish_dir_mode}",
-        pattern: ".command.*",
-        saveAs: { filename -> "${task.process}${filename}" }
-
     label "process_medium"
 
     container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
@@ -25,8 +17,8 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     path("versions.yml")                          , emit: versions
 
     shell:
-    treeMethod = params.tree_method == "fasttree" ? "--use-fasttree" : ""
-    curatedInput = params.curated_input ? "-c" : ""
+    curatedInput = params.curated_input             ? "-c"             : ""
+    treeMethod   = params.tree_method == "fasttree" ? "--use-fasttree" : ""
     '''
     source bash_functions.sh
 
@@ -34,7 +26,8 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     #  aligned nucleotide sequences if the deflines contain hyphens
     sed -i "s/-//g" !{reference_file}
 
-    # Perform the parsnp system call
+    msg "INFO: Performing the parsnp system call."
+
     parsnp \
       -v \
       -d !{input_files} \
