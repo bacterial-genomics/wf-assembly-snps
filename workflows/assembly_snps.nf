@@ -195,7 +195,7 @@ workflow ASSEMBLY_SNPS {
     */
 
     // PROCESS: Convert Parsnp XMFA output to FastA format
-    if (params.recombination != false) {
+    if ( toLower(params.recombination) != "none" ) {
         CONVERT_XMFA_FASTA_PYTHON (
             CORE_GENOME_ALIGNMENT_PARSNP.out.core_alignment
         )
