@@ -42,9 +42,9 @@ include { EXTRACT_SNP_POSITIONS_PARSNP                     } from "../modules/lo
 include { CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON           } from "../modules/local/calculate_pairwise_distances_biopython/main"
 include { CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON             } from "../modules/local/create_snp_distance_matrix_biopython/main"
 include { CONVERT_XMFA_FASTA_PYTHON                        } from "../modules/local/convert_xmfa_fasta_python/main"
-include { MASK_RECOMBINANT_POSITIONS_BIOPYTHON             } from "../../modules/local/mask_recombinant_positions_biopython/main"
+include { MASK_RECOMBINANT_POSITIONS_BIOPYTHON             } from "../modules/local/mask_recombinant_positions_biopython/main"
 
-include { BUILD_PHYLOGENETIC_TREE_PARSNP                   } from "../../modules/local/build_phylogenetic_tree_parsnp/main"
+include { BUILD_PHYLOGENETIC_TREE_PARSNP                   } from "../modules/local/build_phylogenetic_tree_parsnp/main"
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -62,6 +62,10 @@ if (params.ref) {
     ch_ref_input = Channel.fromPath(params.ref, checkIfExists: true)
 } else {
     ch_ref_input = Channel.empty()
+}
+
+if ( toLower(params.aligner) == "parsnp" ) {
+    ch_aligner = "Parsnp"
 }
 
 /*
@@ -123,7 +127,14 @@ workflow ASSEMBLY_SNPS {
     ch_versions     = ch_versions.mix(INFILE_HANDLING_UNIX.out.versions)
     ch_qc_filecheck = ch_qc_filecheck.concat(INFILE_HANDLING_UNIX.out.qc_filecheck)
 
+    // qcfilecheck function is not needed for this channel due to implementation within module
     ch_input_files  = INFILE_HANDLING_UNIX.out.input_files
+                        .collect()
+                        .map{
+                            def meta = [:]
+                            meta['aligner'] = ch_aligner
+                            [ meta, it.sort() ]
+                        }
 
     // SUBWORKFLOW: Check reference input for samplesheet or pull inputs from directory
     if (params.ref) {
@@ -139,28 +150,48 @@ workflow ASSEMBLY_SNPS {
         ch_versions        = ch_versions.mix(REF_INFILE_HANDLING_UNIX.out.versions)
         ch_qc_filecheck    = ch_qc_filecheck.concat(REF_INFILE_HANDLING_UNIX.out.qc_filecheck)
 
+        // qcfilecheck function is not needed for this channel due to implementation within module
         ch_reference_files = REF_INFILE_HANDLING_UNIX.out.input_files
+                                .collect()
+                                .map{
+                                    def meta = [:]
+                                    meta['aligner'] = ch_aligner
+                                    [ meta, it ]
+                                }
 
     } else {
-        // Sort inputs and use first item as reference
-        ch_reference_files = ch_input_files.toSortedList().map{ it[0] }
-        ch_input_files     = ch_input_files.toSortedList().map{ it.remove(it[0]); it }
+        // Use first item as reference and remove it from ch_input_files
+        ch_reference_files = ch_input_files.map{ meta, file -> [ meta, file[0] ] }
+        ch_input_files     = ch_input_files.map{ meta, file -> file.remove(file[0]); [ meta, file ] }
     }
 
     /*
     ================================================================================
-                            Perform ParSNP on input data
+                            Perform core alignment
     ================================================================================
     */
 
-    // PROCESS: Run ParSNP to generate core genome alignment and phylogeny
-    CORE_GENOME_ALIGNMENT_PARSNP (
-        ch_input_files,
-        ch_reference_files
-    )
-    ch_versions     = ch_versions.mix(CORE_GENOME_ALIGNMENT_PARSNP.out.versions)
-    ch_qc_filecheck = ch_qc_filecheck.concat(CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck)
+    if ( toLower(params.aligner) == "parsnp" ) {
+        // PROCESS: Run ParSNP to generate core genome alignment and phylogeny
+        CORE_GENOME_ALIGNMENT_PARSNP (
+            ch_input_files,
+            ch_reference_files
+        )
+        ch_versions        = ch_versions.mix(CORE_GENOME_ALIGNMENT_PARSNP.out.versions)
+        ch_qc_filecheck    = ch_qc_filecheck.concat(CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck)
 
+        ch_gingr_alignment = qcfilecheck(
+                                "CORE_GENOME_ALIGNMENT_PARSNP",
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.gingr_alignment
+                            )
+
+        ch_core_alignment  = qcfilecheck(
+                                "CORE_GENOME_ALIGNMENT_PARSNP",
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.core_alignment
+                            )
+    }
     /*
     ================================================================================
                             Calculate distances
@@ -169,24 +200,42 @@ workflow ASSEMBLY_SNPS {
 
     // PROCESS: Get SNP alignment from ParSNP .ggr file
     EXTRACT_SNP_POSITIONS_PARSNP (
-        CORE_GENOME_ALIGNMENT_PARSNP.out.gingr_alignment
+        ch_gingr_alignment
     )
-    ch_versions     = ch_versions.mix(EXTRACT_SNP_POSITIONS_PARSNP.out.versions)
-    ch_qc_filecheck = ch_qc_filecheck.concat(EXTRACT_SNP_POSITIONS_PARSNP.out.qc_filecheck)
+    ch_versions       = ch_versions.mix(EXTRACT_SNP_POSITIONS_PARSNP.out.versions)
+    ch_qc_filecheck   = ch_qc_filecheck.concat(EXTRACT_SNP_POSITIONS_PARSNP.out.qc_filecheck)
+
+    ch_extracted_snps = qcfilecheck(
+                            "EXTRACT_SNP_POSITIONS_PARSNP",
+                            EXTRACT_SNP_POSITIONS_PARSNP.out.qc_filecheck,
+                            EXTRACT_SNP_POSITIONS_PARSNP.out.snps
+                        )
 
     // PROCESS: Calculate pairwise genome distances
     CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON (
-        EXTRACT_SNP_POSITIONS_PARSNP.out.snps
+        ch_extracted_snps
     )
-    ch_versions     = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.versions)
-    ch_qc_filecheck = ch_qc_filecheck.concat(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck)
+    ch_versions      = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.versions)
+    ch_qc_filecheck  = ch_qc_filecheck.concat(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck)
+
+    ch_snp_distances = qcfilecheck(
+                            "CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON",
+                            CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck,
+                            CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.snp_distances
+                        )
 
     // PROCESS: Reformat pairwise genome distances into matrix
     CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON (
         CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.snp_distances
     )
-    ch_versions     = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.versions)
-    ch_qc_filecheck = ch_qc_filecheck.concat(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.qc_filecheck)
+    ch_versions            = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.versions)
+    ch_qc_filecheck        = ch_qc_filecheck.concat(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.qc_filecheck)
+
+    ch_snp_distance_matrix = qcfilecheck(
+                                "CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON",
+                                CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.qc_filecheck,
+                                CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.distance_matrix
+                            )
 
     /*
     ================================================================================
@@ -197,7 +246,7 @@ workflow ASSEMBLY_SNPS {
     // PROCESS: Convert Parsnp XMFA output to FastA format
     if ( toLower(params.recombination) != "none" ) {
         CONVERT_XMFA_FASTA_PYTHON (
-            CORE_GENOME_ALIGNMENT_PARSNP.out.core_alignment
+            ch_core_alignment
         )
         ch_versions        = ch_versions.mix(CONVERT_XMFA_FASTA_PYTHON.out.versions)
         ch_extracted_fasta = CONVERT_XMFA_FASTA_PYTHON.out.core_alignment
@@ -232,6 +281,12 @@ workflow ASSEMBLY_SNPS {
     )
     ch_versions     = ch_versions.mix(BUILD_PHYLOGENETIC_TREE_PARSNP.out.versions)
     ch_qc_filecheck = ch_qc_filecheck.concat(BUILD_PHYLOGENETIC_TREE_PARSNP.out.qc_filecheck)
+
+    ch_final_tree   = qcfilecheck(
+                            "BUILD_PHYLOGENETIC_TREE_PARSNP",
+                            BUILD_PHYLOGENETIC_TREE_PARSNP.out.qc_filecheck,
+                            BUILD_PHYLOGENETIC_TREE_PARSNP.out.tree
+                        )
 
     /*
     ================================================================================
