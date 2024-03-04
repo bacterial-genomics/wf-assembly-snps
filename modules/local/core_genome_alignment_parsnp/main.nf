@@ -4,7 +4,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     container "quay.io/biocontainers/parsnp@sha256:b46999fb9842f183443dd6226b461c1d8074d4c1391c1f2b1e51cc20cee8f8b2"
 
     input:
-    tuple val(meta_input)    , path(input_files)
+    tuple val(meta_input)    , path("genomes/")
     tuple val(meta_reference), path(reference_file)
 
     output:
@@ -30,7 +30,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
 
     parsnp \
       -v \
-      -d !{input_files} \
+      -d genomes/ \
       -r !{reference_file} \
       -o Parsnp \
       -p !{task.cpus} \
