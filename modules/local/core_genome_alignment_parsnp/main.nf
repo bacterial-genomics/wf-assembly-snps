@@ -17,7 +17,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     path("versions.yml")                                    , emit: versions
 
     shell:
-    curatedInput = params.curated_input             ? "-c"             : ""
+    curatedInput = params.curated_input             ? "--curated"      : ""
     treeMethod   = params.tree_method == "fasttree" ? "--use-fasttree" : ""
     '''
     source bash_functions.sh
