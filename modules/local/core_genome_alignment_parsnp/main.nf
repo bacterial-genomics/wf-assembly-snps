@@ -1,7 +1,7 @@
 process CORE_GENOME_ALIGNMENT_PARSNP {
 
     label "process_medium"
-    container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
+    container "quay.io/biocontainers/parsnp@sha256:b46999fb9842f183443dd6226b461c1d8074d4c1391c1f2b1e51cc20cee8f8b2"
 
     input:
     tuple val(meta_input)    , path(input_files)
@@ -12,6 +12,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     tuple val(meta_input), path("Parsnp.ggr")               , emit: gingr_alignment
     tuple val(meta_input), path("Parsnp.xmfa")              , emit: core_alignment
     tuple val(meta_input), path("Parsnp.tree")              , emit: phylogeny
+    tuple val(meta_input), path("Parsnp.SNPs.fa")           , emit: snps
     path(".command.{out,err}")
     path("versions.yml")                                    , emit: versions
 
@@ -42,6 +43,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     mv Parsnp/parsnp.ggr Parsnp.ggr
     mv Parsnp/parsnp.xmfa Parsnp.xmfa
     mv Parsnp/parsnp.tree Parsnp.tree
+    mv Parsnp/parsnp.snps.mblocks Parsnp.SNPs.fa
 
     # Verify output
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Alignment_File.tsv
