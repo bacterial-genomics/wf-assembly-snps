@@ -6,10 +6,10 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
     tuple val(meta), path(masked_alignment)
 
     output:
-    tuple val(meta), path("${meta.recombination}.Tree_Output_File.tsv"), emit: qc_filecheck
-    tuple val(meta), path("${meta.recombination}.Final.tree")          , emit: tree
+    tuple val(meta), path("*.Tree_Output_File.tsv")      , emit: qc_filecheck
+    tuple val(meta), path("*.Final.tree", optional: true), emit: tree
     path(".command.{out,err}")
-    path("versions.yml")                                               , emit: versions
+    path("versions.yml")                                 , emit: versions
 
     shell:
     '''
@@ -38,6 +38,9 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
     if verify_minimum_file_size "!{meta.recombination}.tree" "Final !{meta.recombination} Tree Output" "!{params.min_tree_filesize}"; then
       echo -e "!{meta.recombination}\tFinal Tree Output\tPASS" >> "!{meta.recombination}.Tree_Output_File.tsv"
     else
+      msg "WARN: The following file did not pass the QC step: '!{meta.recombination}.Final.tree'!"
+      rm !{meta.recombination}.Final.tree
+
       echo -e "!{meta.recombination}\tFinal Tree Output\tFAIL" >> "!{meta.recombination}.Tree_Output_File.tsv"
     fi
 
