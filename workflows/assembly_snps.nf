@@ -165,8 +165,20 @@ workflow ASSEMBLY_SNPS {
 
     } else {
         // Use first item as reference and remove it from ch_input_files
-        ch_reference_files = ch_input_files.map{ meta, file -> [ meta, file[0] ] }
-        ch_input_files     = ch_input_files.map{ meta, file -> file.remove(file[0]); [ meta, file ] }
+        ch_reference_files = ch_input_files
+                                .map{
+                                    meta, file ->
+                                        def file_new = file.collect().sort()
+                                        [ meta, file_new[0] ]
+                                }.collect()
+
+        ch_input_files     = ch_input_files
+                                .map{
+                                    meta, file ->
+                                    def file_new = file.collect().sort()
+                                    file_new.remove(file_new[0])
+                                    [ meta, file_new ]
+                                }.collect()
     }
 
     /*
