@@ -66,6 +66,8 @@ if (params.ref) {
 
 if ( toLower(params.aligner) == "parsnp" ) {
     ch_aligner = "Parsnp"
+} else {
+    ch_aligner = "Parsnp"
 }
 
 /*
