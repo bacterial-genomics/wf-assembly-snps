@@ -54,6 +54,11 @@ workflow RECOMBINATION {
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_GUBBINS.out.versions)
         ch_recombination = RECOMBINATION_GUBBINS.out.positions_and_tree
+                                .map{
+                                    meta, file ->
+                                        meta['recombination'] = "Gubbins"
+                                        [ meta, file ]
+                                }
 
     } else if ( toLower(params.recombination) == "clonalframeml" ) {
         // PROCESS: Perform recombination using ClonalFrameML
@@ -63,6 +68,11 @@ workflow RECOMBINATION {
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_CLONALFRAMEML.out.versions)
         ch_recombination = RECOMBINATION_CLONALFRAMEML.out.positions_and_tree
+                                .map{
+                                    meta, file ->
+                                        meta['recombination'] = "ClonalFrameML"
+                                        [ meta, file ]
+                                }
 
     } else if ( toLower(params.recombination) == "both" ) {
         // PROCESS: Perform recombination using Gubbins
