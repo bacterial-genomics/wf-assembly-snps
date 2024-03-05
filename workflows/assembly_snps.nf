@@ -137,7 +137,7 @@ workflow ASSEMBLY_SNPS {
                         .map{
                             def meta = [:]
                             meta['aligner'] = ch_aligner
-                            [ meta, it.sort() ]
+                            [ meta, it ]
                         }
 
     // SUBWORKFLOW: Check reference input for samplesheet or pull inputs from directory
