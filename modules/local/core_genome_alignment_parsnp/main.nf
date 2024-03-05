@@ -29,15 +29,14 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     msg "INFO: Performing the parsnp system call."
 
     parsnp \
-      -v \
-      -d genomes/ \
-      -r !{reference_file} \
-      -o Parsnp \
-      -p !{task.cpus} \
-      -P !{params.max_partition_size} \
+      --sequences genomes/ \
+      --reference !{reference_file} \
       --verbose \
       !{treeMethod} \
-      !{curatedInput}
+      !{curatedInput} \
+      --output-dir Parsnp \
+      --threads !{task.cpus} \
+      --max-partition-size !{params.max_partition_size}
 
     # Move files to current directory
     mv Parsnp/parsnp.ggr Parsnp.ggr
@@ -59,6 +58,9 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
 
     # Remove reference label from tip in tree file
     sed -i "s/.ref//1" Parsnp.tree
+
+    # Remove all copies of `.ref` from FastA file
+    sed -i 's/.ref//g' Parsnp.SNPs.fa
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
