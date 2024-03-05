@@ -6,8 +6,8 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
     tuple val(meta), path(masked_alignment)
 
     output:
-    tuple val(meta), path("*.Tree_Output_File.tsv")      , emit: qc_filecheck
     tuple val(meta), path("*.Final.tree", optional: true), emit: tree
+    tuple val(meta), path("*.Tree_Output_File.tsv")      , emit: qc_filecheck
     path(".command.{out,err}")
     path("versions.yml")                                 , emit: versions
 
