@@ -7,7 +7,7 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
     output:
     tuple val(meta), path("${meta.recombination}.Tree_Output_File.tsv"), emit: qc_filecheck
-    tuple val(meta), path("${meta.recombination}.tree")                , emit: tree
+    tuple val(meta), path("${meta.recombination}.Final.tree")          , emit: tree
     path(".command.{out,err}")
     path("versions.yml")                                               , emit: versions
 
@@ -20,7 +20,7 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
       fasttree \
         -nt !{masked_alignment} \
-        > !{meta.recombination}.tree
+        > !{meta.recombination}.Final.tree
 
     elif [[ "!{params.tree_method}" = "raxml" ]]; then
       msg "INFO: Building phylogenetic tree using RaxML."
@@ -31,7 +31,7 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
         -n !{meta.recombination} \
         -p 5280
 
-      mv RAxML_bestTree.!{meta.recombination} !{meta.recombination}.tree
+      mv RAxML_bestTree.!{meta.recombination} !{meta.recombination}.Final.tree
     fi
 
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.recombination}.Tree_Output_File.tsv"
