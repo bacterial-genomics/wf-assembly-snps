@@ -1,6 +1,6 @@
 process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
-    container "staphb/parsnp@sha256:4f9ced31c7b7a4ef25046e4904c82d5489414f4ee5ce97e0a676788ea656c6df"
+    container "quay.io/biocontainers/parsnp@sha256:b46999fb9842f183443dd6226b461c1d8074d4c1391c1f2b1e51cc20cee8f8b2"
 
     input:
     tuple val(meta), path(masked_alignment)
@@ -47,5 +47,4 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
         raxml: $(raxmlHPC-PTHREADS -v | sed 's/^/    /')
     END_VERSIONS
     '''
-
 }
