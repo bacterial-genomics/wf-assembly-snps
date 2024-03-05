@@ -41,8 +41,13 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     # Move files to current directory
     mv Parsnp/parsnp.ggr Parsnp.ggr
     mv Parsnp/parsnp.xmfa Parsnp.xmfa
-    mv Parsnp/parsnp.tree Parsnp.tree
     mv Parsnp/parsnp.snps.mblocks Parsnp.SNPs.fa
+
+    if [[ !{params.tree_method} == "fasttree" ]]; then
+      mv Parsnp/log/fasttree.out Parsnp.tree
+    else
+      mv Parsnp/parsnp.tree Parsnp.tree
+    fi
 
     # Verify output
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Alignment_File.tsv
