@@ -207,6 +207,12 @@ workflow ASSEMBLY_SNPS {
                                 CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
                                 CORE_GENOME_ALIGNMENT_PARSNP.out.core_alignment
                             )
+
+        ch_parsnp_snps     = qcfilecheck(
+                                "CORE_GENOME_ALIGNMENT_PARSNP",
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.snps
+                            )
     }
     /*
     ================================================================================
@@ -259,21 +265,9 @@ workflow ASSEMBLY_SNPS {
     ================================================================================
     */
 
-    // PROCESS: Convert Parsnp XMFA output to FastA format
-    if ( toLower(params.recombination) != "none" ) {
-        CONVERT_XMFA_FASTA_PYTHON (
-            ch_core_alignment
-        )
-        ch_versions        = ch_versions.mix(CONVERT_XMFA_FASTA_PYTHON.out.versions)
-        ch_extracted_fasta = CONVERT_XMFA_FASTA_PYTHON.out.core_alignment.collect()
-
-    } else {
-        ch_extracted_fasta = Channel.empty()
-    }
-
     // SUBWORKFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
     RECOMBINATION (
-        ch_extracted_fasta,
+        ch_parsnp_snps,
         CORE_GENOME_ALIGNMENT_PARSNP.out.phylogeny
     )
     ch_versions = ch_versions.mix(RECOMBINATION.out.versions)
@@ -281,7 +275,7 @@ workflow ASSEMBLY_SNPS {
     // PROCESS: Mask recombinant positions
     MASK_RECOMBINANT_POSITIONS_BIOPYTHON (
         RECOMBINATION.out.recombinants,
-        ch_extracted_fasta
+        ch_parsnp_snps.collect()
     )
     ch_versions = ch_versions.mix(MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.versions)
 
