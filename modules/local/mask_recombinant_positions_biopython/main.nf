@@ -12,7 +12,7 @@ process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
     path("versions.yml")                                                                               , emit: versions
 
     shell:
-    format = meta_recombinants.recombination.toLowerCase()
+    format = meta_recombinants.recombination.toString().toLowerCase()
     '''
     source bash_functions.sh
 
