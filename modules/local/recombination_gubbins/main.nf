@@ -7,9 +7,9 @@ process RECOMBINATION_GUBBINS {
     tuple val(meta_tree), path(starter_tree)
 
     output:
-    tuple val(meta_tree), path("*_{positions,tree}.*"), emit: positions_and_tree
+    tuple val(meta_tree), path("*.{gff,tree}"), emit: positions_and_tree
     path(".command.{out,err}")
-    path("versions.yml")                              , emit: versions
+    path("versions.yml")                      , emit: versions
 
     shell:
     '''
@@ -20,7 +20,7 @@ process RECOMBINATION_GUBBINS {
 
     # Rename output files
     mv Gubbins.recombination_predictions.gff Gubbins.recombination_positions.gff
-    mv Gubbins.node_labelled.final_tree.tre Gubbins.labelled_tree.tre
+    mv Gubbins.node_labelled.final_tree.tre Gubbins.labelled_tree.tree
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
