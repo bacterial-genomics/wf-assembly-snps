@@ -198,7 +198,7 @@ workflow ASSEMBLY_SNPS {
         ch_versions        = ch_versions.mix(CORE_GENOME_ALIGNMENT_PARSNP.out.versions)
         ch_qc_filecheck    = ch_qc_filecheck.concat(CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck)
 
-        ch_alignment = qcfilecheck(
+        ch_alignment_files = qcfilecheck(
                             "CORE_GENOME_ALIGNMENT_PARSNP",
                             CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
                             CORE_GENOME_ALIGNMENT_PARSNP.out.output
@@ -206,7 +206,7 @@ workflow ASSEMBLY_SNPS {
 
         // PROCESS: Convert Parsnp Gingr output file to FastA format for recombination
         CONVERT_GINGR_TO_FASTA_HARVESTTOOLS (
-            ch_alignment
+            ch_alignment_files
         )
         ch_versions = ch_versions.mix(CONVERT_GINGR_TO_FASTA_HARVESTTOOLS.out.versions)
         ch_qc_filecheck = ch_qc_filecheck.concat(CONVERT_GINGR_TO_FASTA_HARVESTTOOLS.out.qc_filecheck)
@@ -226,7 +226,7 @@ workflow ASSEMBLY_SNPS {
 
     // PROCESS: Calculate pairwise genome distances
     CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON (
-        ch_alignment
+        ch_alignment_files
     )
     ch_versions      = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.versions)
     ch_qc_filecheck  = ch_qc_filecheck.concat(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck)
@@ -252,7 +252,7 @@ workflow ASSEMBLY_SNPS {
     // SUBWORKFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
     RECOMBINATION (
         ch_core_alignment_fasta,
-        ch_alignment
+        ch_alignment_files
     )
     ch_versions = ch_versions.mix(RECOMBINATION.out.versions)
 
