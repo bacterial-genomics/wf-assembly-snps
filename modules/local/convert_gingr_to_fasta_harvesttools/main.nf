@@ -27,8 +27,13 @@ process CONVERT_GINGR_TO_FASTA_HARVESTTOOLS {
 
     # Verify output
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.aligner}.Gingr_to_FastA_File.tsv"
-    if verify_minimum_file_size "${file}" "!{meta.aligner} Gingr to FastA File" "!{params.min_gingr_to_fasta_filesize}"; then
+    if verify_minimum_file_size \
+      "!{meta.aligner}.Core_Alignment.fasta" \
+      "!{meta.aligner} Gingr to FastA File" \
+      "!{params.min_gingr_to_fasta_filesize}"; then
+
       echo -e "NaN\t!{meta.aligner} Gingr to FastA File\tPASS" >> "!{meta.aligner}.Gingr_to_FastA_File.tsv"
+
     else
       echo -e "NaN\t!{meta.aligner} Gingr to FastA File\tFAIL" >> "!{meta.aligner}.Gingr_to_FastA_File.tsv"
     fi
