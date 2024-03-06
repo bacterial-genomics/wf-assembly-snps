@@ -74,6 +74,12 @@
                     "hidden": true,
                     "description": "Minimum file size of Parsnp output files."
                 },
+                "min_gingr_to_fasta_filesize": {
+                    "type": "string",
+                    "default": "1k",
+                    "hidden": true,
+                    "description": "Minimum file size of the FastA file generated from a Gingr file."
+                },
                 "curated_input": {
                     "type": "boolean",
                     "default": true,
