@@ -47,6 +47,8 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
     else
       msg "WARN: The following file did not pass the QC step: '!{meta.aligner}-!{meta.recombination}.Final.tree'!"
+
+      # Delete file to avoid it being copied to the publishDirectory
       rm "!{meta.aligner}-!{meta.recombination}.Final.tree"
 
       echo -e "!{meta.recombination}\tFinal Tree Output\tFAIL" >> "!{meta.aligner}-!{meta.recombination}.Tree_Output_File.tsv"
