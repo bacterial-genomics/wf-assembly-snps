@@ -38,10 +38,10 @@ include { INFILE_HANDLING_UNIX                             } from "../modules/lo
 include { INFILE_HANDLING_UNIX as REF_INFILE_HANDLING_UNIX } from "../modules/local/infile_handling_unix/main"
 
 include { CORE_GENOME_ALIGNMENT_PARSNP                     } from "../modules/local/core_genome_alignment_parsnp/main"
-include { EXTRACT_SNP_POSITIONS_PARSNP                     } from "../modules/local/extract_snp_positions_parsnp/main"
+include { CONVERT_GINGR_TO_FASTA_HARVESTTOOLS              } from "../modules/local/convert_gingr_to_fasta_harvesttools/main"
+
 include { CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON           } from "../modules/local/calculate_pairwise_distances_biopython/main"
 include { CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON             } from "../modules/local/create_snp_distance_matrix_biopython/main"
-include { CONVERT_XMFA_FASTA_PYTHON                        } from "../modules/local/convert_xmfa_fasta_python/main"
 include { MASK_RECOMBINANT_POSITIONS_BIOPYTHON             } from "../modules/local/mask_recombinant_positions_biopython/main"
 
 include { BUILD_PHYLOGENETIC_TREE_PARSNP                   } from "../modules/local/build_phylogenetic_tree_parsnp/main"
@@ -76,7 +76,7 @@ if ( toLower(params.aligner) == "parsnp" ) {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Convert params.aai to lowercase
+// Convert input to lowercase
 def toLower(it) {
     it.toString().toLowerCase()
 }
@@ -199,10 +199,23 @@ workflow ASSEMBLY_SNPS {
         ch_qc_filecheck    = ch_qc_filecheck.concat(CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck)
 
         ch_alignment = qcfilecheck(
-                                "CORE_GENOME_ALIGNMENT_PARSNP",
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.output
-                            )
+                            "CORE_GENOME_ALIGNMENT_PARSNP",
+                            CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
+                            CORE_GENOME_ALIGNMENT_PARSNP.out.output
+                        )
+
+        // PROCESS: Convert Parsnp Gingr output file to FastA format for recombination
+        CONVERT_GINGR_TO_FASTA_HARVESTTOOLS (
+            ch_alignment
+        )
+        ch_versions = ch_versions.mix(CONVERT_GINGR_TO_FASTA_HARVESTTOOLS.out.versions)
+        ch_qc_filecheck = ch_qc_filecheck.concat(CONVERT_GINGR_TO_FASTA_HARVESTTOOLS.out.qc_filecheck)
+
+        ch_core_alignment_fasta = qcfilecheck(
+                                    "CONVERT_GINGR_TO_FASTA_HARVESTTOOLS",
+                                    CONVERT_GINGR_TO_FASTA_HARVESTTOOLS.out.qc_filecheck,
+                                    CONVERT_GINGR_TO_FASTA_HARVESTTOOLS.out.core_alignment
+                                )
     }
 
     /*
@@ -228,7 +241,7 @@ workflow ASSEMBLY_SNPS {
     CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON (
         ch_snp_distances
     )
-    ch_versions            = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.versions)
+    ch_versions = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.versions)
 
     /*
     ================================================================================
@@ -238,14 +251,14 @@ workflow ASSEMBLY_SNPS {
 
     // SUBWORKFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
     RECOMBINATION (
-        ch_alignment
+        ch_core_alignment_fasta
     )
     ch_versions = ch_versions.mix(RECOMBINATION.out.versions)
 
     // PROCESS: Mask recombinant positions
     MASK_RECOMBINANT_POSITIONS_BIOPYTHON (
         RECOMBINATION.out.recombinants,
-        ch_alignment.collect()
+        ch_core_alignment_fasta.collect()
     )
     ch_versions = ch_versions.mix(MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.versions)
 
