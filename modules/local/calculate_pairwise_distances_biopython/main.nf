@@ -1,5 +1,6 @@
 process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
 
+    tag ( "${meta.aligner}" )
     label "process_medium"
     container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
 

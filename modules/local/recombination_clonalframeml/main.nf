@@ -1,5 +1,6 @@
 process RECOMBINATION_CLONALFRAMEML {
 
+    tag ( "${meta.aligner}" )
     container "snads/clonalframeml@sha256:bc00db247195fdc6151793712a74cc9b272dc2c9f153bb0037415e387f15351e"
 
     input:

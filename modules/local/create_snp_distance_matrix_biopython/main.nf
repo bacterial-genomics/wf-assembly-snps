@@ -1,5 +1,6 @@
 process CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON {
 
+    tag ( "${meta.aligner}" )
     container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
 
     input:
