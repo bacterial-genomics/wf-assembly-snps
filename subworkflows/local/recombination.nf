@@ -24,7 +24,7 @@ include { RECOMBINATION_CLONALFRAMEML } from "../../modules/local/recombination_
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Convert params.aai to lowercase
+// Convert input to lowercase
 def toLower(it) {
     it.toString().toLowerCase()
 }
