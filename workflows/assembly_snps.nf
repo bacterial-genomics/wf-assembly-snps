@@ -198,24 +198,13 @@ workflow ASSEMBLY_SNPS {
         ch_versions        = ch_versions.mix(CORE_GENOME_ALIGNMENT_PARSNP.out.versions)
         ch_qc_filecheck    = ch_qc_filecheck.concat(CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck)
 
-        ch_gingr_alignment = qcfilecheck(
+        ch_alignment = qcfilecheck(
                                 "CORE_GENOME_ALIGNMENT_PARSNP",
                                 CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.gingr_alignment
-                            )
-
-        ch_core_alignment  = qcfilecheck(
-                                "CORE_GENOME_ALIGNMENT_PARSNP",
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.core_alignment
-                            )
-
-        ch_parsnp_snps     = qcfilecheck(
-                                "CORE_GENOME_ALIGNMENT_PARSNP",
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
-                                CORE_GENOME_ALIGNMENT_PARSNP.out.snps
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.output
                             )
     }
+
     /*
     ================================================================================
                             Calculate distances
@@ -237,7 +226,7 @@ workflow ASSEMBLY_SNPS {
 
     // PROCESS: Calculate pairwise genome distances
     CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON (
-        ch_extracted_snps
+        ch_alignment
     )
     ch_versions      = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.versions)
     ch_qc_filecheck  = ch_qc_filecheck.concat(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck)
@@ -269,15 +258,14 @@ workflow ASSEMBLY_SNPS {
 
     // SUBWORKFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
     RECOMBINATION (
-        ch_parsnp_snps,
-        CORE_GENOME_ALIGNMENT_PARSNP.out.phylogeny
+        ch_alignment
     )
     ch_versions = ch_versions.mix(RECOMBINATION.out.versions)
 
     // PROCESS: Mask recombinant positions
     MASK_RECOMBINANT_POSITIONS_BIOPYTHON (
         RECOMBINATION.out.recombinants,
-        ch_parsnp_snps.collect()
+        ch_alignment.collect()
     )
     ch_versions = ch_versions.mix(MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.versions)
 
