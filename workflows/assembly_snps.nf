@@ -211,19 +211,6 @@ workflow ASSEMBLY_SNPS {
     ================================================================================
     */
 
-    // PROCESS: Get SNP alignment from ParSNP .ggr file
-    EXTRACT_SNP_POSITIONS_PARSNP (
-        ch_gingr_alignment
-    )
-    ch_versions       = ch_versions.mix(EXTRACT_SNP_POSITIONS_PARSNP.out.versions)
-    ch_qc_filecheck   = ch_qc_filecheck.concat(EXTRACT_SNP_POSITIONS_PARSNP.out.qc_filecheck)
-
-    ch_extracted_snps = qcfilecheck(
-                            "EXTRACT_SNP_POSITIONS_PARSNP",
-                            EXTRACT_SNP_POSITIONS_PARSNP.out.qc_filecheck,
-                            EXTRACT_SNP_POSITIONS_PARSNP.out.snps
-                        )
-
     // PROCESS: Calculate pairwise genome distances
     CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON (
         ch_alignment
