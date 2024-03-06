@@ -1,4 +1,4 @@
-process CONVERT_XMFA_FASTA_PYTHON {
+process CONVERT_GINGR_TO_FASTA_HARVESTTOOLS {
 
     tag ( "${meta.aligner}" )
     container "quay.io/biocontainers/parsnp@sha256:b46999fb9842f183443dd6226b461c1d8074d4c1391c1f2b1e51cc20cee8f8b2"
@@ -35,7 +35,7 @@ process CONVERT_XMFA_FASTA_PYTHON {
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
-        python: $(python --version)
+        harvesttools: $(harvesttools --version)
     END_VERSIONS
     '''
 }
