@@ -1,7 +1,7 @@
 process CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON {
 
     tag ( "${meta.aligner}" )
-    container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
+    container "gregorysprenger/biopython@sha256:77a50d5d901709923936af92a0b141d22867e3556ef4a99c7009a5e7e0101cc1"
 
     input:
     tuple val(meta), path(snp_distances)
