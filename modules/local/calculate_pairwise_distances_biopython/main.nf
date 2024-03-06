@@ -7,10 +7,10 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
     tuple val(meta), path(snps)
 
     output:
-    tuple val(meta), path("Pairwise_SNP_Distances_File.tsv"), emit: qc_filecheck
-    tuple val(meta), path("SNP-distances.pairs.tsv")        , emit: snp_distances
+    tuple val(meta), path("${meta.aligner}.Pairwise_SNP_Distances_File.tsv"), emit: qc_filecheck
+    tuple val(meta), path("${meta.aligner}.SNP-Distances.Pairs.tsv")        , emit: snp_distances
     path(".command.{out,err}")
-    path("versions.yml")                                    , emit: versions
+    path("versions.yml")                                                    , emit: versions
 
     shell:
     '''
@@ -22,13 +22,13 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
       -n "!{task.cpus}" \
       "!{snps}" \
       | sort -k3,3n \
-      > SNP-distances.pairs.tsv
+      > "!{meta.aligner}.SNP-Distances.Pairs.tsv"
 
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Pairwise_SNP_Distances_File.tsv
-    if verify_minimum_file_size "SNP-distances.pairs.tsv" 'Pairwise SNP Distances' "!{params.min_snp_distance_filesize}"; then
-      echo -e "!{meta.aligner}\tPairwise SNP Distances\tPASS" >> Pairwise_SNP_Distances_File.tsv
+    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.aligner}.Pairwise_SNP_Distances_File.tsv"
+    if verify_minimum_file_size "!{meta.aligner}.SNP-Distances.Pairs.tsv" 'Pairwise SNP Distances' "!{params.min_snp_distance_filesize}"; then
+      echo -e "!{meta.aligner}\tPairwise SNP Distances\tPASS" >> "!{meta.aligner}.Pairwise_SNP_Distances_File.tsv"
     else
-      echo -e "!{meta.aligner}\tPairwise SNP Distances\tFAIL" >> Pairwise_SNP_Distances_File.tsv
+      echo -e "!{meta.aligner}\tPairwise SNP Distances\tFAIL" >> "!{meta.aligner}.Pairwise_SNP_Distances_File.tsv"
     fi
 
     cat <<-END_VERSIONS > versions.yml

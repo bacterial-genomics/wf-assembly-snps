@@ -6,11 +6,11 @@ process CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON {
     tuple val(meta), path(snp_distances)
 
     output:
-    tuple val(meta), path ("SNP-distances.matrix.tsv")   , emit: distance_matrix
-    tuple val(meta), path("SNP_Distance_Matrix_File.tsv"), emit: qc_filecheck
+    tuple val(meta), path ("${meta.aligner}.SNP-Distances.Matrix.tsv")   , emit: distance_matrix
+    tuple val(meta), path("${meta.aligner}.SNP_Distance_Matrix_File.tsv"), emit: qc_filecheck
     path("${snp_distances}.gz")
     path (".command.{out,err}")
-    path ("versions.yml")                                , emit: versions
+    path ("versions.yml")                                                , emit: versions
 
     shell:
     '''
@@ -20,17 +20,17 @@ process CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON {
 
     pairwiseTo2d.py \
       -i "!{snp_distances}" \
-      -o SNP-distances.matrix.tsv \
+      -o "!{meta.aligner}.SNP-Distances.Matrix.tsv" \
       --sort
 
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > SNP_Distance_Matrix_File.tsv
-    if verify_minimum_file_size "SNP-distances.matrix.tsv" 'SNP Distance Matrix' "!{params.min_distance_matrix_filesize}"; then
-      echo -e "!{meta.aligner}\tSNP Distance Matrix\tPASS" >> SNP_Distance_Matrix_File.tsv
+    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
+    if verify_minimum_file_size "!{meta.aligner}.SNP-Distances.Matrix.tsv" '!{meta.aligner} SNP Distance Matrix' "!{params.min_distance_matrix_filesize}"; then
+      echo -e "NaN\t!{meta.aligner} SNP Distance Matrix\tPASS" >> "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
     else
-      echo -e "!{meta.aligner}\tSNP Distance Matrix\tFAIL" >> SNP_Distance_Matrix_File.tsv
+      echo -e "NaN\t!{meta.aligner} SNP Distance Matrix\tFAIL" >> "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
     fi
 
-    sed -i "s/\t-/\t0/g" SNP-distances.matrix.tsv
+    sed -i "s/\t-/\t0/g" "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
 
     # Gzip compress SNP distances
     gzip -9f !{snp_distances}
