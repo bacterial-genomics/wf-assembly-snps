@@ -1,188 +1,163 @@
-# Assembly SNPs Workflow
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/wf-assembly-snps_logo_dark.png">
+    <img alt="bacterial-genomics/wf-assembly-snps" src="docs/images/wf-assembly-snps_logo_light.png">
+  </picture>
+</h1>
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/bacterial-genomics/wf-assembly-snps)
+[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.04.3-23aa62.svg)](https://www.nextflow.io/)
+[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+[![MegaLinter](https://github.com/bacterial-genomics/wf-assembly-snps/actions/workflows/mega-linter.yml/badge.svg)](https://github.com/bacterial-genomics/wf-assembly-snps/actions/workflows/mega-linter.yml)
 
-## Workflow overview
-1. Identify all FastA assembly files in a given input path
-    - recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz
-2. Create a tmp dir and decompress, copy the assembly files with file extensions removed from all sample names
-3. Run parsnp, which generates a phylogenetic tree "parsnp.tree"
-    - optionally specify the reference file using `--reference <FILE>`; otherwise largest filesize is chosen automatically as the reference file
-4. Extract a FastA file "SNPs.fa" with harvesttools of all samples with only the SNP positions
-5. Perform all pairwise comparisons to tabulate the number of SNPs each sample pair have between them
-6. Generate a matrix table summarizing pairwise distances between all samples
-7. Optionally, classify SNPs as being due to recombination and re-estimate phylogenetic tree without these SNPs
+![workflow](docs/images/wf-assembly-snps_workflow.png)
 
-![workflow](images/workflow_v1.0.0.svg)
-*A schematic of the steps in the workflow.*
+> _General schematic of the steps in the workflow_
 
-## Requirements
-* [Nextflow](https://www.nextflow.io/docs/latest/) (tested on version 21.10.6)
-* [Conda](https://docs.conda.io/en/latest/), [Docker](https://www.docker.com/), or [Singularity](https://sylabs.io/)
+## Contents
 
-## Install
-```
-# This creates a subdirectory called `wf-assembly-snps` containing the workflow code in your current directory
-git clone https://github.com/chrisgulvik/wf-assembly-snps.git
+- [Quick Start](#quick-start-test)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Parameters](#parameters)
+  - [Required parameters](#required-parameters)
+  - [Additonal parameters](#additional-parameters)
+- [Resource Managers](#resource-managers)
+- [Output](#output)
+- [Troubleshooting](#troubleshooting)
+- [Contributions and Support](#contributions-and-support)
+- [Citations](#citations)
 
-# Enter the workflow directory
-cd wf-assembly-snps
-```
+## Quick Start: Test
 
-[//]: # (## Run with conda)
+Run the built-in test set to confirm all parts are working as-expected. It will also download all dependencies to make subsequent runs much faster.
 
-[//]: # (```)
-
-[//]: # (# make conda and nextflow available for use)
-
-[//]: # (module load conda nextflow)
-
-[//]: # (# run workflow)
-
-[//]: # (nextflow run main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR -with-dag flow.png)
-
-[//]: # (```)
-
-## Run workflow
-For Aspen or other Univa Gride Engine users, skip to the quick start instructions [below](#quick-start-for-uge-users).
-
-Before running, make sure you have Nextflow and Docker or Singularity installed.
-
-The below run commands assume you are still in the workflow code directory `wf-assembly-snps`.
-```
-# View the help menu with a list of options
-nextflow run main.nf --help
-```
-This yields:
-```
-N E X T F L O W  ~  version 21.10.6
-Launching `main.nf` [modest_kirch] - revision: 5238884e30
-
-=========================================
- wf-assembly-snps v1.0.0
-=========================================
-
-Usage:
-nextflow run -profile <docker|singularity> main.nf --inpath <input directory> --outpath <directory for results>
-Run with test data:
-nextflow run main.nf -profile test,<docker|singularity> --outpath results
-
-Input/output options:
-  --inpath             Path to input data directory containing FastA assemblies. Recognized extensions are:  fa, fasta, fas, fna, fsa, fa.gz, fasta.gz, fas.gz, fna.gz, fsa.gz.
-  --outpath            The output directory where the results will be saved.
-Analysis options:
-  --curated_input      Whether or not input is a curated genome directory. If true, will assemue all genomes are similar enough to return sensible results. Options are: true (default), false.
-  --recombination      Use a program to classify SNPs as due to recombination. Options are: gubbins, cfml, both.
-  --tree_method        Program used to infer trees (in ParSNP and optionally again after masking positions due to recombination). Options are: fasttree (default), raxml.
-  --max_partition_size Max partition size (in bases, limits ParSNP memory usage). Note: results can change slightly depending on this value. Default is: 15000000.
-  --bigdata            Whether or not to use more compute resources. Options are true, false (default).
-  --max_memory         Specify memory limit on your machine/infrastructure, e.g. '128.GB'. Useful to ensure workflow doesn't request too many resources.
-  --max_time           Specify time limit for each process, e.g. '240.h'. Useful to ensure workflow doesn't request too many resources.
-  --max_cpus           Specify CPU limit on your machine/infrastructure, e.g. 16. Useful to ensure workflow doesn't request too many resources.
-  --min_ggr_size       Minimum filesize to verify that ParSNP produced a .ggr file. Default is: '100k'.
-  --min_xmfa_size      Minimum filesize to verify that ParSNP produced a .xmfa file. Default is: '100k'.
-Profile options:
-  -profile singularity Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
-  -profile docker      Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
-  -profile conda       TODO: this is not implemented yet.
-Other options:
-  -resume              Re-start a workflow using cached results. May not behave as expected with containerization profiles docker or singularity.
-  -stub                Use example output files for any process with an uncommented stub block. For debugging/testing purposes.
-  -name                Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic
-```
-
-To run the workflow, replace `INPATH_DIR` with the path to a directory of assembly files you want to analyze.
-Replace `OUTPATH_DIR` with the path to a directory to store analysis results. The workflow will create this directory, or add/overwrite files in it if it already exists.
+### Pull workflow from GitHub
 
 ```
-# Run with Singularity
-nextflow run -profile singularity main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
-
-# Run with Docker
-nextflow run -profile docker main.nf --outpath OUTPATH_DIR --inpath INPUT_DIR
+nextflow pull bacterial-genomics/wf-assembly-snps
 ```
 
-## Workflow output
-```
-# View final output file
-cat OUTPATH_DIR/SNP-distances.matrix.tsv
-
-# View final output dir structure
-tree -a OUTPATH_DIR/
-```
-
-This yields:
-```
--   16-090  16-100  16-127  16-146  16-151  16-155
-16-090  0   31  24  7   32  35
-16-100  31  0   33  32  3   6
-16-127  24  33  0   25  34  37
-16-146  7   32  25  0   33  36
-16-151  32  3   34  33  0   3
-16-155  35  6   37  36  3   0
-```
+### Run test workflow
 
 ```
-OUTPATH_DIR/
-|-- log
-|   |-- pipeline_dag.2022-04-15 08:43:05.svg
-|   |-- process_logs
-|   |   |-- INFILE_HANDLING.command.err
-|   |   |-- INFILE_HANDLING.command.out
-|   |   `-- ...
-|   |-- report.2022-04-15 08:43:05.html
-|   |-- timeline.2022-04-15 08:43:05.html
-|   `--trace.2022-04-15 08:43:05.txt 
-|-- parsnp
-|   |-- SNP-distances.matrix.tsv
-|   |-- SNP-distances.pairs.tsv
-|   |-- SNPs.fa
-|   |-- parsnp.fasta
-|   |-- parsnp.ggr
-|   |-- parsnp.tree
-|   `-- parsnp.xmfa
-`--  software_versions.yml
-```
-Nextflow produces many intermediate files that can waste space. Remove these files with:
-```
-# Clean up intermediate files, retain output
-rm -rf .nextflow .nextflow.log* work/
-```
-## Quick start for UGE Users
-If you are a user of the Apsen cluster (which employs the Univa Grid Engine batch-queueing system), you can call this workflow using a wrapper script.
-
-The wrapper script requires wf-assembly-snps to be installed in a location `$LAB_HOME/workflows/`, where `$LAB_HOME` is an environment variable set in your bash configuration file. 
-The following are one-time steps to define this environment variable and make the script executable:
-```
-# Check if you already have LAB_HOME set:
-echo $LAB_HOME  # Is this varible set?
-cat $HOME/.bashrc  # Do you set LAB_HOME anywhere in your bash configuration file?
-```
-If you already have this variable set, move wf-assembly-snps to `$LAB_HOME/workflows`:
-```
-cd ../
-mkdir -p $LAB_HOME/workflows
-mv wf-assembly-snps $LAB_HOME/workflows/
-```
-If not, set LAB_HOME to be your `$HOME` directory and put wf-assembly-snps there.
-```
-cd ../
-mkdir -p $HOME/workflows
-mv wf-assembly-snps $HOME/workflows/
-echo "export LAB_HOME=$HOME" >> $HOME/.bashrc
-```
-Finally, make the wrapper script executable and add its location to your `PATH` variable.
-```
-chmod u+x $LAB_HOME/workflows/wf-assembly-snps/run_parsnp.uge-nextflow
-echo "export PATH=\$PATH:$LAB_HOME/workflows/wf-assembly-snps" >> $HOME/.bashrc
-```
-Re-start your session.
-
-After this one-time set-up is complete, you will only need to call the script to run the workflow each time you have new data to analyze.
-To run the workflow, replace INPATH_DIR with the path to a directory of assembly files you want to analyze. Replace OUTPATH_DIR with the path to a directory to store analysis results. The workflow will create this directory, or add/overwrite files in it if it already exists.
-```
-run_parsnp.uge-nextflow INPUT_DIR OUTPATH_DIR
+nextflow run \
+  bacterial-genomics/wf-assembly-snps \
+  -r main \
+  -profile <docker|singularity>,test \
+  --outdir results
 ```
 
-Wrapper script worfklow notes: the nextflow logs (typically stored as `.nextflow.log` in the directory the script is run from) are redirected to `/scicomp/scratch/$USER/nextflow_log.txt`. 
-The workDir is set to `/scicomp/scratch/$USER/work`.
-These modifications aim to ensure temporary files get stored in a scratch space so they will be cleared out eventually.
+## Quick Start: Run
+
+Example command on FastAs in "new-fasta-dir" data using **BLAST** with singularity:
+
+### Pull workflow from GitHub
+
+```
+nextflow pull bacterial-genomics/wf-assembly-snps
+```
+
+### Run workflow
+
+```
+nextflow run \
+  bacterial-genomics/wf-assembly-snps \
+  -r main \
+  -profile singularity \
+  --input new-fasta-dir \
+  --outdir my-results \
+  --aligner parsnp
+```
+
+## Introduction
+
+This workflow performs average nucleotide identity on assembled and/or annotated files (FastA/Genbank).
+
+## Installation
+
+- [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html#installation) `>=22.04.03`
+- [Docker](https://docs.docker.com/engine/installation/) or [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) `>=3.8.0`
+- [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) is currently unsupported
+
+## Usage
+
+```
+nextflow run main.nf -profile <docker|singularity> --input <input directory> --ref <optional reference file> --outdir <directory for results> --aligner <parsnp>
+```
+
+Please see the [usage documentation](docs/usage.md) for further information on using this workflow.
+
+## Parameters
+
+Note the "`--`" long name arguments (e.g., `--help`, `--input`, `--outdir`) are generally specific to this workflow's options, whereas "`-`" long name options (e.g., `-help`, `-latest`, `-profile`) are general nextflow options.
+
+These are the most pertinent options for this workflow:
+
+#### Required parameters
+
+```
+  ============================================
+        Input/Output
+  ============================================
+  --input                 Path to input data directory containing FastA/Genbank assemblies or samplesheet. Recognized extensions are:  {fasta,fas,fna,fsa,fa} with optional gzip compression.
+
+  --ref                   Path to reference file in FastA format. Recognized extensions are:  {fasta,fas,fna,fsa,fa} with optional gzip compression. [Default: NaN]
+
+  --outdir                The output directory where the results will be saved.
+
+
+  ============================================
+        Container platforms
+  ============================================
+  -profile singularity    Use Singularity images to run the workflow. Will pull and convert Docker images from Dockerhub if not locally available.
+
+  -profile docker         Use Docker images to run the workflow. Will pull images from Dockerhub if not locally available.
+
+
+  ============================================
+        Optional alignment tools
+  ============================================
+  --aligner              Specify what algorithm should be used to compare input files. Recognized arguments are: parsnp. [Default: parsnp]
+```
+
+#### Additional parameters
+
+View help menu of all workflow options:
+
+```
+nextflow run \
+  bacterial-genomics/wf-assembly-snps \
+  -r main \
+  --help \
+  --show_hidden_params
+```
+
+## Resource Managers
+
+The most well-tested and supported is a Univa Grid Engine (UGE) job scheduler with Singularity for dependency handling.
+
+1. UGE/SGE
+   - Additional tips for UGE processing are [here](docs/HPC-UGE-scheduler.md).
+2. No Scheduler
+   - It has also been confirmed to work on desktop and laptop environments without a job scheduler using Docker with more tips [here](docs/local-device.md).
+
+## Output
+
+Please see the [output documentation](docs/output.md) for a table of all outputs created by this workflow.
+
+## Troubleshooting
+
+Q: It failed, how do I find out what went wrong?
+
+A: View file contents in the `<outdir>/log` directory.
+
+## Contributions and Support
+
+If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+
+## Citations
+
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
