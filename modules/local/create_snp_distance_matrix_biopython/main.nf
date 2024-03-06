@@ -8,7 +8,6 @@ process CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON {
 
     output:
     tuple val(meta), path ("${meta.aligner}.SNP-Distances.Matrix.tsv")   , emit: distance_matrix
-    tuple val(meta), path("${meta.aligner}.SNP_Distance_Matrix_File.tsv"), emit: qc_filecheck
     path("${snp_distances}.gz")
     path (".command.{out,err}")
     path ("versions.yml")                                                , emit: versions
@@ -24,14 +23,7 @@ process CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON {
       -o "!{meta.aligner}.SNP-Distances.Matrix.tsv" \
       --sort
 
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
-    if verify_minimum_file_size "!{meta.aligner}.SNP-Distances.Matrix.tsv" '!{meta.aligner} SNP Distance Matrix' "!{params.min_distance_matrix_filesize}"; then
-      echo -e "NaN\t!{meta.aligner} SNP Distance Matrix\tPASS" >> "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
-    else
-      echo -e "NaN\t!{meta.aligner} SNP Distance Matrix\tFAIL" >> "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
-    fi
-
-    sed -i "s/\t-/\t0/g" "!{meta.aligner}.SNP_Distance_Matrix_File.tsv"
+    sed -i "s/\t-/\t0/g" "!{meta.aligner}.SNP-Distances.Matrix.tsv"
 
     # Gzip compress SNP distances
     gzip -9f !{snp_distances}

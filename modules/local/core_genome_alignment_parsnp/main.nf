@@ -9,10 +9,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
 
     output:
     tuple val(meta_input), path("Parsnp_Alignment_File.tsv"), emit: qc_filecheck
-    tuple val(meta_input), path("Parsnp.ggr")               , emit: gingr_alignment
-    tuple val(meta_input), path("Parsnp.xmfa")              , emit: core_alignment
-    tuple val(meta_input), path("Parsnp.tree")              , emit: phylogeny
-    tuple val(meta_input), path("Parsnp.SNPs.fa")           , emit: snps
+    tuple val(meta_input), path("*{ggr,xmfa,tree,fa}")      , emit: output
     path(".command.{out,err}")
     path("versions.yml")                                    , emit: versions
 

@@ -38,8 +38,7 @@ def toLower(it) {
 workflow RECOMBINATION {
 
     take:
-    core_alignment
-    phylogeny
+    ch_alignment
 
     main:
     ch_versions      = Channel.empty()
@@ -49,8 +48,7 @@ workflow RECOMBINATION {
     if ( toLower(params.recombination) == "gubbins" ) {
         // PROCESS: Perform recombination using Gubbins
         RECOMBINATION_GUBBINS (
-            core_alignment,
-            phylogeny
+            ch_alignment
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_GUBBINS.out.versions)
         ch_recombination = RECOMBINATION_GUBBINS.out.positions_and_tree
@@ -63,8 +61,7 @@ workflow RECOMBINATION {
     } else if ( toLower(params.recombination) == "clonalframeml" ) {
         // PROCESS: Perform recombination using ClonalFrameML
         RECOMBINATION_CLONALFRAMEML (
-            core_alignment,
-            phylogeny
+            ch_alignment
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_CLONALFRAMEML.out.versions)
         ch_recombination = RECOMBINATION_CLONALFRAMEML.out.positions_and_tree
@@ -77,8 +74,7 @@ workflow RECOMBINATION {
     } else if ( toLower(params.recombination) == "both" ) {
         // PROCESS: Perform recombination using Gubbins
         RECOMBINATION_GUBBINS (
-            core_alignment,
-            phylogeny
+            ch_alignment
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_GUBBINS.out.versions)
         ch_recombination = ch_recombination.mix(
@@ -92,8 +88,7 @@ workflow RECOMBINATION {
 
         // PROCESS: Perform recombination using ClonalFrameML
         RECOMBINATION_CLONALFRAMEML (
-            core_alignment,
-            phylogeny
+            ch_alignment
         )
         ch_versions      = ch_versions.mix(RECOMBINATION_CLONALFRAMEML.out.versions)
         ch_recombination = ch_recombination.mix(

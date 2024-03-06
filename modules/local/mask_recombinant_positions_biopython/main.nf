@@ -5,7 +5,7 @@ process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
 
     input:
     tuple val(meta), path(recombination_files)
-    tuple val(meta_alignment), path(alignment)
+    tuple val(meta_snps), path(snp_files)
 
     output:
     tuple val(meta), path("*.masked_recombination.fasta"), emit: masked_alignment
@@ -20,7 +20,7 @@ process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
     msg "INFO: Masking recombinant positions."
 
     mask_recombination.py \
-      --alignment !{alignment} \
+      --alignment "!{meta.aligner}.SNPs.fa" \
       --format !{format} \
       --rec_positions !{meta.recombination}.recombination_positions.* \
       --tree !{meta.recombination}.labelled_tree.* \

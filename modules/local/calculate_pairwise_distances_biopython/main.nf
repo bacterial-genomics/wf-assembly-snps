@@ -5,7 +5,7 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
     container "snads/hamming-dist@sha256:3ecbf4f963adfd8de843f57487ec68ed71614d62956ce4993af3679d08785c48"
 
     input:
-    tuple val(meta), path(snps)
+    tuple val(meta), path(snp_files)
 
     output:
     tuple val(meta), path("${meta.aligner}.Pairwise_SNP_Distances_File.tsv"), emit: qc_filecheck
@@ -21,7 +21,7 @@ process CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON {
 
     pairwiseDistances.py \
       -n "!{task.cpus}" \
-      "!{snps}" \
+      "!{meta.aligner}.SNPs.fa" \
       | sort -k3,3n \
       > "!{meta.aligner}.SNP-Distances.Pairs.tsv"
 

@@ -4,20 +4,19 @@ process RECOMBINATION_CLONALFRAMEML {
     container "snads/clonalframeml@sha256:bc00db247195fdc6151793712a74cc9b272dc2c9f153bb0037415e387f15351e"
 
     input:
-    tuple val(meta), path(alignment)
-    tuple val(meta_tree), path(starter_tree)
+    tuple val(meta), path(snp_files)
 
     output:
-    tuple val(meta_tree), path("*_{positions,tree}.*"), emit: positions_and_tree
+    tuple val(meta), path("*_{positions,tree}.*"), emit: positions_and_tree
     path(".command.{out,err}")
-    path("versions.yml")                              , emit: versions
+    path("versions.yml")                         , emit: versions
 
     shell:
     '''
     # ClonalFrameML needs tree labels to not be surrounded by single quotes
-    sed -i "s/'//g" !{starter_tree}
+    sed -i "s/'//g" "!{meta.aligner}.tree"
 
-    ClonalFrameML !{starter_tree} !{alignment} ClonalFrameML
+    ClonalFrameML "!{meta.aligner}.tree" "!{meta.aligner}.SNPs.fa" ClonalFrameML
 
     # Rename output file
     mv ClonalFrameML.importation_status.txt ClonalFrameML.recombination_positions.txt
