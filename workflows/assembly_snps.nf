@@ -251,7 +251,8 @@ workflow ASSEMBLY_SNPS {
 
     // SUBWORKFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
     RECOMBINATION (
-        ch_core_alignment_fasta
+        ch_core_alignment_fasta,
+        ch_alignment
     )
     ch_versions = ch_versions.mix(RECOMBINATION.out.versions)
 
