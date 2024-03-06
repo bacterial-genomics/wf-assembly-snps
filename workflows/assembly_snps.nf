@@ -226,16 +226,9 @@ workflow ASSEMBLY_SNPS {
 
     // PROCESS: Reformat pairwise genome distances into matrix
     CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON (
-        CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.snp_distances
+        ch_snp_distances
     )
     ch_versions            = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.versions)
-    ch_qc_filecheck        = ch_qc_filecheck.concat(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.qc_filecheck)
-
-    ch_snp_distance_matrix = qcfilecheck(
-                                "CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON",
-                                CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.qc_filecheck,
-                                CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.distance_matrix
-                            )
 
     /*
     ================================================================================
