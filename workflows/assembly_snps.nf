@@ -212,10 +212,10 @@ workflow ASSEMBLY_SNPS {
         ch_qc_filecheck    = ch_qc_filecheck.concat(CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck)
 
         ch_alignment_files = qcfilecheck(
-                            "CORE_GENOME_ALIGNMENT_PARSNP",
-                            CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
-                            CORE_GENOME_ALIGNMENT_PARSNP.out.output
-                        )
+                                "CORE_GENOME_ALIGNMENT_PARSNP",
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.qc_filecheck,
+                                CORE_GENOME_ALIGNMENT_PARSNP.out.output
+                            )
 
         // PROCESS: Convert Parsnp Gingr output file to FastA format for recombination
         CONVERT_GINGR_TO_FASTA_HARVESTTOOLS (
