@@ -28,10 +28,11 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     parsnp \
       --sequences genomes/ \
       --reference !{reference_file} \
+      --output-dir Parsnp \
+      --vcf \
       --verbose \
       !{treeMethod} \
       !{curatedInput} \
-      --output-dir Parsnp \
       --threads !{task.cpus} \
       --max-partition-size !{params.max_partition_size}
 
