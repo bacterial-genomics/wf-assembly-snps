@@ -1,11 +1,11 @@
 process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
 
     tag( "${meta.aligner}-${meta.recombination}" )
-    container "snads/mask-recombination@sha256:0df4f5e26b2beeb2a180c2e4d75148cde55d4cc62585b5053d6606c6623d33e4"
+    container "gregorysprenger/biopython@sha256:77a50d5d901709923936af92a0b141d22867e3556ef4a99c7009a5e7e0101cc1"
 
     input:
     tuple val(meta), path(recombination_files)
-    tuple val(meta_snps), path(snp_files)
+    tuple val(meta_core_alignment), path(core_alignment_fasta)
 
     output:
     tuple val(meta), path("*.masked_recombination.fasta"), emit: masked_alignment
@@ -20,7 +20,7 @@ process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
     msg "INFO: Masking recombinant positions."
 
     mask_recombination.py \
-      --alignment "!{meta.aligner}.SNPs.fa" \
+      --alignment "!{core_alignment_fasta}" \
       --format !{format} \
       --rec_positions !{meta.recombination}.recombination_positions.* \
       --tree !{meta.recombination}.labelled_tree.* \
