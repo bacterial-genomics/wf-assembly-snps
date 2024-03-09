@@ -1,7 +1,7 @@
 process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
 
     tag( "${meta.aligner}-${meta.recombination}" )
-    container "gregorysprenger/biopython@sha256:77a50d5d901709923936af92a0b141d22867e3556ef4a99c7009a5e7e0101cc1"
+    container "quay.io/biocontainers/biopython@sha256:10d755c731c82a22d91fc346f338ba47d5fd4f3b357828f5bbc903c9be865614"
 
     input:
     tuple val(meta), path(recombination_files)
