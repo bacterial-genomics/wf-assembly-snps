@@ -9,7 +9,7 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
 
     output:
     tuple val(meta_input), path("Parsnp_Alignment_File.tsv"), emit: qc_filecheck
-    tuple val(meta_input), path("*{ggr,xmfa,tree,fa}")      , emit: output
+    tuple val(meta_input), path("*{ggr,xmfa,tree,fa.gz}")   , emit: output
     path(".command.{out,err}")
     path("versions.yml")                                    , emit: versions
 
@@ -63,6 +63,8 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
 
     # Remove all copies of `.ref` from FastA file
     sed -i 's/.ref//g' Parsnp.SNPs.fa
+
+    gzip -9f Parsnp.SNPs.fa
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
