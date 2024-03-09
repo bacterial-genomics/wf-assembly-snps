@@ -166,18 +166,18 @@ workflow ASSEMBLY_SNPS {
                                 }
 
     } else {
-        // Use first item as reference and remove it from ch_input_files
+        // Reverse sort items by size and use first item as reference and remove it from ch_input_files
         ch_reference_files = ch_input_files
                                 .map{
                                     meta, file ->
-                                        def file_new = file.collect().sort()
+                                        def file_new = file.collect().sort{ it.size() }.reverse()
                                         [ meta, file_new[0] ]
                                 }.collect()
 
         ch_input_files     = ch_input_files
                                 .map{
                                     meta, file ->
-                                    def file_new = file.collect().sort()
+                                    def file_new = file.collect().sort{ it.size() }.reverse()
                                     file_new.remove(file_new[0])
                                     [ meta, file_new ]
                                 }.collect()
