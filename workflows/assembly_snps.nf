@@ -65,10 +65,10 @@ if (params.ref) {
     ch_ref_input = Channel.empty()
 }
 
-if ( toLower(params.aligner) == "parsnp" ) {
-    ch_aligner = "Parsnp"
+if ( toLower(params.snp_package) == "parsnp" ) {
+    ch_snp_package = "Parsnp"
 } else {
-    ch_aligner = "Parsnp"
+    ch_snp_package = "Parsnp"
 }
 
 /*
@@ -139,7 +139,7 @@ workflow ASSEMBLY_SNPS {
                         .collect()
                         .map{
                             def meta = [:]
-                            meta['aligner'] = ch_aligner
+                            meta['snp_package'] = ch_snp_package
                             [ meta, it ]
                         }
 
@@ -162,7 +162,7 @@ workflow ASSEMBLY_SNPS {
                                 .collect()
                                 .map{
                                     def meta = [:]
-                                    meta['aligner'] = ch_aligner
+                                    meta['snp_package'] = ch_snp_package
                                     [ meta, it ]
                                 }
 
@@ -203,7 +203,7 @@ workflow ASSEMBLY_SNPS {
     ================================================================================
     */
 
-    if ( toLower(params.aligner) == "parsnp" ) {
+    if ( toLower(params.snp_package) == "parsnp" ) {
         // PROCESS: Run ParSNP to generate core genome alignment and phylogeny
         CORE_GENOME_ALIGNMENT_PARSNP (
             ch_input_files,

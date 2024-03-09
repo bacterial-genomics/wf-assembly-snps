@@ -1,6 +1,6 @@
 process CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS {
 
-    tag ( "${meta.aligner}-${meta.recombination}" )
+    tag ( "${meta.snp_package}-${meta.recombination}" )
     container "staphb/snp-dists@sha256:9d457181cccacbbea0a3cb935edb1d066011fbc2f578694b6c5f9d9d58dcac15"
 
     input:
@@ -22,7 +22,7 @@ process CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS {
       -k \
       -j !{task.cpus} \
       "!{masked_alignment}" \
-      > "!{meta.aligner}-!{meta.recombination}.Masked-SNP-Distances.Matrix.tsv"
+      > "!{meta.snp_package}-!{meta.recombination}.Masked-SNP-Distances.Matrix.tsv"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

@@ -1,6 +1,6 @@
 process RECOMBINATION_GUBBINS {
 
-    tag ( "${meta.aligner}" )
+    tag ( "${meta.snp_package}" )
     container "snads/gubbins@sha256:391a980312096f96d976f4be668d4dea7dda13115db004a50e49762accc0ec62"
 
     input:
@@ -17,7 +17,7 @@ process RECOMBINATION_GUBBINS {
     source bash_functions.sh
 
     msg "INFO: Performing recombination using Gubbins."
-    run_gubbins.py --starting-tree "!{meta.aligner}.tree" --prefix Gubbins "!{core_alignment_fasta}"
+    run_gubbins.py --starting-tree "!{meta.snp_package}.tree" --prefix Gubbins "!{core_alignment_fasta}"
 
     # Rename output files
     mv Gubbins.recombination_predictions.gff Gubbins.recombination_positions.gff

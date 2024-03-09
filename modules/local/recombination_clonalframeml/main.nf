@@ -1,6 +1,6 @@
 process RECOMBINATION_CLONALFRAMEML {
 
-    tag ( "${meta.aligner}" )
+    tag ( "${meta.snp_package}" )
     container "snads/clonalframeml@sha256:bc00db247195fdc6151793712a74cc9b272dc2c9f153bb0037415e387f15351e"
 
     input:
@@ -15,9 +15,9 @@ process RECOMBINATION_CLONALFRAMEML {
     shell:
     '''
     # ClonalFrameML needs tree labels to not be surrounded by single quotes
-    sed -i "s/'//g" "!{meta.aligner}.tree"
+    sed -i "s/'//g" "!{meta.snp_package}.tree"
 
-    ClonalFrameML "!{meta.aligner}.tree" "!{core_alignment_fasta}" ClonalFrameML
+    ClonalFrameML "!{meta.snp_package}.tree" "!{core_alignment_fasta}" ClonalFrameML
 
     # Rename output file
     mv ClonalFrameML.importation_status.txt ClonalFrameML.recombination_positions.txt

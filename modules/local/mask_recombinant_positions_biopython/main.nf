@@ -1,6 +1,6 @@
 process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
 
-    tag( "${meta.aligner}-${meta.recombination}" )
+    tag( "${meta.snp_package}-${meta.recombination}" )
     container "quay.io/biocontainers/biopython@sha256:10d755c731c82a22d91fc346f338ba47d5fd4f3b357828f5bbc903c9be865614"
 
     input:
@@ -24,7 +24,7 @@ process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
       --format !{format} \
       --rec_positions !{meta.recombination}.recombination_positions.* \
       --tree !{meta.recombination}.labelled_tree.* \
-      > "!{meta.aligner}-!{meta.recombination}.masked_recombination.fasta"
+      > "!{meta.snp_package}-!{meta.recombination}.masked_recombination.fasta"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

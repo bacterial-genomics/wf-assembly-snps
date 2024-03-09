@@ -69,7 +69,7 @@ nextflow run main.nf \
   -profile singularity \
   --input INPUT_DIRECTORY \
   --outdir OUTPUT_DIRECTORY \
-  --aligner parsnp
+  --snp_package parsnp
 ```
 
 ### Help menu of all options:

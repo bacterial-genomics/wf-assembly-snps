@@ -69,7 +69,7 @@ nextflow run \
   -profile singularity \
   --input new-fasta-dir \
   --outdir my-results \
-  --aligner parsnp
+  --snp_package parsnp
 ```
 
 ## Introduction
@@ -85,7 +85,7 @@ This workflow performs average nucleotide identity on assembled and/or annotated
 ## Usage
 
 ```
-nextflow run main.nf -profile <docker|singularity> --input <input directory> --ref <optional reference file> --outdir <directory for results> --aligner <parsnp>
+nextflow run main.nf -profile <docker|singularity> --input <input directory> --ref <optional reference file> --outdir <directory for results> --snp_package <parsnp>
 ```
 
 Please see the [usage documentation](docs/usage.md) for further information on using this workflow.
@@ -120,7 +120,7 @@ These are the most pertinent options for this workflow:
   ============================================
         Optional alignment tools
   ============================================
-  --aligner              Specify what algorithm should be used to compare input files. Recognized arguments are: parsnp. [Default: parsnp]
+  --snp_package              Specify what algorithm should be used to compare input files. Recognized arguments are: parsnp. [Default: parsnp]
 ```
 
 #### Additional parameters

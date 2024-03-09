@@ -1,6 +1,6 @@
 process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
-    tag( "${meta.aligner}-${meta.recombination}" )
+    tag( "${meta.snp_package}-${meta.recombination}" )
     container "quay.io/biocontainers/parsnp@sha256:b46999fb9842f183443dd6226b461c1d8074d4c1391c1f2b1e51cc20cee8f8b2"
 
     input:
@@ -21,7 +21,7 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
 
       fasttree \
         -nt !{masked_alignment} \
-        > "!{meta.aligner}-!{meta.recombination}.Final.tree"
+        > "!{meta.snp_package}-!{meta.recombination}.Final.tree"
 
     elif [[ "!{params.tree_method}" = "raxml" ]]; then
       msg "INFO: Building phylogenetic tree using RaxML."
@@ -32,26 +32,26 @@ process BUILD_PHYLOGENETIC_TREE_PARSNP {
         -n !{meta.recombination} \
         -p 5280
 
-      mv RAxML_bestTree.!{meta.recombination} "!{meta.aligner}-!{meta.recombination}.Final.tree"
+      mv RAxML_bestTree.!{meta.recombination} "!{meta.snp_package}-!{meta.recombination}.Final.tree"
     fi
 
     # Verify minimum required file size
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.recombination}.Tree_Output_File.tsv"
 
     if verify_minimum_file_size \
-      "!{meta.aligner}-!{meta.recombination}.tree" \
-      "Final !{meta.aligner}-!{meta.recombination} Tree Output" \
+      "!{meta.snp_package}-!{meta.recombination}.tree" \
+      "Final !{meta.snp_package}-!{meta.recombination} Tree Output" \
       "!{params.min_tree_filesize}"; then
 
-      echo -e "!{meta.recombination}\tFinal Tree Output\tPASS" >> "!{meta.aligner}-!{meta.recombination}.Tree_Output_File.tsv"
+      echo -e "!{meta.recombination}\tFinal Tree Output\tPASS" >> "!{meta.snp_package}-!{meta.recombination}.Tree_Output_File.tsv"
 
     else
-      msg "WARN: The following file did not pass the QC step: '!{meta.aligner}-!{meta.recombination}.Final.tree'!"
+      msg "WARN: The following file did not pass the QC step: '!{meta.snp_package}-!{meta.recombination}.Final.tree'!"
 
       # Delete file to avoid it being copied to the publishDirectory
-      rm "!{meta.aligner}-!{meta.recombination}.Final.tree"
+      rm "!{meta.snp_package}-!{meta.recombination}.Final.tree"
 
-      echo -e "!{meta.recombination}\tFinal Tree Output\tFAIL" >> "!{meta.aligner}-!{meta.recombination}.Tree_Output_File.tsv"
+      echo -e "!{meta.recombination}\tFinal Tree Output\tFAIL" >> "!{meta.snp_package}-!{meta.recombination}.Tree_Output_File.tsv"
     fi
 
     cat <<-END_VERSIONS > versions.yml
