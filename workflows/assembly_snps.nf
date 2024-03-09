@@ -43,6 +43,7 @@ include { CONVERT_GINGR_TO_FASTA_HARVESTTOOLS              } from "../modules/lo
 include { CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS           } from "../modules/local/calculate_pairwise_distances_snp_dists/main"
 include { CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS             } from "../modules/local/create_snp_distance_matrix_snp_dists/main"
 include { MASK_RECOMBINANT_POSITIONS_BIOPYTHON             } from "../modules/local/mask_recombinant_positions_biopython/main"
+include { CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS      } from "../modules/local/create_masked_snp_distance_matrix_snp_dists/main"
 
 include { BUILD_PHYLOGENETIC_TREE_PARSNP                   } from "../modules/local/build_phylogenetic_tree_parsnp/main"
 
@@ -268,6 +269,12 @@ workflow ASSEMBLY_SNPS {
         ch_core_alignment_fasta.collect()
     )
     ch_versions = ch_versions.mix(MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.versions)
+
+    // PROCESS: Create SNP distance matrix on masked FastA file
+    CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS (
+        MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.masked_alignment
+    )
+    ch_versions = ch_versions.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
 
     /*
     ================================================================================
