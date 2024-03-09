@@ -8,10 +8,10 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     tuple val(meta_reference), path(reference_file)
 
     output:
-    tuple val(meta_input), path("Parsnp_Alignment_File.tsv"), emit: qc_filecheck
-    tuple val(meta_input), path("*{ggr,xmfa,tree,fa.gz}")   , emit: output
+    tuple val(meta_input), path("Parsnp_Output_File.tsv"), emit: qc_filecheck
+    tuple val(meta_input), path("*{ggr,xmfa,tree,fa.gz}"), emit: output
     path(".command.{out,err}")
-    path("versions.yml")                                    , emit: versions
+    path("versions.yml")                                 , emit: versions
 
     shell:
     curatedInput = params.curated_input               ? "--curated"      : ""
@@ -48,14 +48,12 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
     fi
 
     # Verify output
-    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Alignment_File.tsv
-    for file in Parsnp.ggr Parsnp.xmfa; do
-      if [ ${file#*.} == "ggr" ]; then output="Gingr"; else output="Core"; fi
-
-      if verify_minimum_file_size "${file}" "Parsnp ${output} Alignment File" "!{params.min_parsnp_alignment_filesize}"; then
-        echo -e "NaN\t${output} Alignment File\tPASS" >> Parsnp_Alignment_File.tsv
+    echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > Parsnp_Output_File.tsv
+    for file in Parsnp.ggr Parsnp.xmfa Parsnp.SNPs.fa; do
+      if verify_minimum_file_size "${file}" "${file} Output File" "!{params.min_parsnp_output_filesize}"; then
+        echo -e "NaN\t${file} Output File\tPASS" >> Parsnp_Output_File.tsv
       else
-        echo -e "NaN\t${output} Alignment File\tFAIL" >> Parsnp_Alignment_File.tsv
+        echo -e "NaN\t${file} Output File\tFAIL" >> Parsnp_Output_File.tsv
       fi
     done
 
