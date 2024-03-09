@@ -40,8 +40,8 @@ include { INFILE_HANDLING_UNIX as REF_INFILE_HANDLING_UNIX } from "../modules/lo
 include { CORE_GENOME_ALIGNMENT_PARSNP                     } from "../modules/local/core_genome_alignment_parsnp/main"
 include { CONVERT_GINGR_TO_FASTA_HARVESTTOOLS              } from "../modules/local/convert_gingr_to_fasta_harvesttools/main"
 
-include { CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON           } from "../modules/local/calculate_pairwise_distances_biopython/main"
-include { CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON             } from "../modules/local/create_snp_distance_matrix_biopython/main"
+include { CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS           } from "../modules/local/calculate_pairwise_distances_snp_dists/main"
+include { CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS             } from "../modules/local/create_snp_distance_matrix_snp_dists/main"
 include { MASK_RECOMBINANT_POSITIONS_BIOPYTHON             } from "../modules/local/mask_recombinant_positions_biopython/main"
 
 include { BUILD_PHYLOGENETIC_TREE_PARSNP                   } from "../modules/local/build_phylogenetic_tree_parsnp/main"
@@ -238,23 +238,16 @@ workflow ASSEMBLY_SNPS {
     */
 
     // PROCESS: Calculate pairwise genome distances
-    CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON (
+    CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS (
         ch_alignment_files
     )
-    ch_versions      = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.versions)
-    ch_qc_filecheck  = ch_qc_filecheck.concat(CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck)
-
-    ch_snp_distances = qcfilecheck(
-                            "CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON",
-                            CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.qc_filecheck,
-                            CALCULATE_PAIRWISE_DISTANCES_BIOPYTHON.out.snp_distances
-                        )
+    ch_versions = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.versions)
 
     // PROCESS: Reformat pairwise genome distances into matrix
-    CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON (
-        ch_snp_distances
+    CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS (
+        ch_alignment_files
     )
-    ch_versions = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_BIOPYTHON.out.versions)
+    ch_versions = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
 
     /*
     ================================================================================
