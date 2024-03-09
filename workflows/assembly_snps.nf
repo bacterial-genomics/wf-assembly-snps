@@ -183,6 +183,19 @@ workflow ASSEMBLY_SNPS {
                                 }.collect()
     }
 
+    // Check for reference file in input channel; if so, remove it
+    ch_input_files.join(ch_reference_files)
+        .map{
+            meta, input, ref ->
+                if ( input.contains(ref) ) {
+                    input.remove(ref)
+                    [ meta, input ]
+                } else {
+                    [ meta, input ]
+                }
+        }
+        .set { ch_input_files }
+
     /*
     ================================================================================
                             Perform core alignment
