@@ -1,6 +1,7 @@
 process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
 
     tag( "${meta.snp_package}-${meta.recombination}" )
+    label "process_medium"
     container "quay.io/biocontainers/biopython@sha256:10d755c731c82a22d91fc346f338ba47d5fd4f3b357828f5bbc903c9be865614"
 
     input:

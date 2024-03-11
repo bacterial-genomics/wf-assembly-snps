@@ -1,6 +1,7 @@
 process CONVERT_GINGR_TO_FASTA_HARVESTTOOLS {
 
     tag ( "${meta.snp_package}" )
+    label "process_low"
     container "quay.io/biocontainers/parsnp@sha256:b46999fb9842f183443dd6226b461c1d8074d4c1391c1f2b1e51cc20cee8f8b2"
 
     input:
