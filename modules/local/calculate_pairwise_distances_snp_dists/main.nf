@@ -8,9 +8,9 @@ process CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS {
     tuple val(meta), path(snp_alignment)
 
     output:
-    tuple val(meta), path("${meta.snp_package}.SNP-Distances.Pairs.tsv"), emit: snp_distances
+    tuple val(meta), path("*.SNP-Distances.Pairs.tsv"), emit: snp_distances
     path(".command.{out,err}")
-    path("versions.yml")                                            , emit: versions
+    path("versions.yml")                              , emit: versions
 
     shell:
     '''
