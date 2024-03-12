@@ -244,11 +244,27 @@ workflow ASSEMBLY_SNPS {
     )
     ch_versions = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.versions)
 
+    CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.snp_distances
+                        .map{ meta, file -> file }
+                        .collectFile(
+                            name:       "Summary.${ch_snp_package}.Distance-Pairs.tsv",
+                            keepHeader: true,
+                            storeDir:   "${params.outdir}/Summaries"
+                        )
+
     // PROCESS: Reformat pairwise genome distances into matrix
     CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS (
         ch_alignment_files
     )
     ch_versions = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
+
+    CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix
+                        .map{ meta, file -> file }
+                        .collectFile(
+                            name:       "Summary.${ch_snp_package}.Distance-Matrix.tsv",
+                            keepHeader: true,
+                            storeDir:   "${params.outdir}/Summaries"
+                        )
 
     /*
     ================================================================================
@@ -275,6 +291,14 @@ workflow ASSEMBLY_SNPS {
         MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.masked_alignment
     )
     ch_versions = ch_versions.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
+
+    CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix
+                        .map{ meta, file -> file }
+                        .collectFile(
+                            name:       "Summary.${ch_snp_package}.Masked-Distance-Matrix.tsv",
+                            keepHeader: true,
+                            storeDir:   "${params.outdir}/Summaries"
+                        )
 
     /*
     ================================================================================
