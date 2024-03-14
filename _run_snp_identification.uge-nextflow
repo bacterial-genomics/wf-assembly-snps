@@ -48,7 +48,7 @@ fi
 
 # Check for errors and add to errors.tsv
 # Get nextflow run name
-run_name=$(grep "Launching" ${OUT}/pipeline_info/AAI_*.o${SCRIPT_NAME} | cut -d '[' -f 2 | cut -d ']' -f 1)
+run_name=$(grep "Launching" ${OUT}/pipeline_info/SNP_ID_*.o${SCRIPT_NAME} | cut -d '[' -f 2 | cut -d ']' -f 1)
 time_stamp=$(date '+%Y-%b-%d %a %H:%M:%S')
 # Read each line from nextflow log, find info, and add to errors.tsv
 while read -r line
@@ -56,8 +56,8 @@ do
   # If process is already running, clean up error
   if [[ "${line}" =~ ^Unable[[:space:]]to[[:space:]]acquire[[:space:]]lock.* ]]; then
     error="You are trying to resume the execution of an already running pipeline."
-    AAI_OUT=$(realpath ${OUT}/pipeline_info/AAI_*.o*)
-    echo -e "-\t-\t${error}\t${AAI_OUT}\t${time_stamp}\t${run_name}" >> ${OUT}/pipeline_info/errors.tsv
+    SNP_ID_OUT=$(realpath ${OUT}/pipeline_info/SNP_ID_*.o*)
+    echo -e "-\t-\t${error}\t${SNP_ID_OUT}\t${time_stamp}\t${run_name}" >> ${OUT}/pipeline_info/errors.tsv
   else
     # Workflow ran some processes
     sample_name=$(grep "nf-" ${line}/.command.run | cut -d '(' -f 2 | cut -d ')' -f 1)
@@ -90,7 +90,7 @@ if [[ -f "${OUT}/pipeline_info/errors.tsv" ]]; then
     ${OUT}/pipeline_info/errors.tsv
 fi
 
-# Get proper AAI tool name
+# Get proper SNP package name
 SNP_PKG=$(echo $SNP_PACKAGE | awk '{print tolower($0)}')
 if [[ ${SNP_PKG} == "snippy" ]]; then
   SNP_PKG="Snippy"
