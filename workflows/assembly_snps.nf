@@ -47,6 +47,9 @@ include { CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS      } from "../modules/lo
 
 include { BUILD_PHYLOGENETIC_TREE_PARSNP                   } from "../modules/local/build_phylogenetic_tree_parsnp/main"
 
+include { CONVERT_TSV_TO_EXCEL_PYTHON                      } from "../modules/local/convert_tsv_to_excel_python/main"
+include { CREATE_EXCEL_RUN_SUMMARY_PYTHON                  } from "../modules/local/create_excel_run_summary_python/main"
+
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
@@ -114,6 +117,7 @@ workflow ASSEMBLY_SNPS {
     // SETUP: Define empty channels to concatenate certain outputs
     ch_versions             = Channel.empty()
     ch_qc_filecheck         = Channel.empty()
+    ch_output_summary_files = Channel.empty()
 
     /*
     ================================================================================
@@ -242,13 +246,15 @@ workflow ASSEMBLY_SNPS {
     CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS (
         ch_alignment_files
     )
-    ch_versions = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.versions)
+    ch_versions             = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.versions)
+    ch_output_summary_files = ch_output_summary_files.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.snp_distances)
 
     // PROCESS: Reformat pairwise genome distances into matrix
     CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS (
         ch_alignment_files
     )
-    ch_versions = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
+    ch_versions             = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
+    ch_output_summary_files = ch_output_summary_files.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix)
 
     /*
     ================================================================================
@@ -274,7 +280,8 @@ workflow ASSEMBLY_SNPS {
     CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS (
         MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.masked_alignment
     )
-    ch_versions = ch_versions.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
+    ch_versions             = ch_versions.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
+    ch_output_summary_files = ch_output_summary_files.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix)
 
     /*
     ================================================================================
@@ -294,6 +301,24 @@ workflow ASSEMBLY_SNPS {
                             BUILD_PHYLOGENETIC_TREE_PARSNP.out.qc_filecheck,
                             BUILD_PHYLOGENETIC_TREE_PARSNP.out.tree
                         )
+
+    /*
+    ================================================================================
+                        Convert TSV outputs to Excel XLSX
+    ================================================================================
+    */
+
+    if (params.create_excel_outputs) {
+        CREATE_EXCEL_RUN_SUMMARY_PYTHON (
+            ch_output_summary_files.collect()
+        )
+        ch_versions = ch_versions.mix(CREATE_EXCEL_RUN_SUMMARY_PYTHON.out.versions)
+
+        CONVERT_TSV_TO_EXCEL_PYTHON (
+            CREATE_EXCEL_RUN_SUMMARY_PYTHON.out.summary
+        )
+        ch_versions = ch_versions.mix(CONVERT_TSV_TO_EXCEL_PYTHON.out.versions)
+    }
 
     /*
     ================================================================================
@@ -318,6 +343,8 @@ workflow ASSEMBLY_SNPS {
                             storeDir:   "${params.outdir}/Summaries",
                             sort:       'index'
                         )
+
+    ch_output_summary_files = ch_output_summary_files.mix(ch_qc_filecheck.collect())
 }
 
 /*
