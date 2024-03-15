@@ -104,6 +104,8 @@ workflow RECOMBINATION {
                                             [ meta, file ]
                                     }
                             )
+    } else {
+        ch_recombination = Channel.empty()
     }
 
     emit:
