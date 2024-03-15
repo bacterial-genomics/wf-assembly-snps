@@ -31,6 +31,8 @@ process CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS {
 
     cat non-self-pairs.tsv self-pairs.tsv > "!{meta.snp_package}.SNP-Distances.Pairs.tsv"
 
+    sed -i '1i Sample\tSample\tNum core SNPs apart' "!{meta.snp_package}.SNP-Distances.Pairs.tsv"
+
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
         snp-dists: $(snp-dists -v | awk '{print $2}')
