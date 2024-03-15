@@ -58,7 +58,7 @@
                     "type": "string",
                     "default": "both",
                     "description": "Tool used to classify SNPs due to recombination.",
-                    "enum": ["gubbins", "clonalframeml", "both"]
+                    "enum": ["gubbins", "clonalframeml", "both", "none"]
                 }
             }
         },
