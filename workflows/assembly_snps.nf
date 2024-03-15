@@ -272,7 +272,7 @@ workflow ASSEMBLY_SNPS {
     ================================================================================
     */
 
-    // SUBWORKFLOW: Infer SNPs due to recombination, mask them, re-infer phylogeny
+    // SUBWORKFLOW: Infer SNPs due to recombination
     RECOMBINATION (
         ch_core_alignment_fasta,
         ch_alignment_files
@@ -306,7 +306,7 @@ workflow ASSEMBLY_SNPS {
     ================================================================================
     */
 
-    // PROCESS: Build phylogenetic tree
+    // PROCESS: Infer phylogenetic tree based on masked positions
     BUILD_PHYLOGENETIC_TREE_PARSNP (
         MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.masked_alignment
     )
