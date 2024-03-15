@@ -247,14 +247,14 @@ workflow ASSEMBLY_SNPS {
         ch_alignment_files
     )
     ch_versions             = ch_versions.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.versions)
-    ch_output_summary_files = ch_output_summary_files.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.snp_distances)
+    ch_output_summary_files = ch_output_summary_files.mix(CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS.out.snp_distances.map{ meta, file -> file })
 
     // PROCESS: Reformat pairwise genome distances into matrix
     CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS (
         ch_alignment_files
     )
     ch_versions             = ch_versions.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
-    ch_output_summary_files = ch_output_summary_files.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix)
+    ch_output_summary_files = ch_output_summary_files.mix(CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix.map{ meta, file -> file })
 
     /*
     ================================================================================
@@ -281,7 +281,7 @@ workflow ASSEMBLY_SNPS {
         MASK_RECOMBINANT_POSITIONS_BIOPYTHON.out.masked_alignment
     )
     ch_versions             = ch_versions.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.versions)
-    ch_output_summary_files = ch_output_summary_files.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix)
+    ch_output_summary_files = ch_output_summary_files.mix(CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS.out.distance_matrix.map{ meta, file -> file })
 
     /*
     ================================================================================
