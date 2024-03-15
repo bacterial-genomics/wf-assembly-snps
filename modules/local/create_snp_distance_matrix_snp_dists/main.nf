@@ -1,6 +1,6 @@
 process CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS {
 
-    tag ( "${meta.snp_package}" )
+    tag { "${meta.snp_package}" }
     label "process_low"
     container "staphb/snp-dists@sha256:9d457181cccacbbea0a3cb935edb1d066011fbc2f578694b6c5f9d9d58dcac15"
 

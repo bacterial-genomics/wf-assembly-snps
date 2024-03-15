@@ -1,6 +1,6 @@
 process RECOMBINATION_GUBBINS {
 
-    tag ( "${meta.snp_package}" )
+    tag { "${meta.snp_package}" }
     label "process_medium"
     container "snads/gubbins@sha256:391a980312096f96d976f4be668d4dea7dda13115db004a50e49762accc0ec62"
 

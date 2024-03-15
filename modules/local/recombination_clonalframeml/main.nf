@@ -1,6 +1,6 @@
 process RECOMBINATION_CLONALFRAMEML {
 
-    tag ( "${meta.snp_package}" )
+    tag { "${meta.snp_package}" }
     label "process_medium"
     container "snads/clonalframeml@sha256:bc00db247195fdc6151793712a74cc9b272dc2c9f153bb0037415e387f15351e"
 
