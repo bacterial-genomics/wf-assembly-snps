@@ -15,6 +15,8 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet or directory not specified!' }
+if (params.ref) { ch_ref_input = file(params.ref) } else { ch_ref_input = [] }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -61,12 +63,6 @@ include { RECOMBINATION                                    } from "../subworkflo
     CREATE CHANNELS FOR INPUT PARAMETERS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-if (params.ref) {
-    ch_ref_input = Channel.fromPath(params.ref, checkIfExists: true)
-} else {
-    ch_ref_input = Channel.empty()
-}
 
 if ( toLower(params.snp_package) == "parsnp" ) {
     ch_snp_package = "Parsnp"
