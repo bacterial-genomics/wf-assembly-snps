@@ -12,9 +12,6 @@ usage() {
 Usage: ${0##*/} ReferenceInput GenomeDirectory [OutputDirectory] [-h|--help]
 
 Required:
-<ReferenceInput>      Path to a single FastA formatted file ending in:
-                      {fasta,fas,fna,fsa,fa} with optional .gz compression will be analyzed.
-
 <GenomeDirectory>     Path to FastA formatted files ending in:
                       {fasta,fas,fna,fsa,fa} with optional .gz compression will be analyzed.
 
@@ -22,7 +19,7 @@ Required:
   Make sure file names are descriptive and concise.
   WARNING: Whitespace is forbidden in filenames.
 
-  Only files that exceed 1 kB in size within <ReferenceInput> and
+  Only files that exceed 45 kB in size within <ReferenceInput> and
   <GenomeDirectory> will be used for SNP identification.
 
 Optional:
