@@ -8,7 +8,7 @@ process CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS {
     tuple val(meta), path(snp_alignment_files)
 
     output:
-    tuple val(meta), path ("*.SNP-Distances.Matrix.tsv"), emit: distance_matrix
+    tuple val(meta), path ("*.SNP_Distances_Matrix.tsv"), emit: distance_matrix
     path (".command.{out,err}")
     path ("versions.yml")                               , emit: versions
 
@@ -22,7 +22,7 @@ process CREATE_SNP_DISTANCE_MATRIX_SNP_DISTS {
       -b \
       -j !{task.cpus} \
       "!{meta.snp_package}.SNPs.fa.gz" \
-      > "!{meta.snp_package}.SNP-Distances.Matrix.tsv"
+      > "!{meta.snp_package}.SNP_Distances_Matrix.tsv"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

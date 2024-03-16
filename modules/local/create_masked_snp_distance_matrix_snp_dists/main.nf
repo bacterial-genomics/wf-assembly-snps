@@ -8,7 +8,7 @@ process CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS {
     tuple val(meta), path(masked_alignment)
 
     output:
-    tuple val(meta), path ("*.Masked-SNP-Distances.Matrix.tsv"), emit: distance_matrix
+    tuple val(meta), path ("*.Masked_SNP_Distances_Matrix.tsv"), emit: distance_matrix
     path (".command.{out,err}")
     path ("versions.yml")                                      , emit: versions
 
@@ -23,7 +23,7 @@ process CREATE_MASKED_SNP_DISTANCE_MATRIX_SNP_DISTS {
       -k \
       -j !{task.cpus} \
       "!{masked_alignment}" \
-      > "!{meta.snp_package}-!{meta.recombination}.Masked-SNP-Distances.Matrix.tsv"
+      > "!{meta.snp_package}-!{meta.recombination}.Masked_SNP_Distances_Matrix.tsv"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

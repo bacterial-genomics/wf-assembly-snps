@@ -8,7 +8,7 @@ process CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS {
     tuple val(meta), path(snp_alignment)
 
     output:
-    tuple val(meta), path("*.SNP-Distances.Pairs.tsv"), emit: snp_distances
+    tuple val(meta), path("*.SNP_Distances_Pairs.tsv"), emit: snp_distances
     path(".command.{out,err}")
     path("versions.yml")                              , emit: versions
 
@@ -29,9 +29,9 @@ process CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS {
     awk -F '\t' '$1 == $2 {print $0}' "!{meta.snp_package}.SNP-Distances.Pairs.tsv" > self-pairs.tsv
     awk -F '\t' '$1 != $2 {print $0}' "!{meta.snp_package}.SNP-Distances.Pairs.tsv" > non-self-pairs.tsv
 
-    cat non-self-pairs.tsv self-pairs.tsv > "!{meta.snp_package}.SNP-Distances.Pairs.tsv"
+    cat non-self-pairs.tsv self-pairs.tsv > "!{meta.snp_package}.SNP_Distances_Pairs.tsv"
 
-    sed -i '1i Sample\tSample\tNum core SNPs apart' "!{meta.snp_package}.SNP-Distances.Pairs.tsv"
+    sed -i '1i Sample\tSample\tNum core SNPs apart' "!{meta.snp_package}.SNP_Distances_Pairs.tsv"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

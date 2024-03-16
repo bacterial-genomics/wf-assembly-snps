@@ -1,5 +1,13 @@
 process CREATE_EXCEL_RUN_SUMMARY_PYTHON {
 
+    publishDir   "${params.outdir}/Summaries",
+        mode:    params.publish_dir_mode,
+        pattern: "*xlsx"
+    publishDir   params.process_log_dir,
+        mode:    params.publish_dir_mode,
+        pattern: ".command.{out,err}",
+        saveAs:  { filename -> "${task.process}${filename}" }
+
     container "gregorysprenger/pandas-excel@sha256:4fad4114df25726e24660d8550da48b926b80ce5b8a32b522b552a2d8e1df156"
 
     input:
@@ -36,8 +44,8 @@ process CREATE_EXCEL_RUN_SUMMARY_PYTHON {
     # Get process version information
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
-        python: \$(python3 --version 2>&1 | awk '{print \$2}')
-        ubuntu: \$(awk -F ' ' '{print \$2, \$3}' /etc/issue | tr -d '\\n')
+        python: $(python3 --version 2>&1 | awk '{print $2}')
+        ubuntu: $(awk -F ' ' '{print $2, $3}' /etc/issue | tr -d '\\n')
     END_VERSIONS
     '''
 }
