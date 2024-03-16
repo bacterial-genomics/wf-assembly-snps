@@ -411,10 +411,6 @@ else
   exit 1
 fi
 
-# Add Reference basename to submitted array
-reference_base=$(basename ${REFERENCE} | sed 's/[.].*//g' | sed 's/_genomic//1')
-submitted+=(${reference_base})
-
 # Display basename of FastQ files submitted
 echo -e "${GREEN_TXT}\nReference input:${COLOR_OFF} ${REFERENCE}"
 echo -e "${GREEN_TXT}Genome directory:${COLOR_OFF} ${GENOMES}"
