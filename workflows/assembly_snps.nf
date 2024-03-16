@@ -304,6 +304,24 @@ workflow ASSEMBLY_SNPS {
 
     /*
     ================================================================================
+                        Collect QC information
+    ================================================================================
+    */
+
+    // Collect QC file check information
+    ch_qc_filecheck = ch_qc_filecheck
+                        .map{ meta, file -> file }
+                        .collectFile(
+                            name:       "Summary.QC_File_Checks.tsv",
+                            keepHeader: true,
+                            storeDir:   "${params.outdir}/Summaries",
+                            sort:       'index'
+                        )
+
+    ch_output_summary_files = ch_output_summary_files.mix(ch_qc_filecheck.collect())
+
+    /*
+    ================================================================================
                         Convert TSV outputs to Excel XLSX
     ================================================================================
     */
@@ -322,7 +340,7 @@ workflow ASSEMBLY_SNPS {
 
     /*
     ================================================================================
-                        Collect version and QC information
+                        Collect version information
     ================================================================================
     */
 
@@ -333,18 +351,6 @@ workflow ASSEMBLY_SNPS {
             name:     "software_versions.yml",
             storeDir: params.tracedir
         )
-
-    // Collect QC file check information
-    ch_qc_filecheck = ch_qc_filecheck
-                        .map{ meta, file -> file }
-                        .collectFile(
-                            name:       "Summary.QC_File_Checks.tsv",
-                            keepHeader: true,
-                            storeDir:   "${params.outdir}/Summaries",
-                            sort:       'index'
-                        )
-
-    ch_output_summary_files = ch_output_summary_files.mix(ch_qc_filecheck.collect())
 }
 
 /*
