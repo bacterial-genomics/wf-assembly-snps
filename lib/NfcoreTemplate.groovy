@@ -308,7 +308,7 @@ class NfcoreTemplate {
             ${colors.green}       Identify SNPs from genome assemblies.               ${colors.reset}
 
 
-            ${colors.purple}             ${workflow.manifest.name} ${workflow_version}${colors.reset}
+            ${colors.purple}     ${workflow.manifest.name} ${workflow_version}${colors.reset}
             ${dashedLine(monochrome_logs)}
             """.stripIndent()
         )
