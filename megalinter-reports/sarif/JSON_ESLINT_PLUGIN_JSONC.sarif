@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-2.1.0-rtm.5",
+  "runs": [
+    {
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///github/workspace/modules.json"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///github/workspace/nextflow_schema.json"
+          }
+        }
+      ],
+      "properties": {
+        "megalinter": {
+          "docUrl": "https://megalinter.io/7.10.0/descriptors/json_eslint_plugin_jsonc",
+          "linterKey": "JSON_ESLINT_PLUGIN_JSONC",
+          "linterVersion": "2.13.0"
+        }
+      },
+      "results": [],
+      "tool": {
+        "driver": {
+          "informationUri": "https://eslint.org",
+          "name": "ESLint (MegaLinter JSON_ESLINT_PLUGIN_JSONC)",
+          "rules": [],
+          "version": "8.57.0"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

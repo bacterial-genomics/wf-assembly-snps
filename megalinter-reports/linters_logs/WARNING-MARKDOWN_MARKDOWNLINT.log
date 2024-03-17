@@ -1,0 +1,33 @@
+Results of markdownlint linter (version 0.39.0)
+See documentation on https://megalinter.io/7.10.0/descriptors/markdown_markdownlint/
+-----------------------------------------------
+
+❌ [ERROR] for workspace /github/workspace
+Linter raw log:
+docs/HPC-UGE-scheduler.md:19 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/HPC-UGE-scheduler.md:25 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/HPC-UGE-scheduler.md:40 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/HPC-UGE-scheduler.md:48 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/HPC-UGE-scheduler.md:60 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/HPC-UGE-scheduler.md:67 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/HPC-UGE-scheduler.md:77 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/local-device.md:19 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/local-device.md:27 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/local-device.md:37 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/local-device.md:47 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/local-device.md:60 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+docs/local-device.md:71 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:39 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:45 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:59 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:65 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:87 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:88:121 MD013/line-length Line length [Expected: 120; Actual: 164]
+README.md:99 MD001/heading-increment Heading levels should only increment by one level at a time [Expected: h3; Actual: h4]
+README.md:101 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+README.md:105:121 MD013/line-length Line length [Expected: 120; Actual: 189]
+README.md:107:121 MD013/line-length Line length [Expected: 120; Actual: 163]
+README.md:115:121 MD013/line-length Line length [Expected: 120; Actual: 146]
+README.md:123:121 MD013/line-length Line length [Expected: 120; Actual: 142]
+README.md:130 MD040/fenced-code-language Fenced code blocks should have a language specified [Context: "```"]
+
