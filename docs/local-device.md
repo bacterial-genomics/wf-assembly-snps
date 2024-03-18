@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/wf-assembly-snps_logo_dark.png">
-    <img alt="bacterial-genomics/wf-assembly-snps" src="docs/images/wf-assembly-snps_logo_light.png">
+    <source media="(prefers-color-scheme: dark)" srcset="images/wf-assembly-snps_logo_dark.png">
+    <img alt="bacterial-genomics/wf-assembly-snps" src="images/wf-assembly-snps_logo_light.png">
   </picture>
 </h1>
 
@@ -16,7 +16,7 @@
 
 ## Install Worflow Locally
 
-```
+```bash
 git clone https://github.com/bacterial-genomics/wf-assembly-snps.git
 ```
 
@@ -24,7 +24,7 @@ git clone https://github.com/bacterial-genomics/wf-assembly-snps.git
 
 Before running workflow on new data, the workflow should be ran on the built-in test data to make sure everything is working properly. It will also download all dependencies to make subsequent runs much faster.
 
-```
+```bash
 cd wf-assembly-snps/
 
 nextflow run main.nf -profile singularity,test --outdir results
@@ -34,7 +34,7 @@ nextflow run main.nf -profile singularity,test --outdir results
 
 ### Run all inputs against each other
 
-```
+```bash
 nextflow run main.nf \
   -profile singularity \
   --input INPUT_DIRECTORY \
@@ -44,7 +44,7 @@ nextflow run main.nf \
 
 ### Run a query input against a reference directory of inputs
 
-```
+```bash
 nextflow run main.nf \
   -profile singularity \
   --query QUERY_INPUT_FILE \
@@ -57,7 +57,7 @@ nextflow run main.nf \
 
 When running locally, `--max_cpus` and `--max_memory` may need to be specified. Below, max cpus is set to 4 and max memory is set to 16 (for 16GB).
 
-```
+```bash
 nextflow run main.nf \
   -profile singularity \
   --input INPUT_DIRECTORY \
@@ -68,6 +68,6 @@ nextflow run main.nf \
 
 ### Help menu of all options
 
-```
+```bash
 nextflow run main.nf --help
 ```

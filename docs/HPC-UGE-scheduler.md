@@ -1,7 +1,7 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/wf-assembly-snps_logo_dark.png">
-    <img alt="bacterial-genomics/wf-assembly-snps" src="docs/images/wf-assembly-snps_logo_light.png">
+    <source media="(prefers-color-scheme: dark)" srcset="images/wf-assembly-snps_logo_dark.png">
+    <img alt="bacterial-genomics/wf-assembly-snps" src="images/wf-assembly-snps_logo_light.png">
   </picture>
 </h1>
 
@@ -16,13 +16,13 @@
 
 ## Install on our HPC
 
-```
+```bash
 git clone https://github.com/bacterial-genomics/wf-assembly-snps.git $LAB_HOME/workflows
 ```
 
 ## Setup Singularity environment variables - For Aspen Cluster
 
-```
+```bash
 # Add to $HOME/.bashrc
 SINGULARITY_BASE=/scicomp/scratch/$USER
 
@@ -37,7 +37,7 @@ mkdir -pv $SINGULARITY_TMPDIR $SINGULARITY_CACHEDIR
 
 Reload .bashrc
 
-```
+```bash
 source ~/.bashrc
 ```
 
@@ -45,7 +45,7 @@ source ~/.bashrc
 
 Before running workflow on new data, the workflow should be ran on the built-in test data to make sure everything is working properly. It will also download all dependencies to make subsequent runs much faster.
 
-```
+```bash
 cd $LAB_HOME/workflows/wf-assembly-snps
 
 module load nextflow
@@ -57,14 +57,14 @@ To minimize typing all of the parameters above, a bash script was created for UG
 
 ## Usage
 
-```
+```bash
 # Parsnp
 run_Parsnp.uge-nextflow INPUT_DIRECTORY OUTPUT_DIRECTORY
 ```
 
 Example analysis using Nextflow command:
 
-```
+```bash
 nextflow run main.nf \
   -profile singularity \
   --input INPUT_DIRECTORY \
@@ -74,6 +74,6 @@ nextflow run main.nf \
 
 ### Help menu of all options
 
-```
+```bash
 nextflow run main.nf --help
 ```
