@@ -1,0 +1,120 @@
+Results of shellcheck linter (version 0.10.0)
+See documentation on https://megalinter.io/7.10.0/descriptors/bash_shellcheck/
+-----------------------------------------------
+
+❌ [ERROR] for workspace /github/workspace
+Linter raw log:
+note: Not following: bash_functions.sh: openBinaryFile: does not exist (No such file or directory)
+  ┌─ bin/run_parsnp.sh:8:8
+  │
+8 │ source bash_functions.sh
+  │        ^^^^^^^^^^^^^^^^^
+  │
+  = SC1091
+  = For more information: https://www.shellcheck.net/wiki/SC1091
+
+warning: Did you forget to close this double quoted string?
+   ┌─ bin/run_parsnp.sh:35:10
+   │
+35 │   echo """ERROR: Parsnp failed.
+   │          ^
+   │
+   = SC1078
+   = For more information: https://www.shellcheck.net/wiki/SC1078
+
+note: This is actually an end quote, but due to next char it looks suspect.
+   ┌─ bin/run_parsnp.sh:36:41
+   │
+36 │   Check ${output_path}/parsnpAligner.log""" >&2
+   │                                         ^
+   │
+   = SC1079
+   = For more information: https://www.shellcheck.net/wiki/SC1079
+
+note: Not following: bash_functions.sh: openBinaryFile: does not exist (No such file or directory)
+  ┌─ bin/extract_snps.sh:5:8
+  │
+5 │ source bash_functions.sh
+  │        ^^^^^^^^^^^^^^^^^
+  │
+  = SC1091
+  = For more information: https://www.shellcheck.net/wiki/SC1091
+
+warning: send_mail appears unused. Verify use (or export if used externally).
+  ┌─ bin/bash_functions.sh:3:1
+  │
+3 │ send_mail=true
+  │ ^^^^^^^^^
+  │
+  = SC2034
+  = For more information: https://www.shellcheck.net/wiki/SC2034
+
+error: Argument mixes string and array. Use * or separate argument.
+  ┌─ bin/bash_functions.sh:9:43
+  │
+9 │   echo "[$(date '+%Y-%b-%d %a %H:%M:%S')] $@"
+  │                                           ^^
+  │
+  = SC2145
+  = For more information: https://www.shellcheck.net/wiki/SC2145
+
+note: Double quote to prevent globbing and word splitting.
+   ┌─ bin/bash_functions.sh:47:42
+   │
+47 │         msg "ERROR: ${2} file $(basename ${1}) present but too small (less than ${3})" >&2
+   │                                          ^^^^
+   │
+   ┌─ bin/bash_functions.sh:47:42
+   │
+47 │         msg "ERROR: ${2} file $(basename ${1}) present but too small (less than ${3})" >&2
+   │                                          -
+   │
+   ┌─ bin/bash_functions.sh:47:46
+   │
+47 │         msg "ERROR: ${2} file $(basename ${1}) present but too small (less than ${3})" >&2
+   │                                              -
+   │
+   = SC2086
+   = For more information: https://www.shellcheck.net/wiki/SC2086
+
+note: Double quote to prevent globbing and word splitting.
+   ┌─ bin/bash_functions.sh:51:40
+   │
+51 │       msg "ERROR: ${2} file $(basename ${1}) present but empty" >&2
+   │                                        ^^^^
+   │
+   ┌─ bin/bash_functions.sh:51:40
+   │
+51 │       msg "ERROR: ${2} file $(basename ${1}) present but empty" >&2
+   │                                        -
+   │
+   ┌─ bin/bash_functions.sh:51:44
+   │
+51 │       msg "ERROR: ${2} file $(basename ${1}) present but empty" >&2
+   │                                            -
+   │
+   = SC2086
+   = For more information: https://www.shellcheck.net/wiki/SC2086
+
+note: Double quote to prevent globbing and word splitting.
+   ┌─ bin/bash_functions.sh:55:38
+   │
+55 │     msg "ERROR: ${2} file $(basename ${1}) absent" >&2
+   │                                      ^^^^
+   │
+   ┌─ bin/bash_functions.sh:55:38
+   │
+55 │     msg "ERROR: ${2} file $(basename ${1}) absent" >&2
+   │                                      -
+   │
+   ┌─ bin/bash_functions.sh:55:42
+   │
+55 │     msg "ERROR: ${2} file $(basename ${1}) absent" >&2
+   │                                          -
+   │
+   = SC2086
+   = For more information: https://www.shellcheck.net/wiki/SC2086
+
+warning: 2 warnings emitted
+error: 2 errors emitted
+

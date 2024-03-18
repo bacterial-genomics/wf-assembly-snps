@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/main/assets/schema_input.json",
+    "title": "bacterial-genomics/wf-assembly-snps pipeline - params.input schema",
+    "description": "Schema for the file provided with params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "sample": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Sample name must be provided and cannot contain spaces"
+            },
+            "file": {
+                "type": "string",
+                "pattern": "^\\S+\\.(fasta|fas|fna|fsa|fa)(.gz)?$",
+                "errorMessage": "FastA file must be provided, cannot contain spaces and must have extension one of the following extensions {fasta|fas|fna|fsa|fa} with optional .gz compression."
+            }
+        },
+        "required": ["sample", "file"]
+    }
+}

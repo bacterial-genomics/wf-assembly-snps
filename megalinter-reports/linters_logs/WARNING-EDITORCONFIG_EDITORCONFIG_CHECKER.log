@@ -1,0 +1,42 @@
+Results of editorconfig-checker linter (version 2.7.2)
+See documentation on https://megalinter.io/7.10.0/descriptors/editorconfig_editorconfig_checker/
+-----------------------------------------------
+
+❌ [ERROR] for workspace /github/workspace
+Linter raw log:
+README.md:
+	143: Wrong amount of left-padding spaces(want multiple of 2)
+	145: Wrong amount of left-padding spaces(want multiple of 2)
+docs/usage.md:
+	169: Wrong amount of left-padding spaces(want multiple of 2)
+	171: Wrong amount of left-padding spaces(want multiple of 2)
+	172: Wrong amount of left-padding spaces(want multiple of 2)
+	173: Wrong amount of left-padding spaces(want multiple of 2)
+	174: Wrong amount of left-padding spaces(want multiple of 2)
+	175: Wrong amount of left-padding spaces(want multiple of 2)
+	176: Wrong amount of left-padding spaces(want multiple of 2)
+	177: Wrong amount of left-padding spaces(want multiple of 2)
+	179: Wrong amount of left-padding spaces(want multiple of 2)
+	181: Wrong amount of left-padding spaces(want multiple of 2)
+	182: Wrong amount of left-padding spaces(want multiple of 2)
+	183: Wrong amount of left-padding spaces(want multiple of 2)
+	184: Wrong amount of left-padding spaces(want multiple of 2)
+	185: Wrong amount of left-padding spaces(want multiple of 2)
+	186: Wrong amount of left-padding spaces(want multiple of 2)
+	187: Wrong amount of left-padding spaces(want multiple of 2)
+	189: Wrong amount of left-padding spaces(want multiple of 2)
+	191: Wrong amount of left-padding spaces(want multiple of 2)
+	192: Wrong amount of left-padding spaces(want multiple of 2)
+	193: Wrong amount of left-padding spaces(want multiple of 2)
+	194: Wrong amount of left-padding spaces(want multiple of 2)
+	195: Wrong amount of left-padding spaces(want multiple of 2)
+	196: Wrong amount of left-padding spaces(want multiple of 2)
+	197: Wrong amount of left-padding spaces(want multiple of 2)
+modules.nf:
+	28: Trailing whitespace
+	47: Trailing whitespace
+modules/local/build_phylogenetic_tree_parsnp/params.config:
+	Wrong line endings or no final newline
+
+29 errors found
+
