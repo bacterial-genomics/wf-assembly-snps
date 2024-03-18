@@ -1,8 +1,0 @@
-{
-    "recommendations": [
-        "foxundermoon.shell-format",
-        "timonwong.shellcheck",
-        "charliermarsh.ruff",
-        "esbenp.prettier-vscode"
-    ]
-}
