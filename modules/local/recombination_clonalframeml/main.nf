@@ -18,10 +18,12 @@ process RECOMBINATION_CLONALFRAMEML {
     # ClonalFrameML needs tree labels to not be surrounded by single quotes
     sed -i "s/'//g" "!{meta.snp_package}.tree"
 
-    ClonalFrameML "!{meta.snp_package}.tree" "!{core_alignment_fasta}" ClonalFrameML
+    ClonalFrameML "!{meta.snp_package}.tree" "!{core_alignment_fasta}" "!{meta.snp_package}-ClonalFrameML"
 
     # Rename output file
-    mv ClonalFrameML.importation_status.txt ClonalFrameML.recombination_positions.txt
+    mv \
+      "!{meta.snp_package}-ClonalFrameML.importation_status.txt" \
+      "!{meta.snp_package}-ClonalFrameML.recombination_positions.txt"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

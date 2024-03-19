@@ -18,11 +18,14 @@ process RECOMBINATION_GUBBINS {
     source bash_functions.sh
 
     msg "INFO: Performing recombination using Gubbins."
-    run_gubbins.py --starting-tree "!{meta.snp_package}.tree" --prefix Gubbins "!{core_alignment_fasta}"
+    run_gubbins.py --starting-tree "!{meta.snp_package}.tree" --prefix "!{meta.snp_package}-Gubbins" "!{core_alignment_fasta}"
 
     # Rename output files
-    mv Gubbins.recombination_predictions.gff Gubbins.recombination_positions.gff
-    mv Gubbins.node_labelled.final_tree.tre Gubbins.labelled_tree.tree
+    mv "!{meta.snp_package}-Gubbins.recombination_predictions.gff" \
+      "!{meta.snp_package}-Gubbins.recombination_positions.gff"
+
+    mv "!{meta.snp_package}-Gubbins.node_labelled.final_tree.tre" \
+      "!{meta.snp_package}-Gubbins.labelled_tree.tree"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":
