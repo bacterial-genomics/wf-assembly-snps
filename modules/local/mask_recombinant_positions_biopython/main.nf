@@ -23,8 +23,8 @@ process MASK_RECOMBINANT_POSITIONS_BIOPYTHON {
     mask_recombination.py \
       --alignment "!{core_alignment_fasta}" \
       --format !{format} \
-      --rec_positions !{meta.recombination}.recombination_positions.* \
-      --tree !{meta.recombination}.labelled_tree.* \
+      --rec_positions "!{meta.snp_package}-!{meta.recombination}.recombination_positions.txt" \
+      --tree "!{meta.snp_package}-!{meta.recombination}.labelled_tree.tree" \
       > "!{meta.snp_package}-!{meta.recombination}.masked_recombination.fasta"
 
     cat <<-END_VERSIONS > versions.yml

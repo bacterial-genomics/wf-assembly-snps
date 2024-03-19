@@ -9,7 +9,7 @@ process RECOMBINATION_GUBBINS {
     tuple val(meta_alignment), path(alignment_files)
 
     output:
-    tuple val(meta), path("*.{gff,tree}"), emit: positions_and_tree
+    tuple val(meta), path("*.{txt,tree}"), emit: positions_and_tree
     path(".command.{out,err}")
     path("versions.yml")                 , emit: versions
 
@@ -22,7 +22,7 @@ process RECOMBINATION_GUBBINS {
 
     # Rename output files
     mv "!{meta.snp_package}-Gubbins.recombination_predictions.gff" \
-      "!{meta.snp_package}-Gubbins.recombination_positions.gff"
+      "!{meta.snp_package}-Gubbins.recombination_positions.txt"
 
     mv "!{meta.snp_package}-Gubbins.node_labelled.final_tree.tre" \
       "!{meta.snp_package}-Gubbins.labelled_tree.tree"
