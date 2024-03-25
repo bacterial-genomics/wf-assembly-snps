@@ -18,10 +18,11 @@ process RECOMBINATION_GUBBINS {
     source bash_functions.sh
 
     msg "INFO: Performing recombination using Gubbins."
+
     run_gubbins.py \
-     --starting-tree "!{meta.snp_package}.tree" \
-     --prefix "!{meta.snp_package}-Gubbins" \
-     "!{core_alignment_fasta}"
+      --starting-tree "!{meta.snp_package}.tree" \
+      --prefix "!{meta.snp_package}-Gubbins" \
+      "!{core_alignment_fasta}"
 
     # Rename output files
     mv "!{meta.snp_package}-Gubbins.recombination_predictions.gff" \

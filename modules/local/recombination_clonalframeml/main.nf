@@ -19,9 +19,9 @@ process RECOMBINATION_CLONALFRAMEML {
     sed -i "s/'//g" "!{meta.snp_package}.tree"
 
     ClonalFrameML \
-     "!{meta.snp_package}.tree" \
-     "!{core_alignment_fasta}" \
-     "!{meta.snp_package}-ClonalFrameML"
+      "!{meta.snp_package}.tree" \
+      "!{core_alignment_fasta}" \
+      "!{meta.snp_package}-ClonalFrameML"
 
     # Rename output file
     mv \
