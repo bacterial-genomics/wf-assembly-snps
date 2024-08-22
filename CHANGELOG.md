@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 ### `Fixed`
+
 - [#3](https://github.com/bacterial-genomics/wf-assembly-snps/pull/3) Refactored profiles to align with Seqera Tower requirements and added a Tower yaml for reporting by @slsevilla
 
 ### `Updated`
@@ -15,12 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Deprecated`
 
 ## v1.0.1 - August 21, 2024
+
 ### `Added`
 
 ### `Fixed`
+
 - [#2](https://github.com/bacterial-genomics/wf-assembly-snps/pull/2) Lint fixes (@gregorysprenger)
 
 ### `Updated`
+
 - [#2](https://github.com/bacterial-genomics/wf-assembly-snps/pull/2) Updated docs (@gregorysprenger)
 
 ### `Deprecated`
