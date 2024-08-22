@@ -46,7 +46,7 @@ nextflow pull bacterial-genomics/wf-assembly-snps -r main
 nextflow run \
   bacterial-genomics/wf-assembly-snps \
   -r main \
-  -profile <docker|singularity>,test \
+  -profile docker,test \
   --outdir results
 ```
 
@@ -60,7 +60,7 @@ Example command on FastAs in "new-fasta-dir" data using **BLAST** with singulari
 nextflow run \
   bacterial-genomics/wf-assembly-snps \
   -r main \
-  -profile singularity \
+  -profile docker \
   --input new-fasta-dir \
   --outdir my-results \
   --snp_package parsnp
@@ -80,7 +80,7 @@ This workflow performs average nucleotide identity on assembled and/or annotated
 
 ```bash
 nextflow run main.nf \
-  -profile <docker|singularity> \
+  -profile docker \
   --input <input directory> \
   --ref <optional reference file> \
   --outdir <directory for results> \
@@ -127,7 +127,7 @@ These are the most pertinent options for this workflow:
                           Recognized arguments are: parsnp. [Default: parsnp]
 ```
 
-#### Additional parameters
+### Additional parameters
 
 View help menu of all workflow options:
 
@@ -156,7 +156,7 @@ Please see the [output documentation](docs/output.md) for a table of all outputs
 
 Q: It failed, how do I find out what went wrong?
 
-A: View file contents in the `<outdir>/log` directory.
+A: View file contents in the `<outdir>/pipeline_info` directory.
 
 ## Contributions and Support
 
