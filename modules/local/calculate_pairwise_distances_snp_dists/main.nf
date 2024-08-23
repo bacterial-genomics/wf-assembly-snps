@@ -31,7 +31,7 @@ process CALCULATE_PAIRWISE_DISTANCES_SNP_DISTS {
 
     cat non-self-pairs.tsv self-pairs.tsv > "!{meta.snp_package}.SNP_Distances_Pairs.tsv"
 
-    sed -i '1i Sample\tSample\tNum core SNPs apart' "!{meta.snp_package}.SNP_Distances_Pairs.tsv"
+    sed -i '1i Sample\tSample\tNumber_core_SNPs_apart' "!{meta.snp_package}.SNP_Distances_Pairs.tsv"
 
     cat <<-END_VERSIONS > versions.yml
     "!{task.process}":

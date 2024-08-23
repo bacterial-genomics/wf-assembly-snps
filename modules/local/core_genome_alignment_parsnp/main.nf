@@ -30,7 +30,6 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
       --sequences genomes/ \
       --reference !{reference_file} \
       --output-dir Parsnp \
-      --vcf \
       --verbose \
       !{treeMethod} \
       !{curatedInput} \
@@ -58,11 +57,10 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
       fi
     done
 
-    # Remove reference label from tip in tree file
-    sed -i "s/.ref//1" Parsnp.tree
-
-    # Remove all copies of `.ref` from FastA file
-    sed -i 's/.ref//g' Parsnp.SNPs.fa
+    # Remove the 1 additional suffix Parsnp adds to the reference sample `.ref`
+    if [[ $(grep -o -n '.ref' Parsnp.tree | wc -l) -eq 1 ]]; then
+      sed -i 's/.ref//1' Parsnp.tree Parsnp.SNPs.fa
+    fi
 
     gzip -9f Parsnp.SNPs.fa
 

@@ -23,8 +23,10 @@ process CONVERT_GINGR_TO_FASTA_HARVESTTOOLS {
       -i "!{meta.snp_package}.ggr" \
       -M "!{meta.snp_package}.Core_Alignment.fasta"
 
-    # Remove all copies of `.ref` from FastA file
-    sed -i 's/.ref//g' !{meta.snp_package}.Core_Alignment.fasta
+    # Remove the 1 additional suffix Parsnp adds to the reference sample `.ref`
+    if [[ $(grep -o -n '.ref' !{meta.snp_package}.Core_Alignment.fasta | wc -l) -eq 1 ]]; then
+      sed -i 's/.ref//1' !{meta.snp_package}.Core_Alignment.fasta
+    fi
 
     # Verify output
     echo -e "Sample name\tQC step\tOutcome (Pass/Fail)" > "!{meta.snp_package}.Gingr_to_FastA_File.tsv"
