@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Updated`
 
 ### `Deprecated`
+
 - [#6](https://github.com/bacterial-genomics/wf-assembly-snps/pull/6) [commit](https://github.com/bacterial-genomics/wf-assembly-snps/commit/44e0f25bd71bf2c1191bbcb133fc917ccf039281) No longer create VCF outfile (easily made from `harvesttools -i parsnp.ggr -V out.vcf`) but we rarely need this and slows down larger panel analyses. by @chrisgulvik
 
 ## v1.0.2 - August 21, 2024
