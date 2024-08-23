@@ -30,7 +30,6 @@ process CORE_GENOME_ALIGNMENT_PARSNP {
       --sequences genomes/ \
       --reference !{reference_file} \
       --output-dir Parsnp \
-      --vcf \
       --verbose \
       !{treeMethod} \
       !{curatedInput} \
