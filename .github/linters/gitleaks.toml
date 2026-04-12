@@ -1,4 +1,0 @@
-[allowlist]
-paths = [
-  '''(.*?)(fasta|fas)'''
-]
