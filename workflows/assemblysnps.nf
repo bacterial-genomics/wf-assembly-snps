@@ -40,6 +40,7 @@ workflow ASSEMBLYSNPS {
         [[],[]], // tuple val(meta2), path(fasta)
         [[],[]], // tuple val(meta3), path(gff)
     )
+    ch_quast_multiqc = QUAST.out.results
 
     //
     // Collate and save software versions
