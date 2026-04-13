@@ -9,6 +9,8 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_assemblysnps_pipeline'
 
+include { QUAST } from '../modules/nf-core/quast/main'
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -19,10 +21,25 @@ workflow ASSEMBLYSNPS {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+
     main:
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
+
+    ch_samplesheet.tap { log1 }
+
+    log1.view()
+
+    //
+    // MODULE: QUAST
+    //
+
+    QUAST (
+        ch_samplesheet,
+        [[],[]], // tuple val(meta2), path(fasta)
+        [[],[]], // tuple val(meta3), path(gff)
+    )
 
     //
     // Collate and save software versions
