@@ -1,0 +1,61 @@
+repository_type: pipeline
+
+nf_core_version: 3.5.2
+
+lint:
+  files_unchanged:
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-assemblysnps_logo_light.png
+    - docs/images/nf-core-assemblysnps_logo_light.png
+    - docs/images/nf-core-assemblysnps_logo_dark.png
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/CONTRIBUTING.md
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - assets/email_template.txt
+    - docs/README.md
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/workflows/branch.yml
+    - .github/workflows/linting_comment.yml
+    - .github/workflows/linting.yml
+    - .github/CONTRIBUTING.md
+    - .github/.dockstore.yml
+  nextflow_config:
+    - manifest.name
+    - manifest.homePage
+  multiqc_config:
+    - report_comment
+  files_exist:
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-assemblysnps_logo_light.png
+    - docs/images/nf-core-assemblysnps_logo_light.png
+    - docs/images/nf-core-assemblysnps_logo_dark.png
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/CONTRIBUTING.md
+    - .github/.dockstore.yml
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+  readme:
+    - nextflow_badge
+
+template:
+  org: bacterial-genomics
+  name: AssemblySNPs
+  description: General workflow for genome assembly-based SNP phylogeny with optional
+    recombination masking
+  author: "@Ethan-Hetrick,@chrisgulvik"
+  version: 2.0.0dev
+  force: true
+  outdir: .
+  skip_features:
+    - github
+    - igenomes
+    - gpu
+  is_nfcore: false
