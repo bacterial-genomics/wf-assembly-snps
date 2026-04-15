@@ -43,6 +43,19 @@
                 }
             }
         },
+        "qc_options": {
+            "title": "QC options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "min_assembly_size": {
+                    "type": "integer",
+                    "description": "Minimum file size of assembly",
+                    "default": 5000000
+                }
+            }
+        },
         "institutional_config_options": {
             "title": "Institutional config options",
             "type": "object",
@@ -204,6 +217,9 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/qc_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

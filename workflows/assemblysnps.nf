@@ -27,16 +27,23 @@ workflow ASSEMBLYSNPS {
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
 
-    ch_samplesheet.tap { log1 }
+    //
+    // PREPROCESSING
+    //
 
-    log1.view()
+    // Filter assemblies by size
+    ch_samplesheet
+        .filter{ it[1].size() > params.min_assembly_size }
+        .set { ch_samplesheet_filtered }
+
+    ch_samplesheet_filtered.view( it -> "Filtered samplesheet channel: ${it}" )
 
     //
     // MODULE: QUAST
     //
 
     QUAST (
-        ch_samplesheet,
+        ch_samplesheet_filtered,
         [[],[]], // tuple val(meta2), path(fasta)
         [[],[]], // tuple val(meta3), path(gff)
     )
