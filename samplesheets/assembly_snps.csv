@@ -1,5 +1,5 @@
 sample,fasta
-'https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCA_002587385.1_ASM258738v1_genomic.fna.gz
-'https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCA_002596765.1_ASM259676v1_genomic.fna.gz
-'https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCA_002598005.1_ASM259800v1_genomic.fna.gz
-'https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCF_000819615.1_ViralProj14015_genomic.fna.gz
+GCA_002587385.1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCA_002587385.1_ASM258738v1_genomic.fna.gz"
+GCA_002596765.1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCA_002596765.1_ASM259676v1_genomic.fna.gz"
+GCA_002598005.1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCA_002598005.1_ASM259800v1_genomic.fna.gz"
+GCF_000819615.1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/GCF_000819615.1_ViralProj14015_genomic.fna.gz"
