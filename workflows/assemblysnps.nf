@@ -33,17 +33,21 @@ workflow ASSEMBLYSNPS {
 
     // Filter assemblies by size
     ch_samplesheet
-        .filter{ it[1].size() > params.min_assembly_size }
+        .branch { meta, fasta ->
+            pass: fasta[0].size() > params.min_fasta_size
+            fail: fasta[0].size() <= params.min_fasta_size
+        }
         .set { ch_samplesheet_filtered }
 
-    ch_samplesheet_filtered.view( it -> "Filtered samplesheet channel: ${it}" )
+    ch_samplesheet_filtered.fail.tap { ch_samplesheet_fail_log }
+    ch_samplesheet_fail_log.view( it -> "SAMPLE FAIL: Length of ${it[0].id} < ${params.min_fasta_size} bytes" )
 
     //
     // MODULE: QUAST
     //
 
     QUAST (
-        ch_samplesheet_filtered,
+        ch_samplesheet_filtered.pass,
         [[],[]], // tuple val(meta2), path(fasta)
         [[],[]], // tuple val(meta3), path(gff)
     )

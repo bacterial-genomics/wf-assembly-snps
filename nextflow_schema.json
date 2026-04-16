@@ -49,10 +49,10 @@
             "description": "",
             "default": "",
             "properties": {
-                "min_assembly_size": {
+                "min_fasta_size": {
                     "type": "integer",
-                    "description": "Minimum file size of assembly",
-                    "default": 5000000
+                    "description": "Minimum file size of input FASTA files",
+                    "default": 1000
                 }
             }
         },
