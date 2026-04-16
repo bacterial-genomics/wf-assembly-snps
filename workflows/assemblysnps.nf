@@ -31,6 +31,11 @@ workflow ASSEMBLYSNPS {
     // PREPROCESSING
     //
 
+    // // Error if sample count is insufficient after filtering
+    // if( file(ch_samplesheet).size() < params.min_samples ) {
+    //     error "ERROR: At least ${params.min_samples} samples are required for assembly-based SNP calling."
+    // }
+
     // Filter assemblies by size
     ch_samplesheet
         .branch { meta, fasta ->
