@@ -49,11 +49,6 @@
             "description": "",
             "default": "",
             "properties": {
-                "min_samples": {
-                    "type": "integer",
-                    "description": "Minimum number of samples to run pipeline",
-                    "default": 3
-                },
                 "min_fasta_size": {
                     "type": "integer",
                     "description": "Minimum file size of input FASTA files",

@@ -4,6 +4,7 @@
     "title": "bacterial-genomics/assemblysnps pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
+    "minItems": 3,
     "items": {
         "type": "object",
         "properties": {
