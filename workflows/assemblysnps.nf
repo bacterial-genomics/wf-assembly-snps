@@ -18,6 +18,7 @@ include { PARSNP } from '../modules/local/parsnp/main'
 include { FASTTREE } from '../modules/nf-core/fasttree/main'
 include { SNPSITES } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS } from '../modules/nf-core/snpdists/main'
+include { CLONALFRAMEML } from '../modules/nf-core/clonalframeml/main'
 
 
 /*
@@ -105,6 +106,18 @@ workflow ASSEMBLYSNPS {
 
     FASTTREE (
         ch_fasttree
+    )
+
+    //
+    // MODULE: ClonalFrameML
+    //
+
+    ch_clonalframeml = FASTTREE.out.phylogeny
+        .combine( SNPSITES.out.fasta )
+        .map { newick, msa -> [[], newick, msa] }
+
+    CLONALFRAMEML (
+        ch_clonalframeml
     )
 
     //

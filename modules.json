@@ -5,6 +5,11 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "clonalframeml": {
+                        "branch": "master",
+                        "git_sha": "9cc1f457e29d750a20272b45dcf9bee060d74595",
+                        "installed_by": ["modules"]
+                    },
                     "fasttree": {
                         "branch": "master",
                         "git_sha": "41dfa3f7c0ffabb96a6a813fe321c6d1cc5b6e46",
