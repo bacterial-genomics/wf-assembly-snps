@@ -3,7 +3,7 @@ process FASTTREE {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/fasttree:2.1.10--h516909a_4' :
+        'https://depot.galaxyproject.org/singularity/fasttree:2.1.11--h7b50bb2_5' :
         'biocontainers/fasttree:2.1.10--h516909a_4' }"
 
     input:
