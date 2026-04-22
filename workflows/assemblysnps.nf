@@ -14,6 +14,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_asse
 // Added
 include { QUAST } from '../modules/nf-core/quast/main'
 include { GUBBINS } from '../modules/nf-core/gubbins/main'
+include { PARSNP } from '../modules/local/parsnp/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,7 +35,7 @@ workflow ASSEMBLYSNPS {
     //
     // PREPROCESSING
     //
-    
+
     // Filter assemblies by size
     ch_samplesheet
         .branch { meta, fasta ->
@@ -46,6 +47,8 @@ workflow ASSEMBLYSNPS {
     ch_samplesheet_filtered.fail.tap { ch_samplesheet_fail_log }
     ch_samplesheet_fail_log.view( it -> "SAMPLE FAIL: Length of ${it[0].id} < ${params.min_fasta_size} bytes" )
 
+    ch_reference = file(params.reference, checkIfExists: true)
+
     //
     // MODULE: QUAST
     //
@@ -56,6 +59,29 @@ workflow ASSEMBLYSNPS {
         [[],[]], // tuple val(meta3), path(gff)
     )
     ch_quast_multiqc = QUAST.out.results
+
+    //
+    // MODULE: Parsnp
+    //
+
+    ch_parsnp = ch_samplesheet_filtered.pass
+        .map { meta, fasta -> fasta }
+        .collect()
+
+    PARSNP (
+        ch_parsnp,
+        ch_reference
+    )
+
+    //
+    // MODULE: GUBBINS
+    //
+
+    // ch_gubbins = PARSNP.out.aln
+
+    // GUBBINS (
+    //     ch_gubbins
+    // )
 
     //
     // Collate and save software versions
