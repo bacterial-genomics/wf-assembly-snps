@@ -32,8 +32,7 @@
                 "reference": {
                     "type": "string",
                     "description": "Reference genome for parsnp",
-                    "fa_icon": "fas fa-file",
-                    "help_text": ""
+                    "fa_icon": "fas fa-file"
                 },
                 "email": {
                     "type": "string",
@@ -59,6 +58,22 @@
                     "type": "integer",
                     "description": "Minimum file size of input FASTA files",
                     "default": 1000
+                }
+            }
+        },
+        "recombination_detection": {
+            "title": "Recombination detection",
+            "type": "object",
+            "description": "Options fir recombination detection",
+            "default": "",
+            "properties": {
+                "run_gubbins": {
+                    "type": "boolean",
+                    "description": "Run Gubbins for recombination detection"
+                },
+                "run_clonalframeml": {
+                    "type": "boolean",
+                    "description": "Run ClonalFrameML for recombination detection"
                 }
             }
         },
@@ -226,6 +241,9 @@
         },
         {
             "$ref": "#/$defs/qc_options"
+        },
+        {
+            "$ref": "#/$defs/recombination_detection"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
