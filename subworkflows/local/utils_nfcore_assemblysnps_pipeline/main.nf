@@ -42,14 +42,6 @@ workflow PIPELINE_INITIALISATION {
     ch_versions = channel.empty()
 
     //
-    // Parameter check
-    //
-
-    if ( params.run_gubbins && params.run_clonalframeml ) {
-        error "Cannot run both Gubbins and ClonalFrameML for recombination detection. Please set either 'run_gubbins' or 'run_clonalframeml'"
-    }
-
-    //
     // Print version and exit if required and dump pipeline parameters to JSON file
     //
     UTILS_NEXTFLOW_PIPELINE (
