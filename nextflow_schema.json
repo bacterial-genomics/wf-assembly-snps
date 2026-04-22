@@ -58,6 +58,10 @@
                     "type": "integer",
                     "description": "Minimum file size of input FASTA files",
                     "default": 1000
+                },
+                "skip_quast": {
+                    "type": "boolean",
+                    "description": "Skip assembly QA"
                 }
             }
         },

@@ -56,16 +56,19 @@ workflow ASSEMBLYSNPS {
 
     ch_reference = file(params.reference, checkIfExists: true)
 
+
     //
     // MODULE: QUAST
     //
 
-    QUAST (
-        ch_samplesheet_filtered.pass,
-        [[],[]], // tuple val(meta2), path(fasta)
-        [[],[]], // tuple val(meta3), path(gff)
-    )
-    ch_quast_multiqc = QUAST.out.results
+    if ( !params.skip_quast ) {
+        QUAST (
+            ch_samplesheet_filtered.pass,
+            [[],[]], // tuple val(meta2), path(fasta)
+            [[],[]], // tuple val(meta3), path(gff)
+        )
+        ch_quast_multiqc = QUAST.out.results
+    }
 
     //
     // MODULE: Parsnp
@@ -139,13 +142,10 @@ workflow ASSEMBLYSNPS {
 
     //
     // RECOMBINATION DETECTION
+    // MODULES: Gubbins, ClonalFrameML
     //
 
     if (params.run_gubbins) {
-
-        //
-        // MODULE: GUBBINS
-        //
 
         ch_gubbins = PARSNP.out.aln
         ch_tree = IQTREE.out.phylogeny.map { meta, tree -> tree }
@@ -154,10 +154,6 @@ workflow ASSEMBLYSNPS {
     }
 
     if (params.run_clonalframeml) {
-
-        //
-        // MODULE: ClonalFrameML
-        //
 
         ch_clonalframeml = FASTTREE.out.phylogeny
             .combine( SNPSITES.out.fasta )
