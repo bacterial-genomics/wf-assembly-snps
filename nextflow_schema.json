@@ -5,6 +5,18 @@
     "description": "General workflow for genome assembly-based SNP phylogeny with optional recombination masking",
     "type": "object",
     "$defs": {
+        "phylogenetic_tree_options": {
+            "title": "Phylogenetic Tree Options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "run_fasttree": {
+                    "type": "boolean",
+                    "description": "Use Fasttree instead of IQTree"
+                }
+            }
+        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -240,6 +252,9 @@
         }
     },
     "allOf": [
+        {
+            "$ref": "#/$defs/phylogenetic_tree_options"
+        },
         {
             "$ref": "#/$defs/input_output_options"
         },

@@ -109,37 +109,25 @@ workflow ASSEMBLYSNPS {
     )
 
     //
-    // MODULE: FastTree
+    // Phylogenetic tree construction
+    // MODULES: FastTree, IQ-TREE
     //
 
-    ch_fasttree = SNPSITES.out.fasta
+    if (params.run_fasttree) {
+        ch_fasttree = SNPSITES.out.fasta
 
-    FASTTREE (
-        ch_fasttree
-    )
+        FASTTREE (
+            ch_fasttree
+        )
+    } else {
+        ch_iqtree = SNPSITES.out.fasta.map { aln -> [[], aln, []] }
 
-    //
-    // MODULE: IQ-TREE
-    //
+        IQTREE (
+            ch_iqtree,
+            [],[],[],[],[],[],[],[],[],[],[],[]
+        )
+    }
 
-    ch_iqtree = SNPSITES.out.fasta
-        .map { aln -> [[], aln, []] }
-
-    IQTREE (
-        ch_iqtree,
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        [],
-        []
-    )
 
     //
     // RECOMBINATION DETECTION

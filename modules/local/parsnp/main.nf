@@ -1,5 +1,4 @@
 process PARSNP {
-    //tag "$meta.id"
     label 'process_high'
 
     container "https://depot.galaxyproject.org/singularity/parsnp:2.1.3--h077b44d_0"
