@@ -8,6 +8,7 @@ process GUBBINS {
 
     input:
     path alignment
+    path tree
 
     output:
     path "*.fasta"                          , emit: fasta
@@ -32,6 +33,7 @@ process GUBBINS {
 
     run_gubbins.py \\
         --threads $task.cpus \\
+        --starting-tree $tree \\
         $args \\
         $alignment
     """
