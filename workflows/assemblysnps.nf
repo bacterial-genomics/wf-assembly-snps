@@ -12,14 +12,15 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_assemblysnps_pipeline'
 
 // Added
-include { QUAST } from '../modules/nf-core/quast/main'
-include { GUBBINS } from '../modules/nf-core/gubbins/main'
-include { PARSNP } from '../modules/local/parsnp/main'
-include { FASTTREE } from '../modules/nf-core/fasttree/main'
-include { SNPSITES } from '../modules/nf-core/snpsites/main'
-include { SNPDISTS } from '../modules/nf-core/snpdists/main'
-include { CLONALFRAMEML } from '../modules/nf-core/clonalframeml/main'
-include { IQTREE } from '../modules/nf-core/iqtree/main'
+include { QUAST                       } from '../modules/nf-core/quast/main'
+include { GUBBINS                     } from '../modules/nf-core/gubbins/main'
+include { PARSNP                      } from '../modules/local/parsnp/main'
+include { FASTTREE                    } from '../modules/nf-core/fasttree/main'
+include { SNPSITES                    } from '../modules/nf-core/snpsites/main'
+include { SNPDISTS as SNPDISTS_MATRIX } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_PAIRS  } from '../modules/nf-core/snpdists/main'
+include { CLONALFRAMEML               } from '../modules/nf-core/clonalframeml/main'
+include { IQTREE                      } from '../modules/nf-core/iqtree/main'
 
 
 /*
@@ -95,7 +96,11 @@ workflow ASSEMBLYSNPS {
 
     ch_snpdists = SNPSITES.out.fasta.map { aln -> [[], aln] }
 
-    SNPDISTS (
+    SNPDISTS_MATRIX (
+        ch_snpdists
+    )
+
+    SNPDISTS_PAIRS (
         ch_snpdists
     )
 
