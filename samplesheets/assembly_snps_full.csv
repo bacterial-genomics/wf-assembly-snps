@@ -1,0 +1,6 @@
+sample,fasta
+GCA_002587385.1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/data/GCA_002587385.1_ASM258738v1_genomic.fna.gz"
+K96243_GCF_000959285.1_ASM95928v1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/data/GCF_000959285.1_ASM95928v1_genomic.fna.gz"
+1026b_GCF_000959125.1_ASM95912v1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/data/GCF_000959125.1_ASM95912v1_genomic.fna.gz"
+ATS2021_GCF_030010175.1_ASM3001017v1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/data/GCF_030010175.1_ASM3001017v1_genomic.fna.gz"
+3001546678_GCF_007995115.1_ASM799511v1,"https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/test-datasets/data//GCF_007995115.1_ASM799511v1_genomic.fna.gz"
