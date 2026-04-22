@@ -15,6 +15,10 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_asse
 include { QUAST } from '../modules/nf-core/quast/main'
 include { GUBBINS } from '../modules/nf-core/gubbins/main'
 include { PARSNP } from '../modules/local/parsnp/main'
+include { FASTTREE } from '../modules/nf-core/fasttree/main'
+include { SNPSITES } from '../modules/nf-core/snpsites/main'
+include { SNPDISTS } from '../modules/nf-core/snpdists/main'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,13 +78,45 @@ workflow ASSEMBLYSNPS {
     )
 
     //
+    // MODULE: SnpSites
+    //
+
+    ch_snpsites = PARSNP.out.aln
+
+    SNPSITES (
+        ch_snpsites
+    )
+
+    //
+    // MODULE: SNPdists
+    //
+
+    ch_snpdists = SNPSITES.out.fasta.map { aln -> [[], aln] }
+
+    SNPDISTS (
+        ch_snpdists
+    )
+
+    //
+    // MODULE: FastTree
+    //
+
+    ch_fasttree = SNPSITES.out.fasta
+
+    FASTTREE (
+        ch_fasttree
+    )
+
+    //
     // MODULE: GUBBINS
     //
 
-    // ch_gubbins = PARSNP.out.aln
+    // ch_gubbins = SNPSITES.out.fasta
+    // ch_tree = FASTTREE.out.phylogeny
 
     // GUBBINS (
-    //     ch_gubbins
+    //     ch_gubbins,
+    //     ch_tree
     // )
 
     //
