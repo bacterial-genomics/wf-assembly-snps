@@ -19,6 +19,7 @@ include { FASTTREE } from '../modules/nf-core/fasttree/main'
 include { SNPSITES } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS } from '../modules/nf-core/snpdists/main'
 include { CLONALFRAMEML } from '../modules/nf-core/clonalframeml/main'
+include { IQTREE } from '../modules/nf-core/iqtree/main'
 
 
 /*
@@ -106,6 +107,29 @@ workflow ASSEMBLYSNPS {
 
     FASTTREE (
         ch_fasttree
+    )
+
+    //
+    // MODULE: IQ-TREE
+    //
+
+    ch_iqtree = SNPSITES.out.fasta
+        .map { aln -> [[], aln, []] }
+
+    IQTREE (
+        ch_iqtree,
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
     )
 
     //

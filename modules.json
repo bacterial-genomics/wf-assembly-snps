@@ -20,6 +20,11 @@
                         "git_sha": "51de0f0431ac1300a8faa0edd718d6bd11b39918",
                         "installed_by": ["modules"]
                     },
+                    "iqtree": {
+                        "branch": "master",
+                        "git_sha": "ffe8f0a85ca059893a57c00fd028cb42c48bff19",
+                        "installed_by": ["modules"]
+                    },
                     "multiqc": {
                         "branch": "master",
                         "git_sha": "af27af1be706e6a2bb8fe454175b0cdf77f47b49",
