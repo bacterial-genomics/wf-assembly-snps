@@ -22,8 +22,10 @@ process PARSNP {
     mkdir staging
 
     for f in input/*.gz; do
-      gunzip -c "\$f" > "staging/\$(basename "\${f%.gz}")"
-      echo "staging/\$(basename "\${f%.gz}")" >> inputs.txt
+      base="\$(basename "\${f%.gz}")"
+      out="staging/\${base%.*}"
+      gunzip -c "\$f" > "\$out"
+      echo "\$out" >> inputs.txt
     done
 
     parsnp \
@@ -36,5 +38,12 @@ process PARSNP {
       $args
 
     harvesttools -i ./output/parsnp.ggr -M core.aln
+
+    if [[ \$(grep -c "\\.ref" "core.aln") -eq 1 ]]; then
+      echo "Stripping .ref from core genome alignment FastA"
+      sed -i 's/\\.ref//1' "core.aln"
+    else
+      echo "'.ref' occurs multiple times or not at all; no changes made to core genome alignment FastA"
+    fi
     """
 }
