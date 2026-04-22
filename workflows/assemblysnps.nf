@@ -148,13 +148,14 @@ workflow ASSEMBLYSNPS {
     // MODULE: GUBBINS
     //
 
-    // ch_gubbins = SNPSITES.out.fasta
-    // ch_tree = FASTTREE.out.phylogeny
+    ch_gubbins = PARSNP.out.aln
+    ch_tree = IQTREE.out.phylogeny
+        .map { meta, tree -> tree }
 
-    // GUBBINS (
-    //     ch_gubbins,
-    //     ch_tree
-    // )
+    GUBBINS (
+        ch_gubbins,
+        ch_tree
+    )
 
     //
     // Collate and save software versions
