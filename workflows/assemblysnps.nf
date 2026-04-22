@@ -80,37 +80,6 @@ workflow ASSEMBLYSNPS {
     )
 
     //
-    // RECOMBINATION DETECTION
-    //
-
-    if (params.run_gubbins) {
-
-        //
-        // MODULE: GUBBINS
-        //
-
-        ch_gubbins = PARSNP.out.aln
-        ch_tree = IQTREE.out.phylogeny.map { meta, tree -> tree }
-
-        GUBBINS ( ch_gubbins, ch_tree )
-    }
-
-    if (params.run_clonalframeml) {
-
-        //
-        // MODULE: ClonalFrameML
-        //
-
-        ch_clonalframeml = FASTTREE.out.phylogeny
-            .combine( SNPSITES.out.fasta )
-            .map { newick, msa -> [[], newick, msa] }
-
-        CLONALFRAMEML (
-            ch_clonalframeml
-        )
-    }
-
-    //
     // MODULE: SnpSites
     //
 
@@ -162,6 +131,37 @@ workflow ASSEMBLYSNPS {
         [],
         []
     )
+
+    //
+    // RECOMBINATION DETECTION
+    //
+
+    if (params.run_gubbins) {
+
+        //
+        // MODULE: GUBBINS
+        //
+
+        ch_gubbins = PARSNP.out.aln
+        ch_tree = IQTREE.out.phylogeny.map { meta, tree -> tree }
+
+        GUBBINS ( ch_gubbins, ch_tree )
+    }
+
+    if (params.run_clonalframeml) {
+
+        //
+        // MODULE: ClonalFrameML
+        //
+
+        ch_clonalframeml = FASTTREE.out.phylogeny
+            .combine( SNPSITES.out.fasta )
+            .map { newick, msa -> [[], newick, msa] }
+
+        CLONALFRAMEML (
+            ch_clonalframeml
+        )
+    }
 
     //
     // Collate and save software versions
