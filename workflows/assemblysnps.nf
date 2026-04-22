@@ -52,7 +52,7 @@ workflow ASSEMBLYSNPS {
         .set { ch_samplesheet_filtered }
 
     ch_samplesheet_filtered.fail.tap { ch_samplesheet_fail_log }
-    ch_samplesheet_fail_log.view( it -> "SAMPLE FAIL: Length of ${it[0].id} < ${params.min_fasta_size} bytes" )
+    ch_samplesheet_fail_log.view { it -> "SAMPLE FAIL: Length of ${it[0].id} < ${params.min_fasta_size} bytes" }
 
     ch_reference = file(params.reference, checkIfExists: true)
 
@@ -68,6 +68,7 @@ workflow ASSEMBLYSNPS {
             [[],[]], // tuple val(meta3), path(gff)
         )
         ch_quast_multiqc = QUAST.out.results
+        //ch_multiqc_files = ch_multiqc_files.mix(ch_quast_multiqc)
     }
 
     //
@@ -167,7 +168,7 @@ workflow ASSEMBLYSNPS {
     //
     // Collate and save software versions
     //
-    def topic_versions = Channel.topic("versions")
+    def topic_versions = channel.topic("versions")
         .distinct()
         .branch { entry ->
             versions_file: entry instanceof Path
