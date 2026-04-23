@@ -16,22 +16,41 @@ process PARSNP {
     script:
     def args      = task.ext.args   ?: ''
     //prefix        = task.ext.prefix ?: "${meta.id}"
+    def mem = ((task.memory as MemoryUnit).toBytes() * 0.8) as int
 
     """
     mkdir staging
 
-    for f in input/*.gz; do
-      base="\$(basename "\${f%.gz}")"
-      out="staging/\${base%.*}"
-      gunzip -c "\$f" > "\$out"
-      echo "\$out" >> inputs.txt
+    shopt -s nullglob
+
+    for f in input/*; do
+      [[ -f "\$f" ]] || continue
+
+      base="\$(basename "\$f")"
+
+      if [[ "\$f" == *.gz ]]; then
+        out="staging/\${base%.gz}"
+        gunzip -c "\$f" > "\$out"
+      else
+        out="staging/\$base"
+        cp "\$f" "\$out"
+      fi
+
+      echo "\$out" >> inputs.tmp
     done
+
+    reference="staging/\$(ls -1S staging | head -1)"
+
+    grep -vxF "\$reference" inputs.tmp > inputs.txt
 
     parsnp \
       --sequences inputs.txt \
-      --reference $reference \
+      --validate-input \
+      --reference \${reference} \
       --output-dir ./output \
+      --no-maf \
       --threads $task.cpus \
+      -P $mem \
       --skip-phylogeny \
       --verbose \
       $args
