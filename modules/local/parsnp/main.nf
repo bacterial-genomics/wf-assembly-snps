@@ -1,7 +1,7 @@
 process PARSNP {
     label 'process_high'
 
-    container "https://depot.galaxyproject.org/singularity/parsnp:2.1.3--h077b44d_0"
+    container "https://depot.galaxyproject.org/singularity/parsnp:2.1.5--h077b44d_0"
 
     input:
     path(fasta, stageAs: "input/*")
@@ -35,19 +35,18 @@ process PARSNP {
         out="staging/\$base"
         cp "\$f" "\$out"
       fi
-
-      echo "\$out" >> inputs.tmp
     done
 
-    reference="staging/\$(ls -1S staging | head -1)"
+    reference="\$(ls -1S staging | head -1)"
 
-    grep -vxF "\$reference" inputs.tmp > inputs.txt
+    mv staging/\$reference ./\$reference
 
     parsnp \
-      --sequences inputs.txt \
+      --sequences ./staging \
       --validate-input \
-      --reference \${reference} \
+      --reference ./\$(basename \$reference) \
       --output-dir ./output \
+      --curated \
       --no-maf \
       --threads $task.cpus \
       -P $mem \
@@ -55,7 +54,7 @@ process PARSNP {
       --verbose \
       $args
 
-    harvesttools -i ./output/parsnp.ggr -M core.aln
+    harvesttools -x output/parsnp.xmfa -M core.aln
 
     if [[ \$(grep -c "\\.ref" "core.aln") -eq 1 ]]; then
       echo "Stripping .ref from core genome alignment FastA"
