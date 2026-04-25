@@ -61,7 +61,7 @@ workflow ASSEMBLYSNPS {
     ch_samplesheet_filtered.fail.tap { ch_samplesheet_fail_log }
     ch_samplesheet_fail_log.view { it -> "SAMPLE FAIL: Length of ${it[0].id} < ${params.min_fasta_size} bytes" }
 
-    ch_reference = file(params.reference, checkIfExists: true)
+    //ch_reference = file(params.reference, checkIfExists: true)
 
 
     //
@@ -88,7 +88,7 @@ workflow ASSEMBLYSNPS {
 
     PARSNP (
         ch_parsnp,
-        ch_reference
+        []
     )
 
     //
