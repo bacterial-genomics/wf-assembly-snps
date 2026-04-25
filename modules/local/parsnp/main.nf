@@ -58,7 +58,7 @@ process PARSNP {
 
     if [[ \$(grep -c "\\.ref" "core.aln") -eq 1 ]]; then
       echo "Stripping .ref from core genome alignment FastA"
-      sed -i 's/\\.ref//1' "core.aln"
+      sed -i 's|\\.ref||g' ./core.aln
     else
       echo "'.ref' occurs multiple times or not at all; no changes made to core genome alignment FastA"
     fi

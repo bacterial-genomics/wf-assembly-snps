@@ -42,7 +42,6 @@ workflow ASSEMBLYSNPS {
     ch_multiqc_files = channel.empty()
     ch_snpdists = channel.empty()
     ch_snpdists_recomb = channel.empty()
-    ch_tree = channel.empty()
     ch_clonalframeml = channel.empty()
     ch_gubbins = channel.empty()
     ch_gubbins_tree = channel.empty()
@@ -144,7 +143,7 @@ workflow ASSEMBLYSNPS {
     if (params.run_gubbins) {
 
         ch_gubbins = ch_gubbins.mix( 
-            PARSNP.out.aln
+            SNPSITES.out.fasta
             .collect()
             .combine ( ch_gubbins_tree.collect() )
          )

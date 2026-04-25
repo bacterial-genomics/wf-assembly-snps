@@ -12,6 +12,7 @@ process SNPSITES {
     output:
     path "*.fas"        , emit: fasta
     path "*.sites.txt"  , emit: constant_sites
+    path "variants.vcf" , emit: vcf
     path "versions.yml" , emit: versions
     env 'CONSTANT_SITES', emit: constant_sites_string
 
@@ -27,6 +28,8 @@ process SNPSITES {
         > filtered_alignment.fas
 
     echo \$(snp-sites -C $alignment) > constant.sites.txt
+
+    snp-sites -v -o ./variants.vcf $alignment
 
     export CONSTANT_SITES=\$(cat constant.sites.txt)
 
