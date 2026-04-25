@@ -121,7 +121,7 @@ workflow ASSEMBLYSNPS {
         ch_gubbins_tree = FASTTREE.out.phylogeny
 
     } else {
-        ch_iqtree = SNPSITES.out.fasta.map { aln -> [[], aln, []] }
+        ch_iqtree = SNPSITES.out.fasta.map { aln -> [[ id: "iqtree"], aln, []] }
 
         IQTREE (
             ch_iqtree,
@@ -135,7 +135,6 @@ workflow ASSEMBLYSNPS {
             .combine( SNPSITES.out.fasta )
             .map { newick, msa -> [ [], newick, msa ] }
     }
-
 
     //
     // RECOMBINATION DETECTION
