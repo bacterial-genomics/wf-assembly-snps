@@ -7,8 +7,7 @@ process GUBBINS {
         'biocontainers/gubbins:3.3.5--py39pl5321he4a0461_0' }"
 
     input:
-    path alignment
-    path input_tree
+    tuple path(alignment), path(input_tree)
 
     output:
     path "*.fasta"                          , emit: fasta

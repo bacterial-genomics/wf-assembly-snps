@@ -19,6 +19,8 @@ include { FASTTREE                    } from '../modules/nf-core/fasttree/main'
 include { SNPSITES                    } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS as SNPDISTS_MATRIX } from '../modules/nf-core/snpdists/main'
 include { SNPDISTS as SNPDISTS_PAIRS  } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_MATRIX_RECOMB } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_PAIRS_RECOMB  } from '../modules/nf-core/snpdists/main'
 include { CLONALFRAMEML               } from '../modules/nf-core/clonalframeml/main'
 include { IQTREE                      } from '../modules/nf-core/iqtree/main'
 
@@ -38,6 +40,12 @@ workflow ASSEMBLYSNPS {
 
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
+    ch_snpdists = channel.empty()
+    ch_snpdists_recomb = channel.empty()
+    ch_tree = channel.empty()
+    ch_clonalframeml = channel.empty()
+    ch_gubbins = channel.empty()
+    ch_gubbins_tree = channel.empty()
 
     //
     // PREPROCESSING
@@ -95,20 +103,6 @@ workflow ASSEMBLYSNPS {
     )
 
     //
-    // MODULE: SNPdists
-    //
-
-    ch_snpdists = SNPSITES.out.fasta.map { aln -> [[], aln] }
-
-    SNPDISTS_MATRIX (
-        ch_snpdists
-    )
-
-    SNPDISTS_PAIRS (
-        ch_snpdists
-    )
-
-    //
     // Phylogenetic tree construction
     // MODULES: FastTree, IQ-TREE
     //
@@ -119,6 +113,13 @@ workflow ASSEMBLYSNPS {
         FASTTREE (
             ch_fasttree
         )
+
+        ch_clonalframeml = FASTTREE.out.phylogeny
+            .combine( SNPSITES.out.fasta )
+            .map { newick, msa -> [[], newick, msa] }
+
+        ch_gubbins_tree = FASTTREE.out.phylogeny
+
     } else {
         ch_iqtree = SNPSITES.out.fasta.map { aln -> [[], aln, []] }
 
@@ -126,6 +127,13 @@ workflow ASSEMBLYSNPS {
             ch_iqtree,
             [],[],[],[],[],[],[],[],[],[],[],[]
         )
+
+        ch_gubbins_tree = IQTREE.out.phylogeny.map { meta, tree -> tree }
+
+        ch_clonalframeml = IQTREE.out.phylogeny
+            .map { meta, aln -> aln }
+            .combine( SNPSITES.out.fasta )
+            .map { newick, msa -> [ [], newick, msa ] }
     }
 
 
@@ -136,22 +144,48 @@ workflow ASSEMBLYSNPS {
 
     if (params.run_gubbins) {
 
-        ch_gubbins = PARSNP.out.aln
-        ch_tree = IQTREE.out.phylogeny.map { meta, tree -> tree }
+        ch_gubbins = ch_gubbins.mix( 
+            PARSNP.out.aln
+            .collect()
+            .combine ( ch_gubbins_tree.collect() )
+         )
 
-        GUBBINS ( ch_gubbins, ch_tree )
-    }
+        GUBBINS ( ch_gubbins )
 
-    if (params.run_clonalframeml) {
+        ch_snpdists_recomb = ch_snpdists_recomb.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
 
-        ch_clonalframeml = FASTTREE.out.phylogeny
-            .combine( SNPSITES.out.fasta )
-            .map { newick, msa -> [[], newick, msa] }
+    } else if (params.run_clonalframeml) {
 
         CLONALFRAMEML (
             ch_clonalframeml
         )
+        ch_snpdists_recomb = ch_snpdists_recomb.mix( CLONALFRAMEML.out.fasta )
+
     }
+
+    
+    //
+    // MODULE: SNPdists
+    //
+
+    SNPDISTS_MATRIX_RECOMB (
+        ch_snpdists_recomb
+    )
+
+    SNPDISTS_PAIRS_RECOMB (
+        ch_snpdists_recomb
+    )
+
+    ch_snpdists = ch_snpdists.mix( SNPSITES.out.fasta.map { aln -> [[], aln] } )
+
+    SNPDISTS_MATRIX (
+        ch_snpdists
+    )
+
+    SNPDISTS_PAIRS (
+        ch_snpdists
+    )
+
 
     //
     // Collate and save software versions
