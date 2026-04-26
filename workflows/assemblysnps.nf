@@ -142,7 +142,7 @@ workflow ASSEMBLYSNPS {
 
     if (params.run_gubbins) {
 
-        ch_gubbins = ch_gubbins.mix( 
+        ch_gubbins = ch_gubbins.mix(
             SNPSITES.out.fasta
             .collect()
             .combine ( ch_gubbins_tree.collect() )
