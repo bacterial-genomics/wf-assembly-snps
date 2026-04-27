@@ -24,6 +24,10 @@ include { SNPDISTS as SNPDISTS_PAIRS_RECOMB  } from '../modules/nf-core/snpdists
 include { CLONALFRAMEML               } from '../modules/nf-core/clonalframeml/main'
 include { IQTREE                      } from '../modules/nf-core/iqtree/main'
 
+// local
+include { GGTREE } from '../modules/local/ggtree/main'
+include { CLUSTER } from '../modules/local/cluster/main'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,6 +49,7 @@ workflow ASSEMBLYSNPS {
     ch_clonalframeml = channel.empty()
     ch_gubbins = channel.empty()
     ch_gubbins_tree = channel.empty()
+    ch_ggtree = channel.empty()
 
     //
     // PREPROCESSING
@@ -161,7 +166,7 @@ workflow ASSEMBLYSNPS {
 
     }
 
-    
+
     //
     // MODULE: SNPdists
     //
@@ -183,6 +188,22 @@ workflow ASSEMBLYSNPS {
     SNPDISTS_PAIRS (
         ch_snpdists
     )
+
+    //
+    // Tree visualization and clustering
+    //
+
+    ch_cluster = SNPDISTS_MATRIX.out.tsv.map { meta, tsv -> tsv }
+
+    CLUSTER ( ch_cluster, params.snp_threshold )
+
+    ch_ggtree = ch_ggtree.mix(
+        IQTREE.out.phylogeny
+        .map { meta, tree -> tree }
+        .combine( CLUSTER.out.clusters )
+    )
+
+    GGTREE ( ch_ggtree )
 
 
     //

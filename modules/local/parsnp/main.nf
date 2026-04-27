@@ -1,5 +1,5 @@
 process PARSNP {
-    label 'process_high'
+    label 'process_medium'
 
     container "https://depot.galaxyproject.org/singularity/parsnp:2.1.5--h077b44d_0"
 
