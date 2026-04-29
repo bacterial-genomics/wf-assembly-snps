@@ -27,6 +27,8 @@ include { IQTREE                      } from '../modules/nf-core/iqtree/main'
 // local
 include { GGTREE } from '../modules/local/ggtree/main'
 include { CLUSTER } from '../modules/local/cluster/main'
+include { GGTREE as GGTREE_RECOMB } from '../modules/local/ggtree/main'
+include { CLUSTER as CLUSTER_RECOMB } from '../modules/local/cluster/main'
 
 
 /*
@@ -204,11 +206,19 @@ workflow ASSEMBLYSNPS {
 
     CLUSTER ( ch_cluster, params.snp_threshold )
 
-    ch_ggtree = ch_ggtree
+    ch_cluster_recomb = SNPDISTS_MATRIX_RECOMB.out.tsv.map { meta, tsv -> tsv }
+
+    CLUSTER_RECOMB ( ch_cluster_recomb, params.snp_threshold )
+
+    ch_ggtree_reg = ch_ggtree
         .combine( CLUSTER.out.clusters )
 
-    GGTREE ( ch_ggtree )
+    GGTREE ( ch_ggtree_reg )
 
+    ggtree_recomb = ch_ggtree
+        .combine( CLUSTER_RECOMB.out.clusters )
+
+    GGTREE_RECOMB ( ggtree_recomb )
 
     //
     // Collate and save software versions
