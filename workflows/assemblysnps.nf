@@ -30,6 +30,8 @@ include { CLUSTER } from '../modules/local/cluster/main'
 include { GGTREE as GGTREE_RECOMB } from '../modules/local/ggtree/main'
 include { CLUSTER as CLUSTER_RECOMB } from '../modules/local/cluster/main'
 include { PATRISTICDISTANCE } from '../modules/local/patristic_distance/main'
+include { PATRISTICDISTANCE as PATRISTICDISTANCE_RECOMB } from '../modules/local/patristic_distance/main'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -54,6 +56,7 @@ workflow ASSEMBLYSNPS {
     ch_ggtree = channel.empty()
     ch_fasttree = channel.empty()
     ch_iqtree = channel.empty()
+    ch_patristic_recomb = channel.empty()
 
     //
     // PREPROCESSING
@@ -148,7 +151,7 @@ workflow ASSEMBLYSNPS {
         ch_ggtree = ch_ggtree
             .mix(IQTREE.out.phylogeny)
             .map { meta, tree -> tree }
-        
+
     }
 
     //
@@ -167,12 +170,14 @@ workflow ASSEMBLYSNPS {
         GUBBINS ( ch_gubbins )
 
         ch_snpdists_recomb = ch_snpdists_recomb.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
+        ch_patristic_recomb = ch_patristic_recomb.mix(GUBBINS.out.tree_labelled)
 
     } else if (params.run_clonalframeml) {
 
         CLONALFRAMEML ( ch_clonalframeml )
 
         ch_snpdists_recomb = ch_snpdists_recomb.mix( CLONALFRAMEML.out.fasta )
+        ch_patristic_recomb = ch_patristic_recomb.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
 
     }
 
@@ -200,6 +205,8 @@ workflow ASSEMBLYSNPS {
     )
 
     PATRISTICDISTANCE ( ch_ggtree )
+    
+    PATRISTICDISTANCE_RECOMB ( ch_patristic_recomb )
 
     //
     // Tree visualization and clustering
