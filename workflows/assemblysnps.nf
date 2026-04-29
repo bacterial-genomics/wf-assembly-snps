@@ -29,7 +29,7 @@ include { GGTREE } from '../modules/local/ggtree/main'
 include { CLUSTER } from '../modules/local/cluster/main'
 include { GGTREE as GGTREE_RECOMB } from '../modules/local/ggtree/main'
 include { CLUSTER as CLUSTER_RECOMB } from '../modules/local/cluster/main'
-
+include { PATRISTICDISTANCE } from '../modules/local/patristic_distance/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -148,6 +148,7 @@ workflow ASSEMBLYSNPS {
         ch_ggtree = ch_ggtree
             .mix(IQTREE.out.phylogeny)
             .map { meta, tree -> tree }
+        
     }
 
     //
@@ -168,9 +169,9 @@ workflow ASSEMBLYSNPS {
         ch_snpdists_recomb = ch_snpdists_recomb.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
 
     } else if (params.run_clonalframeml) {
-        
+
         CLONALFRAMEML ( ch_clonalframeml )
-        
+
         ch_snpdists_recomb = ch_snpdists_recomb.mix( CLONALFRAMEML.out.fasta )
 
     }
@@ -197,6 +198,8 @@ workflow ASSEMBLYSNPS {
     SNPDISTS_PAIRS (
         ch_snpdists
     )
+
+    PATRISTICDISTANCE ( ch_ggtree )
 
     //
     // Tree visualization and clustering
