@@ -57,6 +57,7 @@ workflow ASSEMBLYSNPS {
     ch_fasttree = channel.empty()
     ch_iqtree = channel.empty()
     ch_patristic_recomb = channel.empty()
+    ch_ggtree_recomb = channel.empty()
 
     //
     // PREPROCESSING
@@ -171,6 +172,7 @@ workflow ASSEMBLYSNPS {
 
         ch_snpdists_recomb = ch_snpdists_recomb.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
         ch_patristic_recomb = ch_patristic_recomb.mix(GUBBINS.out.tree_labelled)
+        ch_ggtree_recomb = ch_ggtree_recomb.mix(GUBBINS.out.tree_labelled)
 
     } else if (params.run_clonalframeml) {
 
@@ -178,6 +180,7 @@ workflow ASSEMBLYSNPS {
 
         ch_snpdists_recomb = ch_snpdists_recomb.mix( CLONALFRAMEML.out.fasta )
         ch_patristic_recomb = ch_patristic_recomb.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
+        ch_ggtree_recomb = ch_ggtree_recomb.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
 
     }
 
@@ -205,7 +208,7 @@ workflow ASSEMBLYSNPS {
     )
 
     PATRISTICDISTANCE ( ch_ggtree )
-    
+
     PATRISTICDISTANCE_RECOMB ( ch_patristic_recomb )
 
     //
@@ -225,7 +228,7 @@ workflow ASSEMBLYSNPS {
 
     GGTREE ( ch_ggtree_reg )
 
-    ggtree_recomb = ch_ggtree
+    ggtree_recomb = ch_ggtree_recomb
         .combine( CLUSTER_RECOMB.out.clusters )
 
     GGTREE_RECOMB ( ggtree_recomb )
