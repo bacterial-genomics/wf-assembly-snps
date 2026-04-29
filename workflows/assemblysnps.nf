@@ -50,6 +50,8 @@ workflow ASSEMBLYSNPS {
     ch_gubbins = channel.empty()
     ch_gubbins_tree = channel.empty()
     ch_ggtree = channel.empty()
+    ch_fasttree = channel.empty()
+    ch_iqtree = channel.empty()
 
     //
     // PREPROCESSING
@@ -112,7 +114,7 @@ workflow ASSEMBLYSNPS {
     //
 
     if (params.run_fasttree) {
-        ch_fasttree = SNPSITES.out.fasta
+        ch_fasttree = ch_fasttree.mix(SNPSITES.out.fasta)
 
         FASTTREE (
             ch_fasttree
@@ -120,24 +122,30 @@ workflow ASSEMBLYSNPS {
 
         ch_clonalframeml = FASTTREE.out.phylogeny
             .combine( SNPSITES.out.fasta )
-            .map { newick, msa -> [[], newick, msa] }
+            .map { newick, msa -> [ [], newick, msa ] }
 
-        ch_gubbins_tree = FASTTREE.out.phylogeny
+        ch_gubbins_tree = ch_gubbins_tree.mix(FASTTREE.out.phylogeny)
+        ch_ggtree = ch_ggtree
+            .mix(FASTTREE.out.phylogeny)
 
     } else {
-        ch_iqtree = SNPSITES.out.fasta.map { aln -> [[ id: "iqtree"], aln, []] }
+        ch_iqtree = ch_iqtree.mix(SNPSITES.out.fasta.map { aln -> [[ id: "iqtree"], aln, []] })
 
         IQTREE (
             ch_iqtree,
             [],[],[],[],[],[],[],[],[],[],[],[]
         )
 
-        ch_gubbins_tree = IQTREE.out.phylogeny.map { meta, tree -> tree }
+        ch_gubbins_tree = ch_gubbins_tree.mix(IQTREE.out.phylogeny.map { meta, tree -> tree })
 
-        ch_clonalframeml = IQTREE.out.phylogeny
+        ch_clonalframeml = ch_clonalframeml.mix(IQTREE.out.phylogeny)
             .map { meta, aln -> aln }
             .combine( SNPSITES.out.fasta )
             .map { newick, msa -> [ [], newick, msa ] }
+
+        ch_ggtree = ch_ggtree
+            .mix(IQTREE.out.phylogeny)
+            .map { meta, tree -> tree }
     }
 
     //
@@ -158,10 +166,9 @@ workflow ASSEMBLYSNPS {
         ch_snpdists_recomb = ch_snpdists_recomb.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
 
     } else if (params.run_clonalframeml) {
-
-        CLONALFRAMEML (
-            ch_clonalframeml
-        )
+        
+        CLONALFRAMEML ( ch_clonalframeml )
+        
         ch_snpdists_recomb = ch_snpdists_recomb.mix( CLONALFRAMEML.out.fasta )
 
     }
@@ -197,11 +204,8 @@ workflow ASSEMBLYSNPS {
 
     CLUSTER ( ch_cluster, params.snp_threshold )
 
-    ch_ggtree = ch_ggtree.mix(
-        IQTREE.out.phylogeny
-        .map { meta, tree -> tree }
+    ch_ggtree = ch_ggtree
         .combine( CLUSTER.out.clusters )
-    )
 
     GGTREE ( ch_ggtree )
 
