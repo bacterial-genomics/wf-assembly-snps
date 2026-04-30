@@ -14,6 +14,8 @@
 
 ## Introduction
 
+![Workflow Diagram](docs/img/metromap_workflow_diagram.png)
+
 **bacterial-genomics/assemblysnps** is a bioinformatics pipeline that ...
 
 <!-- TODO nf-core:
