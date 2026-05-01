@@ -48,7 +48,7 @@ sampleB,sampleB.fna.gz
 > [!NOTE]
 > The following input FASTA file extensions are acceptable: `.fasta`, `.fna`, `.fa`, `.fsa`, `.fas`. Files may also be gzipped-compressed and have a `.gz` extension.
 
-> [!NOTE]
+> [!WARNING]
 By default, FASTA files under 1000 bytes will be excluded from the analysis for quality control, a warning message will print to `.nextflow.log` if so. This feature can be modified with the `--min_fasta_size` parameter. This feature may change to minimum assembly length in future releases.
 
 Now, you can run the pipeline using:
@@ -59,7 +59,7 @@ nextflow run bacterial-genomics/assemblysnps \
    --input samplesheet.csv \
    --outdir <OUTDIR>
 ```
-> [!NOTE]
+> [!WARNING]
 > At the moment, some of the modules only have a Singularity container defined.
 
 > [!WARNING]
