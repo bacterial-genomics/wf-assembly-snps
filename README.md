@@ -17,13 +17,13 @@
 
 3. Extract SNPs from core genome alignment with [snp-sites](https://sanger-pathogens.github.io/snp-sites/).
 
-4. Compute maximum likelihood tree with [IQTREE2](https://github.com/iqtree/iqtree2) or optionally [FastTree](https://github.com/morgannprice/fasttree) using the `--run_fasttree` parameter.
+4. Compute maximum likelihood tree with [IQTREE2](https://github.com/iqtree/iqtree2) or optionally [FastTree](https://github.com/morgannprice/fasttree) specifying the `--run_fasttree` parameter.
 
-5. (Optional) Detect and mask recombination loci with [Gubbins](https://nickjcroucher.github.io/gubbins/) or [ClonalFrameML](https://github.com/xavierdidelot/clonalframeml).
+5. (Optional) Detect and mask recombination loci with [Gubbins](https://nickjcroucher.github.io/gubbins/) by specifying the `--run_gubbins` parameter, or [ClonalFrameML](https://github.com/xavierdidelot/clonalframeml) by specifying the `--run_clonalframeml` parameter.
 
 6. Generate SNP distance matrices with [snp-dists]() and patristic distances from resulting trees with a [homebrew python script](bin/patristic_distance.py)
 
-7. Automatically annotate SNP clusters using a [homebrew script](bin/outbreak_detection.py) using the [Disjoint Set Union algorithm](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) to iteratively aggregate genomes based on a SNP distance threshold, which may be set using the `--snp_threshold` parameter.
+7. Automatically annotate SNP clusters using a [homebrew script](bin/outbreak_detection.py) using the [Disjoint Set Union algorithm](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) to iteratively aggregate genomes based on a SNP distance threshold, which may be set specifying the `--snp_threshold` parameter.
 
 8 Generate a phylogenetic tree graphic (`ggtree/tree.png`) using [ggtrree](https://github.com/YuLab-SMU/ggtree).
 
@@ -45,7 +45,7 @@ sample,fasta
 sampleA,sampleA.fasta
 sampleB,sampleB.fna.gz
 ```
-
+> [!NOTE]
 > The following input FASTA file extensions are acceptable: `.fasta`, `.fna`, `.fa`, `.fsa`, `.fas`. Files may also be gzipped-compressed and have a `.gz` extension.
 
 > [!NOTE]
