@@ -16,42 +16,47 @@
 
 ![Workflow Diagram](docs/img/metromap_workflow_diagram.png)
 
-**bacterial-genomics/assemblysnps** is a bioinformatics pipeline that ...
+**bacterial-genomics/assemblysnps** is a bioinformatics pipeline that generates a core genome alignment, genomic distances and a phlyogenetic tree, intended for bacterial outbreak surveillance.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+1. (Optional) QC FASTA assemblies with ([QUAST](https://quast.sourceforge.net/)) and reported with ([`MultiQC`](http://multiqc.info/)). This step can be skipped with `--skip_quast`.
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/guidelines/graphic_design/workflow_diagrams#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+2. Core genome alignment with ([Parsnp](https://harvest.readthedocs.io/en/latest/content/parsnp.html)).
+
+3. Extract SNPs from core genome alignment with [snp-sites](https://sanger-pathogens.github.io/snp-sites/).
+
+4. Compute maximum likelihood tree with [IQTREE2](https://github.com/iqtree/iqtree2) or optionally [FastTree](https://github.com/morgannprice/fasttree) using the `--run_fasttree` parameter.
+
+5. (Optional) Detect and mask recombination loci with [Gubbins](https://nickjcroucher.github.io/gubbins/) or [ClonalFrameML](https://github.com/xavierdidelot/clonalframeml).
+
+6. Generate SNP distance matrices with [snp-dists]() and patristic distances from resulting trees with a [homebrew python script](bin/patristic_distance.py)
+
+7. Automatically annotate SNP clusters using a [homebrew script](bin/outbreak_detection.py) using the [Disjoint Set Union algorithm](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) to iteratively aggregate genomes based on a SNP distance threshold, which may be set using the `--snp_threshold` parameter.
+
+8 Generate a phylogenetic tree graphic (`ggtree/tree.png`) using [ggtrree](https://github.com/YuLab-SMU/ggtree).
 
 ## Usage
 
+This pipeline was tested using Nextflow v25.10.4, and should be compatible with Nextflow v26.04.0 if the `NXF_SYNTAX_PARSER` environment variable is set to `v1`. **It has yet to adopt [strict syntax](https://docs.seqera.io/nextflow/strict-syntax)**.
+> `export NXF_SYNTAX_PARSER=v1`
+
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
-
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
 
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,fasta
+sampleA,sampleA.fasta
+sampleB,sampleB.fna.gz
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+> The following input FASTA file extensions are acceptable: `.fasta`, `.fna`, `.fa`, `.fsa`, `.fas`. Files may also be gzipped-compressed and have a `.gz` extension.
 
--->
+> [!NOTE] By default, FASTA files under 1000 bytes will be excluded from the analysis for quality control, a warning message will print to `.nextflow.log` if so. This feature can be modified with the `--min_fasta_size` parameter. This feature may change to minimum assembly length in future releases.
 
 Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run bacterial-genomics/assemblysnps \
@@ -59,17 +64,18 @@ nextflow run bacterial-genomics/assemblysnps \
    --input samplesheet.csv \
    --outdir <OUTDIR>
 ```
+> [!NOTE] At the moment, some of the modules only have a Singularity container defined.
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 ## Credits
 
-bacterial-genomics/assemblysnps was originally written by @Ethan-Hetrick,@chrisgulvik.
+bacterial-genomics/assemblysnps was originally written by @Ethan-Hetrick,@chrisgulvik, **[TODO: insert other authors here]**
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+**[TODO: insert other contributors here]**
 
 ## Contributions and Support
 
