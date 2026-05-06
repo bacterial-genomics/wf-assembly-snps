@@ -104,6 +104,10 @@ workflow ASSEMBLYSNPS {
         []
     )
 
+    // PARSNP.out.log
+    //     .splitText()[1]
+    //     .view()
+
     //
     // MODULE: SnpSites
     //

@@ -9,6 +9,7 @@ process PARSNP {
 
     output:
     path("core.aln"), emit: aln
+    path("parsnp.log"), emit: log
 
     when:
     task.ext.when == null || task.ext.when
@@ -53,6 +54,8 @@ process PARSNP {
       --skip-phylogeny \
       --verbose \
       $args
+
+    cp output/log/parsnpAligner.log ./parsnp.log
 
     harvesttools -x output/parsnp.xmfa -M core.aln
 
