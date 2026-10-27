@@ -1,7 +1,7 @@
 process PARSNP {
     label 'process_medium'
 
-    container "https://depot.galaxyproject.org/singularity/parsnp:2.1.5--h077b44d_0"
+    container "quay.io/biocontainers/parsnp:2.1.6--h3be2455_0"
 
     input:
     path(fasta, stageAs: "input/*")
@@ -9,7 +9,9 @@ process PARSNP {
 
     output:
     path("core.aln"), emit: aln
+    path("parsnp.ggr"), emit: ggr
     path("parsnp.log"), emit: log
+    path("parsnp.xmfa"), emit: xmfa
 
     when:
     task.ext.when == null || task.ext.when
@@ -38,9 +40,9 @@ process PARSNP {
       fi
     done
 
-    reference="\$(ls -1S staging | head -1)"
+    reference="\$(ls -1SL staging | head -1)"
 
-    mv staging/\$reference ./\$reference
+    mv -f staging/\$reference ./\$reference
 
     parsnp \
       --sequences ./staging \
@@ -55,13 +57,15 @@ process PARSNP {
       --verbose \
       $args
 
-    cp output/log/parsnpAligner.log ./parsnp.log
+    mv -f output/log/parsnpAligner.log parsnp.log
+    mv -f output/parsnp.ggr parsnp.ggr
+    mv -f output/parsnp.xmfa parsnp.xmfa
 
-    harvesttools -x output/parsnp.xmfa -M core.aln
+    harvesttools -x parsnp.xmfa -M core.aln
 
     if [[ \$(grep -c "\\.ref" "core.aln") -eq 1 ]]; then
       echo "Stripping .ref from core genome alignment FastA"
-      sed -i 's|\\.ref||g' ./core.aln
+      sed -i 's|\\.ref||1' core.aln
     else
       echo "'.ref' occurs multiple times or not at all; no changes made to core genome alignment FastA"
     fi
