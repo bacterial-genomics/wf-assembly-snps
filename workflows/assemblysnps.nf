@@ -11,7 +11,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_assemblysnps_pipeline'
 
-// Added
+// Added nf-core modules
 include { QUAST                       } from '../modules/nf-core/quast/main'
 include { GUBBINS                     } from '../modules/nf-core/gubbins/main'
 include { PARSNP                      } from '../modules/local/parsnp/main'
@@ -19,18 +19,23 @@ include { FASTTREE                    } from '../modules/nf-core/fasttree/main'
 include { SNPSITES                    } from '../modules/nf-core/snpsites/main'
 include { SNPDISTS as SNPDISTS_MATRIX } from '../modules/nf-core/snpdists/main'
 include { SNPDISTS as SNPDISTS_PAIRS  } from '../modules/nf-core/snpdists/main'
-include { SNPDISTS as SNPDISTS_MATRIX_RECOMB } from '../modules/nf-core/snpdists/main'
-include { SNPDISTS as SNPDISTS_PAIRS_RECOMB  } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_MATRIX_CFML } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_PAIRS_CFML  } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_MATRIX_GUBBINS } from '../modules/nf-core/snpdists/main'
+include { SNPDISTS as SNPDISTS_PAIRS_GUBBINS  } from '../modules/nf-core/snpdists/main'
 include { CLONALFRAMEML               } from '../modules/nf-core/clonalframeml/main'
 include { IQTREE                      } from '../modules/nf-core/iqtree/main'
 
 // local
 include { GGTREE } from '../modules/local/ggtree/main'
 include { CLUSTER } from '../modules/local/cluster/main'
-include { GGTREE as GGTREE_RECOMB } from '../modules/local/ggtree/main'
-include { CLUSTER as CLUSTER_RECOMB } from '../modules/local/cluster/main'
+include { GGTREE as GGTREE_CFML } from '../modules/local/ggtree/main'
+include { CLUSTER as CLUSTER_CFML } from '../modules/local/cluster/main'
+include { GGTREE as GGTREE_GUBBINS } from '../modules/local/ggtree/main'
+include { CLUSTER as CLUSTER_GUBBINS } from '../modules/local/cluster/main'
 include { PATRISTICDISTANCE } from '../modules/local/patristic_distance/main'
-include { PATRISTICDISTANCE as PATRISTICDISTANCE_RECOMB } from '../modules/local/patristic_distance/main'
+include { PATRISTICDISTANCE as PATRISTICDISTANCE_CFML } from '../modules/local/patristic_distance/main'
+include { PATRISTICDISTANCE as PATRISTICDISTANCE_GUBBINS } from '../modules/local/patristic_distance/main'
 
 
 /*
@@ -46,18 +51,26 @@ workflow ASSEMBLYSNPS {
 
     main:
 
+    // Main defaults
     ch_versions = channel.empty()
     ch_multiqc_files = channel.empty()
     ch_snpdists = channel.empty()
-    ch_snpdists_recomb = channel.empty()
-    ch_clonalframeml = channel.empty()
-    ch_gubbins = channel.empty()
-    ch_gubbins_tree = channel.empty()
     ch_ggtree = channel.empty()
     ch_fasttree = channel.empty()
     ch_iqtree = channel.empty()
-    ch_patristic_recomb = channel.empty()
-    ch_ggtree_recomb = channel.empty()
+
+    // Gubbins recombination (optional)
+    ch_gubbins = channel.empty()
+    ch_snpdists_gubbins = channel.empty()
+    ch_gubbins_tree = channel.empty()
+    ch_patristic_gubbins = channel.empty()
+    ch_ggtree_gubbins = channel.empty()
+
+    // ClonalFrameML recombination (optional)
+    ch_clonalframeml = channel.empty()
+    ch_snpdists_cfml = channel.empty()
+    ch_patristic_cfml = channel.empty()
+    ch_ggtree_cfml = channel.empty()
 
     //
     // PREPROCESSING
@@ -103,10 +116,6 @@ workflow ASSEMBLYSNPS {
         ch_parsnp,
         []
     )
-
-    // PARSNP.out.log
-    //     .splitText()[1]
-    //     .view()
 
     //
     // MODULE: SnpSites
@@ -164,6 +173,16 @@ workflow ASSEMBLYSNPS {
     // MODULES: Gubbins, ClonalFrameML
     //
 
+    if (params.run_clonalframeml) {
+
+        CLONALFRAMEML ( ch_clonalframeml )
+
+        ch_snpdists_cfml = ch_snpdists_cfml.mix( CLONALFRAMEML.out.fasta )
+        ch_patristic_cfml = ch_patristic_cfml.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
+        ch_ggtree_cfml = ch_ggtree_cfml.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
+
+    }
+
     if (params.run_gubbins) {
 
         ch_gubbins = ch_gubbins.mix(
@@ -174,32 +193,32 @@ workflow ASSEMBLYSNPS {
 
         GUBBINS ( ch_gubbins )
 
-        ch_snpdists_recomb = ch_snpdists_recomb.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
-        ch_patristic_recomb = ch_patristic_recomb.mix(GUBBINS.out.tree_labelled)
-        ch_ggtree_recomb = ch_ggtree_recomb.mix(GUBBINS.out.tree_labelled)
-
-    } else if (params.run_clonalframeml) {
-
-        CLONALFRAMEML ( ch_clonalframeml )
-
-        ch_snpdists_recomb = ch_snpdists_recomb.mix( CLONALFRAMEML.out.fasta )
-        ch_patristic_recomb = ch_patristic_recomb.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
-        ch_ggtree_recomb = ch_ggtree_recomb.mix(CLONALFRAMEML.out.newick.map { meta, tree -> tree })
+        ch_snpdists_gubbins = ch_snpdists_gubbins.mix( GUBBINS.out.fasta.map { aln -> [[], aln] } )
+        ch_patristic_gubbins = ch_patristic_gubbins.mix(GUBBINS.out.tree_labelled)
+        ch_ggtree_gubbins = ch_ggtree_gubbins.mix(GUBBINS.out.tree_labelled)
 
     }
-
 
     //
     // MODULE: SNPdists
     //
 
-    SNPDISTS_MATRIX_RECOMB (
-        ch_snpdists_recomb
+    SNPDISTS_MATRIX_CFML (
+        ch_snpdists_cfml
     )
 
-    SNPDISTS_PAIRS_RECOMB (
-        ch_snpdists_recomb
+    SNPDISTS_PAIRS_CFML (
+        ch_snpdists_cfml
     )
+
+    SNPDISTS_MATRIX_GUBBINS (
+        ch_snpdists_gubbins
+    )
+
+    SNPDISTS_PAIRS_GUBBINS (
+        ch_snpdists_gubbins
+    )
+
 
     ch_snpdists = ch_snpdists.mix( SNPSITES.out.fasta.map { aln -> [[], aln] } )
 
@@ -213,7 +232,8 @@ workflow ASSEMBLYSNPS {
 
     PATRISTICDISTANCE ( ch_ggtree )
 
-    PATRISTICDISTANCE_RECOMB ( ch_patristic_recomb )
+    PATRISTICDISTANCE_CFML ( ch_patristic_cfml )
+    PATRISTICDISTANCE_GUBBINS ( ch_patristic_gubbins )
 
     //
     // Tree visualization and clustering
@@ -223,19 +243,24 @@ workflow ASSEMBLYSNPS {
 
     CLUSTER ( ch_cluster, params.snp_threshold )
 
-    ch_cluster_recomb = SNPDISTS_MATRIX_RECOMB.out.tsv.map { meta, tsv -> tsv }
-
-    CLUSTER_RECOMB ( ch_cluster_recomb, params.snp_threshold )
-
-    ch_ggtree_reg = ch_ggtree
+    ch_ggtree_regular = ch_ggtree
         .combine( CLUSTER.out.clusters )
 
-    GGTREE ( ch_ggtree_reg )
+    GGTREE ( ch_ggtree_regular )
 
-    ggtree_recomb = ch_ggtree_recomb
-        .combine( CLUSTER_RECOMB.out.clusters )
+    ch_cluster_cfml = SNPDISTS_MATRIX_CFML.out.tsv.map { meta, tsv -> tsv }
+    ch_cluster_gubbins = SNPDISTS_MATRIX_GUBBINS.out.tsv.map { meta, tsv -> tsv }
 
-    GGTREE_RECOMB ( ggtree_recomb )
+    CLUSTER_CFML ( ch_cluster_cfml, params.snp_threshold )
+    CLUSTER_GUBBINS ( ch_cluster_gubbins, params.snp_threshold )
+
+    ggtree_cfml = ch_ggtree_cfml
+        .combine( CLUSTER_CFML.out.clusters )
+    ggtree_gubbins = ch_ggtree_gubbins
+        .combine( CLUSTER_GUBBINS.out.clusters )
+
+    GGTREE_CFML ( ggtree_cfml )
+    GGTREE_GUBBINS ( ggtree_gubbins )
 
     //
     // Collate and save software versions
