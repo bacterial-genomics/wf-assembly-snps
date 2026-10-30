@@ -1,0 +1,25 @@
+#!/bin/bash -l
+
+
+SCRIPT_NAME="$(basename ${0#_} .uge-nextflow)"
+
+mkdir -p "${OUT}" && cd "${OUT}"
+
+module --ignore-cache load nextflow/25.10.4
+nextflow -version
+
+nextflow \
+  run \
+  $LAB_HOME/.cgul-playground/wf-snp-v2.0-dev/wf-assembly-snps/main.nf \
+  --help --help_full --show_hidden
+
+nextflow \
+  -log ${OUT}/log/nextflow_log.${SCRIPT_NAME}.txt \
+  run \
+  -profile singularity,rosalind_uge \
+  $LAB_HOME/.cgul-playground/wf-snp-v2.0-dev/wf-assembly-snps/main.nf \
+  --outdir $OUT \
+  --input $IN \
+  -w /scicomp/scratch/$USER/work \
+  -ansi-log false \
+  -resume
