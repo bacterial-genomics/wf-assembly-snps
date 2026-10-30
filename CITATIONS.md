@@ -1,4 +1,4 @@
-# wf-assembly-snps: Citations
+# bacterial-genomics/assemblysnps: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
@@ -10,33 +10,13 @@
 
 ## Pipeline tools
 
-- [BioPython](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2682512/)
+- [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
-  > Cock PJ, Antao T, Chang JT, et al. Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics. Jun 1 2009;25(11):1422-3. doi:10.1093/bioinformatics/btp163
+> Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
 
-- [ClonalFrameML](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4326465/)
+- [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
-  > Didelot X, Wilson DJ. ClonalFrameML: efficient inference of recombination in whole bacterial genomes. PLoS Comput Biol. Feb 2015;11(2):e1004041. doi:10.1371/journal.pcbi.1004041
-
-- [Gubbins](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4330336/)
-
-  > Croucher NJ, Page AJ, Connor TR, et al. Rapid phylogenetic analysis of large samples of recombinant bacterial whole genome sequences using Gubbins. Nucleic Acids Res. Feb 18 2015;43(3):e15. doi:10.1093/nar/gku1196
-
-- [MUSCLE](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC390337/)
-
-  > Edgar RC. MUSCLE: multiple sequence alignment with high accuracy and high throughput. Nucleic Acids Res. 2004;32(5):1792-7. doi:10.1093/nar/gkh340
-
-- [RAxML-NG](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6821337/)
-
-  > Kozlov AM, Darriba D, Flouri T, Morel B, Stamatakis A. RAxML-NG: a fast, scalable and user-friendly tool for maximum likelihood phylogenetic inference. Bioinformatics. Nov 01 2019;35(21):4453-4455. doi:10.1093/bioinformatics/btz305
-
-- [Parsnp 2.0](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10862825/)
-
-  > Kille B, Nute MG, Huang V, Kim E, Phillippy AM, Treangen TJ. Parsnp 2.0: Scalable Core-Genome Alignment for Massive Microbial Datasets. bioRxiv. Jan 31 2024;doi:10.1101/2024.01.30.577458
-
-- [snp-dists](https://github.com/tseemann/snp-dists)
-
-  > Seemann T. snp-dists. <https://github.com/tseemann/snp-dists>
+> Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
 ## Software packaging/containerisation tools
 
@@ -54,10 +34,8 @@
 
 - [Docker](https://dl.acm.org/doi/10.5555/2600239.2600241)
 
+  > Merkel, D. (2014). Docker: lightweight linux containers for consistent development and deployment. Linux Journal, 2014(239), 2. doi: 10.5555/2600239.2600241.
+
 - [Singularity](https://pubmed.ncbi.nlm.nih.gov/28494014/)
 
   > Kurtzer GM, Sochat V, Bauer MW. Singularity: Scientific containers for mobility of compute. PLoS One. 2017 May 11;12(5):e0177459. doi: 10.1371/journal.pone.0177459. eCollection 2017. PubMed PMID: 28494014; PubMed Central PMCID: PMC5426675.
-
-### Citation Information
-
-Citations were created with the help of EndNote and were exported in AMA format.

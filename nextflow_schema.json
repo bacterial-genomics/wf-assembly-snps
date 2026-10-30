@@ -1,26 +1,44 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/bacterial-genomics/wf-assembly-snps/main/nextflow_schema.json",
-    "title": "wf-assembly-snps pipeline parameters",
-    "description": "Identify SNPs from genome assemblies.",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/bacterial-genomics/assemblysnps/master/nextflow_schema.json",
+    "title": "bacterial-genomics/assemblysnps pipeline parameters",
+    "description": "General workflow for genome assembly-based SNP phylogeny with optional recombination masking",
     "type": "object",
-    "definitions": {
+    "$defs": {
+        "phylogenetic_tree_options": {
+            "title": "Phylogenetic Tree Options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "run_fasttree": {
+                    "type": "boolean",
+                    "description": "Use Fasttree instead of IQTree"
+                },
+                "snp_threshold": {
+                    "type": "integer",
+                    "description": "Threshold for SNP cluster detection",
+                    "default": 50
+                }
+            }
+        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["outdir"],
+            "required": ["input", "outdir"],
             "properties": {
                 "input": {
                     "type": "string",
-                    "description": "Path to directory ** OR ** samplesheet containing FastA/Genbank files. Recognized extensions are {fasta,fas,fna,fsa,fa} with optional gzip compression.",
-                    "fa_icon": "fas fa-folder-open"
-                },
-                "ref": {
-                    "type": "string",
-                    "description": "Path to file ** OR ** samplesheet containing a FastA file. Recognized extensions are {fasta,fas,fna,fsa,fa} with optional gzip compression.",
-                    "fa_icon": "fas fa-folder-open"
+                    "format": "file-path",
+                    "exists": true,
+                    "schema": "assets/schema_input.json",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "description": "Path to comma-separated file containing information about the samples in the experiment.",
+                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
+                    "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
                     "type": "string",
@@ -28,96 +46,55 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
-                "min_input_filesize": {
+                "reference": {
                     "type": "string",
-                    "default": "1k",
-                    "hidden": true,
-                    "description": "Minimum file size of input data."
+                    "description": "Reference genome for parsnp",
+                    "fa_icon": "fas fa-file"
+                },
+                "email": {
+                    "type": "string",
+                    "description": "Email address for completion summary.",
+                    "fa_icon": "fas fa-envelope",
+                    "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
+                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                },
+                "multiqc_title": {
+                    "type": "string",
+                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+                    "fa_icon": "fas fa-file-signature"
                 }
             }
         },
-        "analysis_options": {
-            "title": "Analysis options",
+        "qc_options": {
+            "title": "QC options",
             "type": "object",
-            "fa_icon": "fas fa-terminal",
-            "description": "Main pipeline parameters.",
+            "description": "",
+            "default": "",
             "properties": {
-                "snp_package": {
-                    "type": "string",
-                    "default": "parsnp",
-                    "description": "Specify what alignment tool to use to identify SNPs.",
-                    "enum": ["parsnp"]
-                },
-                "tree_method": {
-                    "type": "string",
-                    "default": "fasttree",
-                    "description": "Tool used to infer phylogeny after masking positions due to recombination.",
-                    "enum": ["fasttree", "raxml"]
-                },
-                "recombination": {
-                    "type": "string",
-                    "default": "both",
-                    "description": "Tool used to classify SNPs due to recombination.",
-                    "enum": ["gubbins", "clonalframeml", "both", "none"]
-                }
-            }
-        },
-        "parsnp_options": {
-            "title": "Parsnp options",
-            "type": "object",
-            "fa_icon": "fas fa-terminal",
-            "description": "Parsnp specific parameters.",
-            "properties": {
-                "min_parsnp_output_filesize": {
-                    "type": "string",
-                    "default": "100k",
-                    "hidden": true,
-                    "description": "Minimum file size of Parsnp output files."
-                },
-                "min_gingr_to_fasta_filesize": {
-                    "type": "string",
-                    "default": "1k",
-                    "hidden": true,
-                    "description": "Minimum file size of the FastA file generated from a Gingr file."
-                },
-                "curated_input": {
-                    "type": "boolean",
-                    "default": true,
-                    "hidden": true,
-                    "description": "Specify if input genomes are similar enough to be considered curated."
-                },
-                "max_partition_size": {
+                "min_fasta_size": {
                     "type": "integer",
-                    "default": 15000000,
-                    "hidden": true,
-                    "description": "Number of decimal points to round values."
+                    "description": "Minimum file size of input FASTA files",
+                    "default": 1000
+                },
+                "skip_quast": {
+                    "type": "boolean",
+                    "description": "Skip assembly QA"
                 }
             }
         },
-        "profile_options": {
-            "title": "Profile options",
+        "recombination_detection": {
+            "title": "Recombination detection",
             "type": "object",
-            "fa_icon": "fas fa-terminal",
-            "description": "Parameters to select which profile to use.",
+            "description": "Options fir recombination detection",
+            "default": "",
             "properties": {
-                "profile_cache_dir": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "hidden": true,
-                    "description": "The output directory where process module containers and/or conda environments will be saved. You have to use absolute paths to storage on Cloud infrastructure."
-                }
-            }
-        },
-        "spreadsheet_parsing_options": {
-            "title": "Spreadsheet parsing options",
-            "type": "object",
-            "description": "Spreadsheet parsing options",
-            "properties": {
-                "excel_sheet_name": {
-                    "type": "string",
-                    "default": "Sheet1",
-                    "hidden": true,
-                    "description": "EXCEL SAMPLESHEET ONLY: Sheet name of Excel (.XLSX, .XLS) samplesheet."
+                "run_gubbins": {
+                    "type": "boolean",
+                    "description": "Run Gubbins for recombination detection"
+                },
+                "run_clonalframeml": {
+                    "type": "boolean",
+                    "description": "Run ClonalFrameML for recombination detection"
                 }
             }
         },
@@ -169,41 +146,6 @@
                 }
             }
         },
-        "max_job_request_options": {
-            "title": "Max job request options",
-            "type": "object",
-            "fa_icon": "fab fa-acquisitions-incorporated",
-            "description": "Set the top limit for requested resources for any single job.",
-            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
-            "properties": {
-                "max_cpus": {
-                    "type": "integer",
-                    "description": "Maximum number of CPUs that can be requested for any single job.",
-                    "default": 16,
-                    "fa_icon": "fas fa-microchip",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`"
-                },
-                "max_memory": {
-                    "type": "string",
-                    "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
-                    "fa_icon": "fas fa-memory",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`"
-                },
-                "max_time": {
-                    "type": "string",
-                    "description": "Maximum amount of time that can be requested for any single job.",
-                    "default": "240.h",
-                    "fa_icon": "far fa-clock",
-                    "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
-                    "hidden": true,
-                    "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
-                }
-            }
-        },
         "generic_options": {
             "title": "Generic options",
             "type": "object",
@@ -211,21 +153,10 @@
             "description": "Less common options for the pipeline, typically set in a config file.",
             "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
             "properties": {
-                "help": {
-                    "type": "boolean",
-                    "description": "Display help text.",
-                    "fa_icon": "fas fa-question-circle",
-                    "hidden": false
-                },
                 "version": {
                     "type": "boolean",
                     "description": "Display version and exit.",
                     "fa_icon": "fas fa-question-circle",
-                    "hidden": true
-                },
-                "create_excel_outputs": {
-                    "type": "boolean",
-                    "description": "Convert tab-separated value (TSV) files to Excel spreadsheet files (XLSX) while retaining TSV files. Also creates a summary workbook where each summary output is placed into a separate sheet within the workbook.",
                     "hidden": true
                 },
                 "publish_dir_mode": {
@@ -236,14 +167,6 @@
                     "fa_icon": "fas fa-copy",
                     "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
                     "hidden": true
-                },
-                "email": {
-                    "type": "string",
-                    "description": "Email address for completion summary.",
-                    "fa_icon": "fas fa-envelope",
-                    "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
-                    "hidden": false
                 },
                 "email_on_fail": {
                     "type": "string",
@@ -259,6 +182,14 @@
                     "fa_icon": "fas fa-remove-format",
                     "hidden": true
                 },
+                "max_multiqc_email_size": {
+                    "type": "string",
+                    "description": "File size limit when attaching MultiQC reports to summary emails.",
+                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
+                    "default": "25.MB",
+                    "fa_icon": "fas fa-file-upload",
+                    "hidden": true
+                },
                 "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
@@ -272,26 +203,23 @@
                     "help_text": "Incoming hook URL for messaging service. Currently, MS Teams and Slack are supported.",
                     "hidden": true
                 },
-                "tracedir": {
+                "multiqc_config": {
                     "type": "string",
-                    "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "fa_icon": "fas fa-cogs",
+                    "format": "file-path",
+                    "description": "Custom config file to supply to MultiQC.",
+                    "fa_icon": "fas fa-cog",
                     "hidden": true
                 },
-                "process_log_dir": {
+                "multiqc_logo": {
                     "type": "string",
-                    "description": "Directory to keep output and error logs from each process.",
+                    "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
+                    "fa_icon": "fas fa-image",
                     "hidden": true
                 },
-                "qc_filecheck_log_dir": {
+                "multiqc_methods_description": {
                     "type": "string",
-                    "description": "Directory to keep QC file checks from processes.",
-                    "hidden": true
-                },
-                "validationShowHiddenParams": {
-                    "type": "boolean",
-                    "description": "Boolean whether to show hidden parameters at runtime",
-                    "hidden": true
+                    "description": "Custom MultiQC yaml file containing HTML including a methods description.",
+                    "fa_icon": "fas fa-cog"
                 },
                 "validate_params": {
                     "type": "boolean",
@@ -300,40 +228,52 @@
                     "fa_icon": "fas fa-check-square",
                     "hidden": true
                 },
-                "show_hidden_params": {
+                "pipelines_testdata_base_path": {
+                    "type": "string",
+                    "fa_icon": "far fa-check-circle",
+                    "description": "Base URL or local path to location of pipeline test dataset files",
+                    "default": "https://raw.githubusercontent.com/nf-core/test-datasets/",
+                    "hidden": true
+                },
+                "trace_report_suffix": {
+                    "type": "string",
+                    "fa_icon": "far calendar",
+                    "description": "Suffix to add to the trace report filename. Default is the date and time in the format yyyy-MM-dd_HH-mm-ss.",
+                    "hidden": true
+                },
+                "help": {
+                    "type": ["boolean", "string"],
+                    "description": "Display the help message."
+                },
+                "help_full": {
                     "type": "boolean",
-                    "fa_icon": "far fa-eye-slash",
-                    "description": "Show all params when using `--help`",
-                    "hidden": true,
-                    "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                    "description": "Display the full detailed help message."
+                },
+                "show_hidden": {
+                    "type": "boolean",
+                    "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
         }
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/phylogenetic_tree_options"
         },
         {
-            "$ref": "#/definitions/analysis_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/parsnp_options"
+            "$ref": "#/$defs/qc_options"
         },
         {
-            "$ref": "#/definitions/profile_options"
+            "$ref": "#/$defs/recombination_detection"
         },
         {
-            "$ref": "#/definitions/spreadsheet_parsing_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
-        },
-        {
-            "$ref": "#/definitions/max_job_request_options"
-        },
-        {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ]
 }
