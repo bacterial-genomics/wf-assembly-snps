@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+
+
+SCRIPT_NAME="$(basename ${0#_} .uge-nextflow)"
+
+# Define script usage
+usage() {
+  echo "
+Usage: ${0##*/} InputDirectory [OutputDirectory] [-h|--help]
+Required:
+  <InputDirectory>   All assembly files ending in fa,fas,
+                     fsa,fna,fasta will be analyzed.
+Optional:
+  -h | --help        Show this help message and exit.
+  <OutputDirectory>  Location for the output files, which
+                     includes job logfiles. Output files
+                     will be overwritten if already present.
+                     Default: current working directory.
+  "
+}
+
+# Color output for success, warnings, and errors to catch user's attention
+GREEN_TXT='\033[0;32m'
+RED_TXT='\033[0;31m'
+YELLOW_TXT='\033[0;93m'
+RED_BG='\033[41m'
+COLOR_OFF='\033[0m'
+
+# Check requirements
+[[ $1 == "--help" || $1 == "-h" ]] && { usage; exit 0; }
+if [[ $# -lt 1  || $# -gt 2 ]]; then
+  echo "ERROR: improper number ("$#") of arguments provided" >&2
+  usage
+  exit 1
+fi
+
+# Confirm we are on a host that can submit jobs
+if [ "${HOSTNAME%%.*}" == 'biolinux' ] || \
+  [ "${HOSTNAME%%.*}" == 'login02' ] || \
+  [ "${HOSTNAME%%.*}" == 'rosalind01' ] || \
+  [ "${HOSTNAME%%.*}" == 'rosalind02' ] || \
+  [ "$(echo ${HOSTNAME%%.*} | sed 's/[0-9]//g')" == 'rosalind-' ] || \
+  [ "$(echo ${HOSTNAME%%.*} | sed 's/[0-9]//g')" == 'node' ]; then
+  :
+else
+  echo -e "${RED_TXT}ERROR:${COLOR_OFF} must be on rosalind, aspen, or biolinux" >&2
+  exit 1
+fi
+
+# I/O handling
+if [[ "${1}" =~ .+[[:space:]].+ ]]; then
+  echo -e "${RED_TXT}ERROR:${COLOR_OFF} whitespace in $1 path unsupported" >&2
+  exit 1
+fi
+if [[ "${2}" =~ .+[[:space:]].+ ]]; then
+  echo -e "${RED_TXT}ERROR:${COLOR_OFF} whitespace in $2 path unsupported" >&2
+  exit 1
+fi
+IN="$(realpath -- ${1})"
+if [[ -z "${2}" ]]; then
+  OUT="${PWD}"
+else
+  OUT="$(realpath -- ${2})"
+fi
+
+# Set up tmp and cache directories for Singularity
+mkdir -p /scicomp/scratch/$USER/singularity.cache && export NXF_SINGULARITY_CACHEDIR=/scicomp/scratch/$USER/singularity.cache
+
+# Determine the quantity of input genomes
+shopt -s nullglob
+compressed_asm=( "${IN}"/*.{fa,fas,fsa,fna,fasta}.gz )
+plaintext_asm=( "${IN}"/*.{fa,fas,fsa,fna,fasta} )
+n_asm=$(( ${#compressed_asm[@]} + ${#plaintext_asm[@]} ))
+shopt -u nullglob
+
+# Require at least three (3) input genomes
+if [[ "${n_asm}" -lt 3 ]]; then
+  echo -e "${RED_TXT}ERROR:${COLOR_OFF} fewer than three assembly files (${n_asm}) found in ${IN}" >&2
+  usage
+  exit 1
+fi
+
+# Get LAB_HOME or custom tmp/cache variables from .bashrc
+source $HOME/.bashrc
+if [[ -z "${LAB_HOME}" ]]; then
+  echo -e "${RED_TXT}ERROR:${COLOR_OFF} ${LAB_HOME} not set" >&2
+  exit 1
+fi
+
+# Form that annoying samplesheet.csv automagically
+mkdir -p "${OUT}"
+SHEET="${OUT}/samplesheet.csv"
+{
+  echo "sample,fasta"
+  for f in "${compressed_asm[@]}" "${plaintext_asm[@]}"; do
+    filename=${f##*/}
+    if [[ "$filename" == *,* ]]; then
+      echo -e "${RED_TXT}ERROR:${COLOR_OFF} filename contains a comma: ${filename}" >&2
+      exit 1
+    fi
+    name=${filename%.gz}; name=${name%.*}
+    echo "${name//[^A-Za-z0-9_.-]/_},${f}"
+  done | sort -t, -k1,1
+} > "${SHEET}"
+
+# Run the nextflow workflow
+qsub \
+  -v NXF_SINGULARITY_CACHEDIR=$NXF_SINGULARITY_CACHEDIR \
+  -v OUT=$OUT \
+  -v IN=$SHEET \
+  -v LAB_HOME=$LAB_HOME \
+  -N asm_snp \
+  -e $OUT/'$JOB_NAME.$JOB_ID.stderr.txt' \
+  -o $OUT/'$JOB_NAME.$JOB_ID.stdout.txt' \
+  -M $USER@cdc.gov \
+  -m bae \
+  -q long.q \
+  -pe smp 1 \
+  -l h_vmem=16G \
+  -l h_rt=670:00:00 \
+  $LAB_HOME/.cgul-playground/wf-snp-v2.0-dev/wf-assembly-snps/_run_parsnp.uge-nextflow

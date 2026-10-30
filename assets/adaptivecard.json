@@ -17,7 +17,7 @@
                         "size": "Large",
                         "weight": "Bolder",
                         "color": "<% if (success) { %>Good<% } else { %>Attention<%} %>",
-                        "text": "bacterial-genomics/wf-assembly-snps v${version} - ${runName}",
+                        "text": "bacterial-genomics/assemblysnps v${version} - ${runName}",
                         "wrap": true
                     },
                     {

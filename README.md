@@ -1,162 +1,77 @@
-<h1>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/wf-assembly-snps_logo_dark.png">
-    <img alt="bacterial-genomics/wf-assembly-snps" src="docs/images/wf-assembly-snps_logo_light.png">
-  </picture>
-</h1>
+# bacterial-genomics/assemblysnps
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/bacterial-genomics/wf-assembly-snps)
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.04.3-23aa62.svg)](https://www.nextflow.io/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.04.0-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.5.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.5.2)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![MegaLinter](https://github.com/bacterial-genomics/wf-assembly-snps/actions/workflows/mega-linter.yml/badge.svg)](https://github.com/bacterial-genomics/wf-assembly-snps/actions/workflows/mega-linter.yml)
-
-![workflow](docs/images/wf-assembly-snps_workflow.png)
-
-> _General schematic of the steps in the workflow_
-
-## Contents
-
-- [Quick Start](#quick-start-test)
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Parameters](#parameters)
-  - [Required parameters](#required-parameters)
-  - [Additonal parameters](#additional-parameters)
-- [Resource Managers](#resource-managers)
-- [Output](#output)
-- [Troubleshooting](#troubleshooting)
-- [Contributions and Support](#contributions-and-support)
-- [Citations](#citations)
-
-## Quick Start: Test
-
-Run the built-in test set to confirm all parts are working as-expected. It will also download all dependencies to make subsequent runs much faster.
-
-### Pull workflow from GitHub
-
-```bash
-nextflow pull bacterial-genomics/wf-assembly-snps -r main
-```
-
-### Run test workflow
-
-```bash
-nextflow run \
-  bacterial-genomics/wf-assembly-snps \
-  -r main \
-  -profile docker,test \
-  --outdir results
-```
-
-## Quick Start: Run
-
-Example command on FastAs in "new-fasta-dir" data using **BLAST** with singularity:
-
-### Run workflow
-
-```bash
-nextflow run \
-  bacterial-genomics/wf-assembly-snps \
-  -r main \
-  -profile docker \
-  --input new-fasta-dir \
-  --outdir my-results \
-  --snp_package parsnp
-```
 
 ## Introduction
 
-This workflow performs average nucleotide identity on assembled and/or annotated files (FastA/Genbank).
+![Workflow Diagram](docs/img/metromap_workflow_diagram.png)
 
-## Installation
+**bacterial-genomics/assemblysnps** is a bioinformatics pipeline that generates a core genome alignment, genomic distances and a phlyogenetic tree, intended for bacterial outbreak surveillance.
 
-- [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html#installation) `>=22.04.03`
-- [Docker](https://docs.docker.com/engine/installation/) or [Singularity](https://www.sylabs.io/guides/3.0/user-guide/) `>=3.8.0`
-- [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) is currently unsupported
+1. (Optional) QC FASTA assemblies with ([QUAST](https://quast.sourceforge.net/)) and reported with ([`MultiQC`](http://multiqc.info/)). This step can be skipped with `--skip_quast`.
+
+2. Core genome alignment with ([Parsnp](https://harvest.readthedocs.io/en/latest/content/parsnp.html)).
+
+3. Extract SNPs from core genome alignment with [snp-sites](https://sanger-pathogens.github.io/snp-sites/).
+
+4. Compute maximum likelihood tree with [IQTREE2](https://github.com/iqtree/iqtree2) or optionally [FastTree](https://github.com/morgannprice/fasttree) specifying the `--run_fasttree` parameter.
+
+5. (Optional) Detect and mask recombination loci with [Gubbins](https://nickjcroucher.github.io/gubbins/) by specifying the `--run_gubbins` parameter, or [ClonalFrameML](https://github.com/xavierdidelot/clonalframeml) by specifying the `--run_clonalframeml` parameter.
+
+6. Generate SNP distance matrices with [snp-dists]() and patristic distances from resulting trees with a [homebrew python script](bin/patristic_distance.py)
+
+7. Automatically annotate SNP clusters using a [homebrew script](bin/outbreak_detection.py) using the [Disjoint Set Union algorithm](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) to iteratively aggregate genomes based on a SNP distance threshold, which may be set specifying the `--snp_threshold` parameter.
+
+8 Generate a phylogenetic tree graphic (`ggtree/tree.png`) using [ggtrree](https://github.com/YuLab-SMU/ggtree).
 
 ## Usage
 
-```bash
-nextflow run main.nf \
-  -profile docker \
-  --input <input directory> \
-  --ref <optional reference file> \
-  --outdir <directory for results> \
-  --snp_package <parsnp>
+> [!IMPORTANT]
+This pipeline was tested using Nextflow v25.10.4, and should be compatible with Nextflow v26.04.0 if the `NXF_SYNTAX_PARSER` environment variable is set to `v1`. **It has yet to adopt [strict syntax](https://docs.seqera.io/nextflow/strict-syntax)**.
+> `export NXF_SYNTAX_PARSER=v1`
+
+> [!NOTE]
+> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
+
+First, prepare a samplesheet with your input data that looks as follows:
+
+`samplesheet.csv`:
+
+```csv
+sample,fasta
+sampleA,sampleA.fasta
+sampleB,sampleB.fna.gz
 ```
+> [!NOTE]
+> The following input FASTA file extensions are acceptable: `.fasta`, `.fna`, `.fa`, `.fsa`, `.fas`. Files may also be gzipped-compressed and have a `.gz` extension.
 
-Please see the [usage documentation](docs/usage.md) for further information on using this workflow.
+> [!WARNING]
+By default, FASTA files under 1000 bytes will be excluded from the analysis for quality control, a warning message will print to `.nextflow.log` if so. This feature can be modified with the `--min_fasta_size` parameter. This feature may change to minimum assembly length in future releases.
 
-## Parameters
-
-Note the "`--`" long name arguments (e.g., `--help`, `--input`, `--outdir`) are generally specific to this workflow's options, whereas "`-`" long name options (e.g., `-help`, `-latest`, `-profile`) are general nextflow options.
-
-These are the most pertinent options for this workflow:
-
-### Required parameters
-
-```console
-  ============================================
-        Input/Output
-  ============================================
-  --input                 Path to input data directory containing FastA/Genbank assemblies or samplesheet.
-                          Recognized extensions are:  {fasta,fas,fna,fsa,fa} with optional gzip compression.
-
-  --ref                   Path to reference file in FastA format.
-                          Recognized extensions are:  {fasta,fas,fna,fsa,fa} with optional gzip compression. [Default: NaN]
-
-  --outdir                The output directory where the results will be saved.
-
-
-  ============================================
-        Container platforms
-  ============================================
-  -profile singularity    Use Singularity images to run the workflow.
-                          Will pull and convert Docker images from Dockerhub if not locally available.
-
-  -profile docker         Use Docker images to run the workflow.
-                          Will pull images from Dockerhub if not locally available.
-
-
-  ============================================
-        Optional alignment tools
-  ============================================
-  --snp_package           Specify what algorithm should be used to compare input files.
-                          Recognized arguments are: parsnp. [Default: parsnp]
-```
-
-### Additional parameters
-
-View help menu of all workflow options:
+Now, you can run the pipeline using:
 
 ```bash
-nextflow run \
-  bacterial-genomics/wf-assembly-snps \
-  -r main \
-  --help \
-  --show_hidden_params
+nextflow run bacterial-genomics/assemblysnps \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --outdir <OUTDIR>
 ```
+> [!WARNING]
+> At the moment, some of the modules only have a Singularity container defined.
 
-## Resource Managers
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
-The most well-tested and supported is a Univa Grid Engine (UGE) job scheduler with Singularity for dependency handling.
+## Credits
 
-1. UGE/SGE
-    - Additional tips for UGE processing are [here](docs/HPC-UGE-scheduler.md).
-2. No Scheduler
-    - It has also been confirmed to work on desktop and laptop environments without a job scheduler using Docker with more tips [here](docs/local-device.md).
+bacterial-genomics/assemblysnps was originally written by @Ethan-Hetrick,@chrisgulvik, **[TODO: insert other authors here]**
 
-## Output
+We thank the following people for their extensive assistance in the development of this pipeline:
 
-Please see the [output documentation](docs/output.md) for a table of all outputs created by this workflow.
-
-## Troubleshooting
-
-Q: It failed, how do I find out what went wrong?
-
-A: View file contents in the `<outdir>/pipeline_info` directory.
+**[TODO: insert other contributors here]**
 
 ## Contributions and Support
 
@@ -164,4 +79,17 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 ## Citations
 
+<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
+<!-- If you use bacterial-genomics/assemblysnps for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+
+<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
+
+This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/main/LICENSE).
+
+> **The nf-core framework for community-curated bioinformatics pipelines.**
+>
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+>
+> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
