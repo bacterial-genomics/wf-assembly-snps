@@ -68,7 +68,14 @@ def get_matrix(file):
     ncols = len(names)
 
     names.pop(0) #remove first index since that isn't an isolate name
-    matrix = np.loadtxt(file,dtype=int,delimiter='\t',skiprows=1,usecols=range(1,ncols))
+    matrix = np.loadtxt(
+        file,
+        dtype=int,
+        delimiter='\t',
+        comments=None,  # enables reading samples with '#' in their names, such as Burkholderia_pseudomallei_USAMRU_Malaysia_#17_GCF_002881035.1_Malaysia.fna
+        skiprows=1,
+        usecols=range(1,ncols)
+    )
     return matrix, names
 
 ### construct graph from SNP dists matrix from isolates with a SNP distance of < dist ###
