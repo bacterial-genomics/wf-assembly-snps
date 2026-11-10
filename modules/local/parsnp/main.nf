@@ -10,7 +10,7 @@ process PARSNP {
     output:
     path("core.aln"), emit: aln
     path("parsnp.ggr"), emit: ggr
-    path("parsnp.log"), emit: log
+    path("parsnp.log"), emit: log, optional: true
     path("parsnp.xmfa"), emit: xmfa
 
     when:
@@ -40,7 +40,7 @@ process PARSNP {
       fi
     done
 
-    reference="\$(ls -1SL staging | head -1)"
+    reference="\$(ls -1SL staging | sed -n '1p')"
 
     mv -f staging/\$reference ./\$reference
 
@@ -57,7 +57,13 @@ process PARSNP {
       --verbose \
       $args
 
-    mv -f output/log/parsnpAligner.log parsnp.log
+    # Log file is not always created with large datasets, so check for existence before renaming
+    if [[ -f output/log/parsnpAligner.log ]]; then
+      mv -f output/log/parsnpAligner.log parsnp.log
+    else
+      echo "parsnpAligner.log not found; skipping rename"
+    fi
+
     mv -f output/parsnp.ggr parsnp.ggr
     mv -f output/parsnp.xmfa parsnp.xmfa
 
